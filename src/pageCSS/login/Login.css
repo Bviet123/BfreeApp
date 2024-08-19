@@ -1,0 +1,144 @@
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f2f5;
+}
+
+.login-form {
+    background-color: rgba(255, 255, 255, 0.24);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 350px;
+}
+
+.login-form h2 {
+    text-align: center;
+    color: #1877f2;
+    margin-bottom: 1.5rem;
+}
+
+.login-form-group {
+    margin-bottom: 1rem;
+}
+
+.login-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.login-form-group input {
+    width: 95%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    background-color: white;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.login-button,
+.reset-button {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-button {
+    background-color: #1877f2;
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.login-button:hover {
+    background-color: #166fe5;
+}
+
+.reset-button {
+    background-color: #42b72a;
+    color: white;
+}
+
+.reset-button:hover {
+    background-color: #36a420;
+}
+
+.error-message {
+    color: #c62828;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.success-message {
+    color: #2e7d32;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.auth-button,
+.google-button {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-bottom: 0.5rem;
+}
+
+.auth-button {
+    background-color: #1877f2;
+    color: white;
+}
+
+.auth-button:hover {
+    background-color: #166fe5;
+}
+
+.google-button {
+    background-color: #fff;
+    color: #757575;
+    border: 1px solid #ddd;
+}
+
+.google-button:hover {
+    background-color: #f5f5f5;
+}
+
+.switch-mode {
+    text-align: center;
+    color: #1877f2;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+.switch-mode:hover {
+    text-decoration: underline;
+}
+
+.google-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    color: black;
+    border: 1px solid #ddd;
+}
+
+.google-button i {
+    margin-right: 10px;
+    font-size: 18px;
+    color: #4285F4;
+}
+
+.google-button:hover {
+    background-color: #f5f5f5;
+}
