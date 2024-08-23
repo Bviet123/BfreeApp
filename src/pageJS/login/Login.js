@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { getDatabase, ref, set, get } from "firebase/database";
+import { ref, set, get, serverTimestamp } from "firebase/database";
 import '../../pageCSS/login/Login.css';
 import { auth, database } from '../../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
@@ -11,64 +11,87 @@ function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [role, setRole] = useState(''); // new field
     const [error, setError] = useState(null);
     const [isSignUp, setIsSignUp] = useState(false);
+    const [avatar, setAvatar] = useState(null); // new field
+
     const navigate = useNavigate();
-    
+
     // Add user to Realtime Database
     const addUserToDatabase = async (user) => {
         try {
             await set(ref(database, 'users/' + user.uid), {
                 email: user.email,
+                password: user.password, 
+                role: "Người dùng", 
                 fullName: "",
                 birthDate: "",
                 gender: "",
-                createdAt: new Date().toISOString()
+                favoriteGenres: { default: "Chưa có" },
+                booksRead: { default: "Chưa đọc sách nào" },
+                readingGoal: "",
+                createdAt: serverTimestamp(),
+                lastUpdated: serverTimestamp(),
+                avatar: null
             });
-            console.log("Thông tin người dùng đã được thêm vào Realtime Database");
+            console.log("Thông tin người dùng đã được thêm vào Database");
         } catch (error) {
-            console.error("Lỗi khi thêm thông tin người dùng vào Realtime Database:", error);
+            console.error("Lỗi khi thêm thông tin người dùng vào Database:", error);
         }
     };
 
     const handleAuth = async (e) => {
         e.preventDefault();
         setError(null);
-        
+    
         if (isSignUp && password !== confirmPassword) {
             setError("Mật khẩu không khớp");
             return;
         }
-        
+    
         try {
             let userCredential;
+            let userInfo;
             if (isSignUp) {
                 userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                userInfo = {
+                    email: userCredential.user.email,
+                    password: password,
+                    role: role,
+                    uid: userCredential.user.uid,
+                    avatar: null
+                };
+                await addUserToDatabase(userInfo);
                 toast.success("Tài khoản đã được tạo thành công!");
+                setIsSignUp(false); 
+                setEmail(''); 
+                setPassword(''); 
+                setConfirmPassword(''); 
             } else {
                 userCredential = await signInWithEmailAndPassword(auth, email, password);
+                userInfo = {
+                    email: userCredential.user.email,
+                    uid: userCredential.user.uid,
+                };
                 toast.success("Đăng nhập thành công!");
+                navigate('/Home', { state: { user: userInfo } });
             }
-            const userInfo = {
-                email: userCredential.user.email,
-                uid: userCredential.user.uid,
-            };
-            if (isSignUp) {
-                await addUserToDatabase(userInfo);
-            }
-            navigate('/Home', { state: { user: userInfo } });
         } catch (error) {
             handleAuthError(error);
         }
     };
-    
+
     const handleGoogleSignIn = async () => {
         const provider = new GoogleAuthProvider();
         try {
             const result = await signInWithPopup(auth, provider);
             const userInfo = {
                 email: result.user.email,
+                password: "", 
+                role: "", 
                 uid: result.user.uid,
+                avatar: null
             };
             const userExists = await checkUserExists(userInfo.uid);
             if (!userExists) {
@@ -154,6 +177,7 @@ function Login() {
                         />
                     </div>
                 )}
+                
                 <button type="submit" className="auth-button">
                     {isSignUp ? 'Đăng ký' : 'Đăng nhập'}
                 </button>

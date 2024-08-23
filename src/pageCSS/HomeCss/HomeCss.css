@@ -257,7 +257,7 @@ footer {
   color: white;
 }
 
-/* Responsive design */
+/* Responsive */
 @media (max-width: 768px) {
   nav {
     flex-direction: column;
