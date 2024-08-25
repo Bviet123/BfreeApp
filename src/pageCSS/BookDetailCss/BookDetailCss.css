@@ -1,0 +1,169 @@
+.book-detail-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.book-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.book-detail-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.book-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.book-main-info {
+  display: flex;
+  gap: 40px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.book-cover img {
+  max-width: 300px;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.book-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.book-info h1 {
+  font-size: 2.5em;
+  color: #333;
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.author {
+  font-size: 1.2em;
+  color: #555;
+}
+
+.author a {
+  color: #1a73e8;
+  text-decoration: none;
+}
+
+.author a:hover {
+  color: #174ea6;
+}
+
+.genre-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.genre-tag {
+  background-color: #e0e0e0;
+  color: #333;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.9em;
+}
+
+.genre-tag:hover {
+  background-color: #d0d0d0;
+}
+
+.description {
+  line-height: 1.6;
+  margin-bottom: 20px;
+  color: #555;
+}
+
+.read-button,
+.buy-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: bold;
+}
+
+.read-button {
+  background-color: #4CAF50;
+  color: white;
+  margin-right: 15px;
+}
+
+.buy-button {
+  background-color: #f0c14b;
+  color: #111;
+}
+
+.read-button:hover {
+  background-color: #45a049;
+}
+
+.buy-button:hover {
+  background-color: #e6b63b;
+}
+
+.book-additional-info,
+.author-info,
+.related-books {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.book-additional-info table {
+  width: 100%;
+}
+
+.book-additional-info td {
+  padding: 5px 0;
+}
+
+.author-info ul {
+  padding-left: 20px;
+}
+
+.related-books .book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.book-card {
+  text-decoration: none;
+  color: inherit;
+}
+
+.book-card img {
+  width: 100%;
+  height: 250px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.book-card h3 {
+  margin: 10px 0 5px;
+  font-size: 1em;
+}
+
+.book-card p {
+  margin: 0;
+  font-size: 0.9em;
+  color: #666;
+}

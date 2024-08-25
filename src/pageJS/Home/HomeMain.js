@@ -5,8 +5,18 @@ import img4 from '../../resource/image/SoDo.jpeg';
 import img5 from '../../resource/image/TuDienTiengEm.jpeg';
 import img6 from '../../resource/image/LuocSuLoaiNguoi.png';
 import img7 from '../../resource/image/ToiTaiGioi.jpeg';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 function HomeMain() {
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const user = location.state?.user;
+
+  const handleBookClick = (book) => {
+    navigate('/BookDetail', { state: { user, book } });
+  };
+
   const featuredBooks = [
     { id: 1, title: "Đắc Nhân Tâm", author: "Dale Carnegie", cover: img2, genre: "Tự giúp bản thân" },
     { id: 2, title: "Nhà Giả Kim", author: "Paulo Coelho", cover: img3, genre: "Tiểu thuyết" },
@@ -33,7 +43,7 @@ function HomeMain() {
         <h2>Sách nổi bật</h2>
         <div className="book-grid">
           {featuredBooks.map(book => (
-            <div key={book.id} className="book-card">
+            <div key={book.id} onClick={() => handleBookClick(book)} className="book-card">
               <img src={book.cover} alt={book.title} />
               <h3>{book.title}</h3>
               <p>{book.author}</p>

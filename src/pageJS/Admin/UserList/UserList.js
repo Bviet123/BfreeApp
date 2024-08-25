@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import '../../../pageCSS/Admin/UserListCss/UserListCss.css';
 import Aside from '../Aside/Aside.js';
 import DeleteModel from './Model/DeleteModel';
+import { FaBars, FaTimes } from 'react-icons/fa';
+
 
 function UserList() {
     const [users, setUsers] = useState([]);
@@ -17,6 +19,12 @@ function UserList() {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [usersPerPage] = useState(5);
+
+    const [isAsideVisible, setIsAsideVisible] = useState(true);
+
+    const toggleAside = () => {
+        setIsAsideVisible(!isAsideVisible);
+    };
 
     const handleDelete = async (userId) => {
         setUserToDelete(userId);
@@ -103,18 +111,22 @@ function UserList() {
 
     return (
         <div className="user-list-container">
-
-            <Aside currentUser={currentUser} />
-
-            <div className="user-list-content">
+            {isAsideVisible && <Aside currentUser={currentUser} />}
+            <div className={`user-list-main ${isAsideVisible ? '' : 'full-width'}`}>
                 <div className="user-list-header">
-                    <h2>Danh sách tài khoản người dùng</h2>
+                    <div className='user-list-toggle'>
+                        <button className="toggle-aside-btn" onClick={toggleAside}>
+                            {isAsideVisible ? <FaTimes /> : <FaBars />}
+                        </button>
+                        <h2>Danh sách tài khoản người dùng</h2>
+                    </div>
                     <div className="user-list-actions">
                         <button className="btn-add" onClick={handleAddUser}>
                             Thêm tài khoản
                         </button>
                     </div>
                 </div>
+
                 <div className="user-list-search">
                     <input
                         type="text"

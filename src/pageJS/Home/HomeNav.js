@@ -1,13 +1,13 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import avatarIcon from '../../resource/image/Avatar.png';
 
 function HomeNav() {
+  const navigate = useNavigate();
   const location = useLocation();
   const user = location.state?.user;
 
   const genres = [
-    "Tất cả",
     "Tự giúp bản thân",
     "Tiểu thuyết",
     "Văn học Việt Nam",
@@ -16,22 +16,27 @@ function HomeNav() {
     "Giáo dục"
   ];
 
+  const handleNavigation = (path) => {
+    navigate(path, { state: { user } });
+  };
+
   return (
     <header>
       <nav>
         <ul>
-          <li><a href="/">Trang chủ</a></li>
+          <li><div onClick={() => handleNavigation('/')}>Trang chủ</div></li>
           <li>
             <div className="dropdown">
               <button className="dropbtn">Thể loại</button>
               <div className="dropdown-content">
                 {genres.map((genre, index) => (
-                  <a key={index} href={`/theloai/${genre}`}>{genre}</a>
+                  <div key={index} onClick={() => handleNavigation(`/theloai/${genre}`)}>{genre}</div>
                 ))}
               </div>
             </div>
           </li>
-          <li><a href="/xephang">Xếp hạng</a></li>
+          <li><div onClick={() => handleNavigation('/Author')}>Tác giả</div></li>
+          <li><div onClick={() => handleNavigation('/BookLibrary')}>Kho sách</div></li>
         </ul>
         <div className='searchAvatar'>
           <div className="search-bar">
@@ -42,8 +47,14 @@ function HomeNav() {
             <button type="submit">Tìm</button>
           </div>
           <div className="avatar">
-            <span>{user.email}</span>
-            <img src={avatarIcon} alt="Avatar" />
+            {user ? (
+              <>
+                <span>{user.email}</span>
+                <img src={avatarIcon} alt="Avatar" />
+              </>
+            ) : (
+              <div onClick={() => handleNavigation('/login')}>Đăng nhập</div>
+            )}
           </div>
         </div>
       </nav>
