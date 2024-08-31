@@ -1,0 +1,302 @@
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #e74c3c;
+    --background-color: #ecf0f1;
+    --text-color: #34495e;
+    --link-color: #3498db;
+    --aside-background: #f1f1f1;
+  }
+  
+  .author-list-container {
+    display: flex;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    min-height: 100vh;
+  }
+  
+  .aside {
+    width: 250px;
+    background-color: var(--aside-background);
+    padding: 20px;
+  }
+  
+  .author-list-main {
+    flex-grow: 1;
+    padding: 20px;
+    transition: margin-left 0.3s ease;
+    margin-left: 250px;
+  }
+  
+  .author-list-main.full-width {
+    margin-left: 0;
+  }
+  
+  .author-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .author-list-toggle {
+    display: flex;
+    align-items: center;
+  }
+  
+  .toggle-aside-btn {
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    margin-right: 10px;
+    padding: 10px 15px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  
+  .author-list-search {
+    margin-bottom: 20px;
+    width: 320px;
+  }
+  
+  .author-list-search input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  th {
+    background-color: var(--primary-color);
+    color: #fff;
+  }
+  
+  .btn-add, .btn-details, .btn-delete {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    height: 40px;
+    color: #fff;
+  }
+  
+  .btn-add {
+    background-color: var(--primary-color);
+  }
+  
+  .btn-details {
+    background-color: var(--link-color);
+    margin-right: 5px;
+  }
+  
+  .btn-delete {
+    background-color: var(--secondary-color);
+  }
+  
+  .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .pagination button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    cursor: pointer;
+  }
+  
+  .pagination button.active {
+    background-color: var(--primary-color);
+    color: #fff;
+  }:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #e74c3c;
+    --background-color: #ecf0f1;
+    --text-color: #34495e;
+    --link-color: #3498db;
+    --aside-background: #f1f1f1;
+    --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .author-list-container {
+    display: flex;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    min-height: 100vh;
+  }
+  
+  .aside {
+    width: 250px;
+    background-color: var(--aside-background);
+    padding: 20px;
+    box-shadow: var(--box-shadow);
+  }
+  
+  .author-list-main {
+    flex-grow: 1;
+    padding: 30px;
+    transition: margin-left 0.3s ease;
+    margin-left: 250px;
+  }
+  
+  .author-list-main.full-width {
+    margin-left: 0;
+  }
+  
+  .author-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .author-list-toggle {
+    display: flex;
+    align-items: center;
+  }
+  
+  .toggle-aside-btn {
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    margin-right: 15px;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .toggle-aside-btn:hover {
+    background-color: #34495e;
+  }
+  
+  .author-list-search {
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .author-list-search input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .author-list-search input:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--box-shadow);
+  }
+  
+  th, td {
+    text-align: left;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  th {
+    background-color: var(--primary-color);
+    color: #fff;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 14px;
+  }
+  
+  tr:last-child td {
+    border-bottom: none;
+  }
+  
+  tr:hover {
+    background-color: #f9f9f9;
+  }
+  
+  .btn-add, .btn-details, .btn-delete {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #fff;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-add {
+    background-color: var(--primary-color);
+  }
+  
+  .btn-add:hover {
+    background-color: #34495e;
+  }
+  
+  .btn-details {
+    background-color: var(--link-color);
+    margin-right: 10px;
+  }
+  
+  .btn-details:hover {
+    background-color: #2980b9;
+  }
+  
+  .btn-delete {
+    background-color: var(--secondary-color);
+  }
+  
+  .btn-delete:hover {
+    background-color: #c0392b;
+  }
+  
+  .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+  }
+  
+  .pagination button {
+    margin: 0 5px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .pagination button:hover {
+    background-color: var(--link-color);
+    color: #fff;
+  }
+  
+  .pagination button.active {
+    background-color: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+  }

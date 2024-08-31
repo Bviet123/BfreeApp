@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ref, get, onValue, remove, update, push } from 'firebase/database';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { ref, get, onValue, remove, update, push, set, serverTimestamp } from 'firebase/database';
 import { auth, database } from '../../../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 import '../../../pageCSS/Admin/UserListCss/UserListCss.css';
 import Aside from '../Aside/Aside.js';
-import DeleteModel from './Model/DeleteModel';
 import { FaBars, FaTimes } from 'react-icons/fa';
+import UserModal from './Model/UserModel';
 
 
 function UserList() {
@@ -13,9 +14,10 @@ function UserList() {
     const [currentUser, setCurrentUser] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
-    const [showDeleteModel, setShowDeleteModel] = useState(false);
-    const [userToDelete, setUserToDelete] = useState(null);
     const [showPasswords, setShowPasswords] = useState({});
+
+    const [modalAction, setModalAction] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [usersPerPage] = useState(5);
@@ -24,27 +26,6 @@ function UserList() {
 
     const toggleAside = () => {
         setIsAsideVisible(!isAsideVisible);
-    };
-
-    const handleDelete = async (userId) => {
-        setUserToDelete(userId);
-        setShowDeleteModel(true);
-    };
-
-    const confirmDelete = async () => {
-        try {
-            await remove(ref(database, 'users/' + userToDelete));
-            setUsers(users.filter((user) => user.id !== userToDelete));
-            setShowDeleteModel(false);
-            setUserToDelete(null);
-        } catch (error) {
-            console.error('Error deleting user:', error);
-        }
-    };
-
-    const cancelDelete = () => {
-        setShowDeleteModel(false);
-        setUserToDelete(null);
     };
 
     useEffect(() => {
@@ -91,14 +72,6 @@ function UserList() {
         setCurrentPage(1);
     };
 
-    const handleEdit = (user) => {
-        navigate(`/user/${user.id}/edit`, { state: { user } });
-    };
-
-    const handleAddUser = () => {
-        navigate('/user/add');
-    };
-
     const filteredUsers = users.filter((user) =>
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -108,6 +81,73 @@ function UserList() {
     const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    const handleAdd = () => {
+        setModalAction('add');
+        setSelectedUser(null);
+    };
+
+    const handleEdit = (user) => {
+        setModalAction('edit');
+        setSelectedUser(user);
+    };
+
+    const handleDelete = (user) => {
+        setModalAction('delete');
+        setSelectedUser(user);
+    };
+
+    const closeModal = () => {
+        setModalAction(null);
+        setSelectedUser(null);
+    };
+
+    const handleSubmit = async (userData) => {
+        try {
+            if (modalAction === 'add') {
+                // Tạo user mới trong Authentication
+                const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
+                const user = userCredential.user;
+    
+                // Thêm thông tin user vào Realtime Database
+                await set(ref(database, 'users/' + user.uid), {
+                    email: userData.email,
+                    password: userData.password,
+                    role: userData.role,
+                    fullName: "",
+                    birthDate: "",
+                    gender: "",
+                    favoriteGenres: { default: "Chưa có" },
+                    booksRead: { default: "Chưa đọc sách nào" },
+                    readingGoal: "",
+                    createdAt: serverTimestamp(),
+                    lastUpdated: serverTimestamp(),
+                    avatar: null,
+                    borrowedBooks: ["book1"],
+                    favoriteBooks: ["book1"],
+
+                });
+    
+                setUsers([...users, { id: user.uid, ...userData }]);
+            } else if (modalAction === 'edit') {
+                // Cập nhật thông tin user
+                await update(ref(database, `users/${selectedUser.id}`), {
+                    email: userData.email,
+                    password: userData.password,
+                    role: userData.role,
+                    lastUpdated: serverTimestamp()
+                });
+                setUsers(users.map(user => user.id === selectedUser.id ? { ...user, ...userData } : user));
+            } else if (modalAction === 'delete') {
+                // Xóa user
+                await remove(ref(database, `users/${selectedUser.id}`));
+                setUsers(users.filter(user => user.id !== selectedUser.id));
+            }
+            closeModal();
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
 
     return (
         <div className="user-list-container">
@@ -121,7 +161,7 @@ function UserList() {
                         <h2>Danh sách tài khoản người dùng</h2>
                     </div>
                     <div className="user-list-actions">
-                        <button className="btn-add" onClick={handleAddUser}>
+                        <button className="btn-add" onClick={handleAdd}>
                             Thêm tài khoản
                         </button>
                     </div>
@@ -164,7 +204,7 @@ function UserList() {
                                         <button className="btn-edit" onClick={() => handleEdit(user)}>
                                             Sửa
                                         </button>
-                                        <button className="btn-delete" onClick={() => handleDelete(user.id)}>
+                                        <button className="btn-delete" onClick={() => handleDelete(user)}>
                                             Xóa
                                         </button>
                                     </td>
@@ -191,6 +231,13 @@ function UserList() {
                 </div>
 
             </div>
+            <UserModal
+                isOpen={modalAction !== null}
+                onClose={closeModal}
+                action={modalAction}
+                user={selectedUser}
+                onSubmit={handleSubmit}
+            />
         </div>
     );
 }

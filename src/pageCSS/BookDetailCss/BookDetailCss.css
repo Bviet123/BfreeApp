@@ -11,19 +11,6 @@
   gap: 30px;
 }
 
-.book-detail-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-}
-
-.book-detail-content {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-}
-
 .book-main-info {
   display: flex;
   gap: 40px;
@@ -39,7 +26,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.book-info {
+.bookDetail-info {
   flex: 1;
   display: flex;
   flex-direction: column;

@@ -49,7 +49,7 @@ function BookDetail() {
           <div className="book-cover">
             <img src={book.cover} alt={book.title} />
           </div>
-          <div className="book-info">
+          <div className="bookDetail-info">
             <h1>{book.title}</h1>
             <p className="author">Tác giả: <Link to={`/author/${author.name}`}>{book.author}</Link></p>
             <div className="genre-list">
