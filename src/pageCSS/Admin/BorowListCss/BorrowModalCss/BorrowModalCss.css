@@ -1,0 +1,117 @@
+/* BorrowModal.css */
+
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #e74c3c;
+    --background-color: #ecf0f1;
+    --text-color: #34495e;
+    --card-background: #ffffff;
+    --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    --aside-width: 250px;
+    --border-radius: 8px;
+    --transition: all 0.3s ease;
+    
+    /* Additional colors for specific actions */
+    --approve-color: #27ae60;
+    --reject-color: #e74c3c;
+    --return-color: #3498db;
+  }
+  
+  .borrow-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .borrow-modal-content {
+    background-color: var(--card-background);
+    color: var(--text-color);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    max-width: 500px;
+    width: 100%;
+    box-shadow: var(--card-shadow);
+  }
+  
+  .borrow-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+  }
+  
+  .borrow-modal-text {
+    margin-bottom: 20px;
+  }
+  
+  .borrow-modal-reject-reason {
+    margin-bottom: 20px;
+  }
+  
+  .borrow-modal-reject-reason label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .borrow-modal-reject-reason textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--background-color);
+    border-radius: var(--border-radius);
+    resize: vertical;
+    color: var(--text-color);
+    background-color: var(--card-background);
+  }
+  
+  .borrow-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  .borrow-modal-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: bold;
+    transition: var(--transition);
+  }
+  
+  .borrow-modal-cancel-btn {
+    background-color: var(--background-color);
+    color: var(--text-color);
+  }
+  
+  .borrow-modal-cancel-btn:hover {
+    background-color: var(--text-color);
+    color: var(--card-background);
+  }
+  
+  .borrow-modal-confirm-btn {
+    color: var(--card-background);
+  }
+  
+  .borrow-modal-confirm-btn[data-action="approve"] {
+    background-color: var(--approve-color);
+  }
+  
+  .borrow-modal-confirm-btn[data-action="reject"] {
+    background-color: var(--reject-color);
+  }
+  
+  .borrow-modal-confirm-btn[data-action="return"] {
+    background-color: var(--return-color);
+  }
+  
+  .borrow-modal-confirm-btn:hover {
+    opacity: 0.9;
+  }

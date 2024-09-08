@@ -1,6 +1,7 @@
-import React from 'react';
-import { FaTimes, FaSave, FaTrash } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaSave, FaTrash } from 'react-icons/fa';
 import '../../../../pageCSS/Admin/OtherListCss/OtherModalCss/OtherModalCss.css'; 
+import { countries } from '../Contries';
 
 // Base Modal Component
 const Modal = ({ isOpen, onClose, title, children }) => {
@@ -11,9 +12,6 @@ const Modal = ({ isOpen, onClose, title, children }) => {
       <div className="modal-content">
         <div className="modal-header">
           <h3>{title}</h3>
-          <button onClick={onClose} className="close-button">
-            <FaTimes />
-          </button>
         </div>
         <div className="modal-body">{children}</div>
       </div>
@@ -23,11 +21,32 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 
 // Add/Edit Category Modal
 export const CategoryModal = ({ isOpen, onClose, onSave, editingItem }) => {
-  const [name, setName] = React.useState(editingItem?.name || '');
-  const [description, setDescription] = React.useState(editingItem?.description || '');
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      if (editingItem) {
+        // Nếu đang chỉnh sửa, điền thông tin của mục vào các trường
+        setName(editingItem.name || '');
+        setDescription(editingItem.description || '');
+      } else {
+        // Nếu đang thêm mới, làm mới các trường
+        setName('');
+        setDescription('');
+      }
+    }
+  }, [isOpen, editingItem]);
 
   const handleSave = () => {
-    onSave({ id: editingItem?.id, name, description });
+    const categoryData = {
+      name: name.trim(),
+      description: description.trim()
+    };
+    if (editingItem) {
+      categoryData.id = editingItem.id;
+    }
+    onSave(categoryData);
     onClose();
   };
 
@@ -49,19 +68,19 @@ export const CategoryModal = ({ isOpen, onClose, onSave, editingItem }) => {
       </div>
       <div className="form-group">
         <label htmlFor="description">Mô tả</label>
-        <input
+        <textarea
           id="description"
-          type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Nhập mô tả"
+          rows="3"
         />
       </div>
       <div className="modal-actions">
         <button onClick={onClose} className="button secondary">
           Hủy
         </button>
-        <button onClick={handleSave} className="button primary">
+        <button onClick={handleSave} className="button primary" disabled={!name.trim()}>
           <FaSave /> Lưu
         </button>
       </div>
@@ -69,14 +88,43 @@ export const CategoryModal = ({ isOpen, onClose, onSave, editingItem }) => {
   );
 };
 
+
 // Add/Edit Producer Modal
 export const ProducerModal = ({ isOpen, onClose, onSave, editingItem }) => {
-  const [name, setName] = React.useState(editingItem?.name || '');
-  const [founded, setFounded] = React.useState(editingItem?.founded || '');
-  const [country, setCountry] = React.useState(editingItem?.country || '');
+  const [name, setName] = useState('');
+  const [founded, setFounded] = useState('');
+  const [country, setCountry] = useState('');
+  const [description, setDescription] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      if (editingItem) {
+        // Nếu đang chỉnh sửa, điền thông tin của mục vào các trường
+        setName(editingItem.name || '');
+        setFounded(editingItem.founded || '');
+        setCountry(editingItem.country || '');
+        setDescription(editingItem.description || '');
+      } else {
+        // Nếu đang thêm mới, làm mới tất cả các trường
+        setName('');
+        setFounded('');
+        setCountry('');
+        setDescription('');
+      }
+    }
+  }, [isOpen, editingItem]);
 
   const handleSave = () => {
-    onSave({ id: editingItem?.id, name, founded, country });
+    const producerData = {
+      name: name.trim(),
+      founded: founded.trim(),
+      country: country,
+      description: description.trim()
+    };
+    if (editingItem) {
+      producerData.id = editingItem.id;
+    }
+    onSave(producerData);
     onClose();
   };
 
@@ -108,19 +156,34 @@ export const ProducerModal = ({ isOpen, onClose, onSave, editingItem }) => {
       </div>
       <div className="form-group">
         <label htmlFor="country">Quốc gia</label>
-        <input
+        <select
           id="country"
-          type="text"
           value={country}
           onChange={(e) => setCountry(e.target.value)}
-          placeholder="Nhập quốc gia"
+        >
+          <option value="">Chọn quốc gia</option>
+          {countries.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="form-group">
+        <label htmlFor="description">Mô tả</label>
+        <textarea
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Nhập mô tả về nhà sản xuất"
+          rows="3"
         />
       </div>
       <div className="modal-actions">
         <button onClick={onClose} className="button secondary">
           Hủy
         </button>
-        <button onClick={handleSave} className="button primary">
+        <button onClick={handleSave} className="button primary" disabled={!name.trim()}>
           <FaSave /> Lưu
         </button>
       </div>
@@ -137,6 +200,7 @@ export const DeleteModal = ({ isOpen, onClose, onConfirm, itemType }) => {
       title={`Xóa ${itemType === 'category' ? 'Thể loại' : 'Nhà sản xuất'}`}
     >
       <p className="confirmation-message">Bạn có chắc chắn muốn xóa mục này?</p>
+      <p className="warning-message">Lưu ý: Hành động này không thể hoàn tác.</p>
       <div className="modal-actions">
         <button onClick={onClose} className="button secondary">
           Hủy

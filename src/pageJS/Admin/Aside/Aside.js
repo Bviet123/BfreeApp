@@ -8,7 +8,7 @@ function Aside({ currentUser, className }) {
   return (
     <aside className={`user-list-aside ${className}`}>
       <div className="aside-header">
-        <h3>Admin Tools</h3>
+        <h3>Admin DashBoard</h3>
       </div>
       <div className="admin-tools-list">
         <ul>

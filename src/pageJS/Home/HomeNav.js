@@ -1,36 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { getDatabase, ref, onValue } from "firebase/database";
 import avatarIcon from '../../resource/image/Avatar.png';
 
 function HomeNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = location.state?.user;
+  const [categories, setCategories] = useState([]);
 
-  const genres = [
-    "Tự giúp bản thân",
-    "Tiểu thuyết",
-    "Văn học Việt Nam",
-    "Thơ",
-    "Khoa học",
-    "Giáo dục"
-  ];
+  useEffect(() => {
+    const db = getDatabase();
+    const categoriesRef = ref(db, 'categories');
+    onValue(categoriesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const categoriesList = Object.entries(data).map(([key, value]) => ({
+          id: key,
+          ...value
+        }));
+        setCategories(categoriesList);
+      }
+    });
+  }, []);
 
-  const handleNavigation = (path) => {
-    navigate(path, { state: { user } });
+  const handleNavigation = (path, userId) => {
+    navigate(path, { state: { user, userId } });
   };
 
   return (
     <header>
       <nav>
         <ul>
-          <li><div onClick={() => handleNavigation('/')}>Trang chủ</div></li>
+          <li><div onClick={() => handleNavigation('/Home')}>Trang chủ</div></li>
           <li>
             <div className="dropdown">
               <button className="dropbtn">Thể loại</button>
               <div className="dropdown-content">
-                {genres.map((genre, index) => (
-                  <div key={index} onClick={() => handleNavigation(`/theloai/${genre}`)}>{genre}</div>
+                {categories.map((category) => (
+                  <div key={category.id} onClick={() => handleNavigation(`/category/${category.id}`, { categoryId: category.id })}>
+                    {category.name}
+                  </div>
                 ))}
               </div>
             </div>
@@ -49,7 +59,9 @@ function HomeNav() {
           <div className="avatar">
             {user ? (
               <>
-                <span>{user.email}</span>
+                <div onClick={() => handleNavigation(`/user/profile/${user.uid}`, user.uid)}>
+                  <span>{user.email}</span>
+                </div>
                 <img src={avatarIcon} alt="Avatar" />
               </>
             ) : (

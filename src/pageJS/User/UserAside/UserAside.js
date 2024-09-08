@@ -2,18 +2,22 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaHome, FaBook, FaUser, FaBookmark } from 'react-icons/fa';
 
-const UserAside = ({ activeItem }) => {
+const UserAside = ({ activeItem, user }) => {
   const navigate = useNavigate();
 
   const handleNavigation = (path) => {
     navigate(path);
   };
 
+  // Sử dụng dữ liệu người dùng hoặc giá trị mặc định nếu không có
+  const userName = user?.fullName ||   "Người dùng";
+  const userAvatar = user?.avatar || "/path/to/default-avatar.png"; // Thay thế bằng đường dẫn đến avatar mặc định của bạn
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <img src="https://example.com/user-avatar.jpg" alt="Avatar" className="sidebar-avatar" />
-        <h2>Nguyễn Văn A</h2>
+        <img src={userAvatar} alt="Avatar" className="sidebar-avatar" />
+        <h2>{userName}</h2>
       </div>
       <div>
         <ul>

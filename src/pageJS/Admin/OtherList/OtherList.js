@@ -1,30 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaBars, FaTimes, FaPlus, FaEdit, FaTrash, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { ref, onValue, push, update, remove } from 'firebase/database';
 import Aside from '../Aside/Aside';
 import { CategoryModal, ProducerModal, DeleteModal } from '../OtherList/OtherModal/OtherModal.js';
 import '../../../pageCSS/Admin/OtherListCss/OtherListCss.css';
-
-// Sample data (you may want to fetch this from an API in a real application)
-const sampleCategories = [
-    { id: 1, name: "Tiểu thuyết", description: "Tác phẩm văn học dài" },
-    { id: 2, name: "Truyện ngắn", description: "Tác phẩm văn học ngắn" },
-    { id: 3, name: "Thơ", description: "Tác phẩm văn vần" },
-    { id: 4, name: "Sách giáo khoa", description: "Sách học tập" },
-    { id: 5, name: "Sách tham khảo", description: "Sách bổ trợ kiến thức" },
-    { id: 6, name: "Truyện tranh", description: "Tác phẩm kết hợp hình ảnh và chữ viết" },
-];
-
-const sampleProducers = [
-    { id: 1, name: "NXB Kim Đồng", founded: "1957", country: "Việt Nam" },
-    { id: 2, name: "NXB Trẻ", founded: "1981", country: "Việt Nam" },
-    { id: 3, name: "NXB Giáo dục", founded: "1957", country: "Việt Nam" },
-];
-
-const ITEMS_PER_PAGE = 5;
+import { database } from '../../../firebaseConfig';
 
 function OtherList() {
-    const [categories, setCategories] = useState(sampleCategories);
-    const [producers, setProducers] = useState(sampleProducers);
+    const [categories, setCategories] = useState([]);
+    const [producers, setProducers] = useState([]);
     const [categorySearch, setCategorySearch] = useState('');
     const [producerSearch, setProducerSearch] = useState('');
     const [isAsideVisible, setIsAsideVisible] = useState(true);
@@ -33,6 +17,37 @@ function OtherList() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalType, setModalType] = useState('');
     const [editingItem, setEditingItem] = useState(null);
+
+    const ITEMS_PER_PAGE = 5;
+    const MAX_DESCRIPTION_LENGTH = 40;
+
+    useEffect(() => {
+        const categoriesRef = ref(database, 'categories');
+        const producersRef = ref(database, 'producers');
+
+        const unsubscribeCategories = onValue(categoriesRef, (snapshot) => {
+            const data = snapshot.val();
+            const categoriesList = data ? Object.keys(data).map(key => ({
+                id: key,
+                ...data[key]
+            })) : [];
+            setCategories(categoriesList);
+        });
+
+        const unsubscribeProducers = onValue(producersRef, (snapshot) => {
+            const data = snapshot.val();
+            const producersList = data ? Object.keys(data).map(key => ({
+                id: key,
+                ...data[key]
+            })) : [];
+            setProducers(producersList);
+        });
+
+        return () => {
+            unsubscribeCategories();
+            unsubscribeProducers();
+        };
+    }, []);
 
     const toggleAside = () => {
         setIsAsideVisible(!isAsideVisible);
@@ -50,7 +65,7 @@ function OtherList() {
     };
 
     const filteredItems = (items, searchTerm) => {
-        return items.filter((item) => 
+        return items.filter((item) =>
             item.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
     };
@@ -93,48 +108,61 @@ function OtherList() {
 
     const handleSave = (item) => {
         if (modalType.includes('Category')) {
-            const updatedCategories = modalType === 'editCategory'
-                ? categories.map(cat => cat.id === item.id ? item : cat)
-                : [...categories, { ...item, id: Date.now() }];
-            setCategories(updatedCategories);
+            const categoryRef = ref(database, `categories/${item.id || ''}`);
+            if (modalType === 'editCategory') {
+                update(categoryRef, item);
+            } else {
+                push(categoryRef, item);
+            }
         } else if (modalType.includes('Producer')) {
-            const updatedProducers = modalType === 'editProducer'
-                ? producers.map(prod => prod.id === item.id ? item : prod)
-                : [...producers, { ...item, id: Date.now() }];
-            setProducers(updatedProducers);
+            const producerRef = ref(database, `producers/${item.id || ''}`);
+            if (modalType === 'editProducer') {
+                update(producerRef, item);
+            } else {
+                push(producerRef, item);
+            }
         }
         closeModal();
     };
 
     const handleConfirmDelete = () => {
         if (editingItem.type === 'category') {
-            setCategories(categories.filter(category => category.id !== editingItem.id));
+            const categoryRef = ref(database, `categories/${editingItem.id}`);
+            remove(categoryRef);
         } else {
-            setProducers(producers.filter(producer => producer.id !== editingItem.id));
+            const producerRef = ref(database, `producers/${editingItem.id}`);
+            remove(producerRef);
         }
         closeModal();
     };
 
     const renderPagination = (items, currentPage, type) => {
         const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
-        
+
         return (
             <div className="pagination">
-                <button 
-                    onClick={() => handlePageChange(type, currentPage - 1)} 
+                <button
+                    onClick={() => handlePageChange(type, currentPage - 1)}
                     disabled={currentPage === 1}
                 >
                     <FaChevronLeft />
                 </button>
                 <span>{currentPage} / {totalPages}</span>
-                <button 
-                    onClick={() => handlePageChange(type, currentPage + 1)} 
+                <button
+                    onClick={() => handlePageChange(type, currentPage + 1)}
                     disabled={currentPage === totalPages}
                 >
                     <FaChevronRight />
                 </button>
             </div>
         );
+    };
+
+    const truncateDescription = (description) => {
+        if (description.length <= MAX_DESCRIPTION_LENGTH) {
+            return description;
+        }
+        return `${description.substring(0, MAX_DESCRIPTION_LENGTH)}...`;
     };
 
     const renderList = (items, type, currentPage) => (
@@ -144,11 +172,18 @@ function OtherList() {
                     <li key={item.id} className="list-item">
                         <div className="item-info">
                             <strong>{item.name}</strong>
-                            {type === 'category' && <span>{item.description}</span>}
+                            {type === 'category' && (
+                                <span className="truncate" title={item.description}>
+                                    {truncateDescription(item.description)}
+                                </span>
+                            )}
                             {type === 'producer' && (
                                 <>
                                     <span>Năm thành lập: {item.founded}</span>
                                     <span>Quốc gia: {item.country}</span>
+                                    <span className="truncate" title={item.description}>
+                                        Mô tả: {truncateDescription(item.description)}
+                                    </span>
                                 </>
                             )}
                         </div>

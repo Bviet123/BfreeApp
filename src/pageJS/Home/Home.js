@@ -8,6 +8,7 @@ import BookDetail from '../BookDetail/BookDetail';
 import BookLibrary from '../BookLibrary/BookLibrary';
 
 function Home() {
+  
   return (
     <div className="home-page">
       <HomeNav />

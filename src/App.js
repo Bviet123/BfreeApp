@@ -11,23 +11,24 @@ import BookList from './pageJS/Admin/BookList/BookList';
 import EditBook from './pageJS/Admin/BookList/EditBook';
 import AuthorList from './pageJS/Admin/AuthorList/AuthorList';
 import OtherList from './pageJS/Admin/OtherList/OtherList';
+import BorrowList from './pageJS/Admin/BorrowList/BorrowList';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/Home" element={<Home />} />
-        <Route path="/UserList" element={<UserList />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/home/*" element={<Home />} />
+        <Route path="/admin/users" element={<UserList />} />
         <Route path="/BookDetail" element={<BookDetail />} />
-        <Route path="/BookLibrary" element={<BookLibrary />} />
-        <Route path="/UserProfile" element={<UserProfile />} />
-        <Route path="/BookShelf" element={<Bookshelf />} />
-        <Route path="/BookList" element={<BookList />} />
-        <Route path="/EditBook" element={<EditBook />} />
-        <Route path="/AuthorList" element={<AuthorList />} />
-        <Route path="/OtherList" element={<OtherList />} />
-
+        <Route path="/library" element={<BookLibrary />} />
+        <Route path="/user/profile/:userId" element={<UserProfile />} />
+        <Route path="/user/bookshelf" element={<Bookshelf />} />
+        <Route path="/admin/books" element={<BookList />} />
+        <Route path="/admin/books/edit/:id" element={<EditBook />} />
+        <Route path="/admin/authors" element={<AuthorList />} />
+        <Route path="/admin/other" element={<OtherList />} />
+        <Route path="/admin/borrows" element={<BorrowList />} />
       </Routes>
     </Router>
   );
