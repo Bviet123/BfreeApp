@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../../../../pageCSS/Admin/AuthorListCss/AuthorModalCss/AuthorModalCss.css';
 import { ref, push, update, remove } from 'firebase/database';
 import { database } from '../../../../firebaseConfig';
+import { countries } from '../../OtherList/Contries';
 
 export function AuthorDetailModal({ isOpen, onClose, author, onEdit }) {
     const [modalClass, setModalClass] = useState('modal');
@@ -86,13 +87,19 @@ export function AuthorFormModal({ isOpen, onClose, author, onSubmit }) {
                         onChange={handleChange}
                         required
                     />
-                    <input
+                    <select
                         name="nationality"
                         value={formData.nationality}
                         onChange={handleChange}
-                        placeholder="Quốc tịch"
                         required
-                    />
+                    >
+                        <option value="">Chọn quốc tịch</option>
+                        {countries.map((country, index) => (
+                            <option key={index} value={country}>
+                                {country}
+                            </option>
+                        ))}
+                    </select>
                     <textarea
                         name="introduction"
                         value={formData.introduction}
