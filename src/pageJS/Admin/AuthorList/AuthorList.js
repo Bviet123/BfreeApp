@@ -1,18 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../../../pageCSS/Admin/AuthorListCss/AuthorListCss.css';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import Aside from '../Aside/Aside';
 import { AuthorDetailModal, AuthorFormModal, AuthorDeleteModal } from './AuthorModal/AuthorModal.js';
-
-// Sample data
-const sampleAuthors = [
-    { id: 1, name: "Nguyễn Nhật Ánh", birthDate: "1955-05-07", nationality: "Việt Nam", introduction: "Nhà văn nổi tiếng với nhiều tác phẩm văn học thiếu nhi." },
-    { id: 2, name: "Tô Hoài", birthDate: "1920-09-27", nationality: "Việt Nam", introduction: "Nhà văn, nhà báo nổi tiếng với tác phẩm Dế Mèn Phiêu Lưu Ký." },
-    // ... (other authors)
-];
+import { ref, onValue } from 'firebase/database';
+import { database } from '../../../firebaseConfig';
 
 function AuthorList() {
-    const [authors, setAuthors] = useState(sampleAuthors);
+    const [authors, setAuthors] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [authorsPerPage] = useState(5);
@@ -21,6 +16,20 @@ function AuthorList() {
     const [formModalOpen, setFormModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [selectedAuthor, setSelectedAuthor] = useState(null);
+
+    useEffect(() => {
+        const authorsRef = ref(database, 'authors');
+        onValue(authorsRef, (snapshot) => {
+            const data = snapshot.val();
+            console.log("Raw data from Firebase:", data);
+            const authorList = data ? Object.keys(data).map(key => ({
+                id: key,
+                ...data[key]
+            })) : [];
+            console.log("Processed author list:", authorList);
+            setAuthors(authorList);
+        });
+    }, []);
 
     const toggleAside = () => {
         setIsAsideVisible(!isAsideVisible);
@@ -51,7 +60,8 @@ function AuthorList() {
         setDetailModalOpen(true);
     };
 
-    const handleEdit = () => {
+    const handleEdit = (author) => {
+        setSelectedAuthor(author);
         setDetailModalOpen(false);
         setFormModalOpen(true);
     };
@@ -61,20 +71,12 @@ function AuthorList() {
         setDeleteModalOpen(true);
     };
 
-    const handleDelete = (authorId) => {
-        setAuthors(authors.filter(author => author.id !== authorId));
-        setDeleteModalOpen(false);
+    const handleSubmit = () => {
+        setFormModalOpen(false);
     };
 
-    const handleSubmit = (authorData) => {
-        if (selectedAuthor) {
-            setAuthors(authors.map(author =>
-                author.id === selectedAuthor.id ? { ...author, ...authorData } : author
-            ));
-        } else {
-            setAuthors([...authors, { id: authors.length + 1, ...authorData }]);
-        }
-        setFormModalOpen(false);
+    const handleDelete = () => {
+        setDeleteModalOpen(false);
     };
 
     return (
@@ -113,7 +115,7 @@ function AuthorList() {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentAuthors.map((author) => (
+                        {filteredAuthors.map((author) => (
                             <tr key={author.id}>
                                 <td>{author.name}</td>
                                 <td>{author.birthDate}</td>
@@ -121,6 +123,9 @@ function AuthorList() {
                                 <td>
                                     <button className="btn-details" onClick={() => handleDetails(author)}>
                                         Chi tiết
+                                    </button>
+                                    <button className="btn-edit" onClick={() => handleEdit(author)}>
+                                        Sửa
                                     </button>
                                     <button className="btn-delete" onClick={() => handleDeleteClick(author)}>
                                         Xóa
@@ -148,7 +153,7 @@ function AuthorList() {
                 isOpen={detailModalOpen}
                 onClose={() => setDetailModalOpen(false)}
                 author={selectedAuthor}
-                onEdit={handleEdit}
+                onEdit={() => handleEdit(selectedAuthor)}
             />
 
             <AuthorFormModal

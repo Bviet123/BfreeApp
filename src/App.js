@@ -25,7 +25,7 @@ function App() {
         <Route path="/user/profile/:userId" element={<UserProfile />} />
         <Route path="/user/bookshelf" element={<Bookshelf />} />
         <Route path="/admin/books" element={<BookList />} />
-        <Route path="/admin/books/edit/:id" element={<EditBook />} />
+        <Route path="/admin/books/edit/" element={<EditBook />} />
         <Route path="/admin/authors" element={<AuthorList />} />
         <Route path="/admin/other" element={<OtherList />} />
         <Route path="/admin/borrows" element={<BorrowList />} />
