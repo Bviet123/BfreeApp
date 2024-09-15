@@ -1,5 +1,6 @@
-import React from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import '../../pageCSS/BookDetailCss/BookDetailCss.css'
 
 import image1 from '../../resource/image/DacNhanTam.jpeg';
@@ -10,11 +11,15 @@ import img2 from '../../resource/image/TuDienTiengEm.jpeg';
 import img3 from '../../resource/image/NhaGiaKim.jpeg';
 
 function BookDetail() {
-  const { id } = useParams();
-
   const location = useLocation();
+  const navigate = useNavigate();
   const user = location.state?.user;
+  const [isFavorite, setIsFavorite] = useState(false);
 
+  const handleFavoriteClick = () => {
+    setIsFavorite(!isFavorite);
+    // Ở đây bạn có thể thêm logic để lưu trạng thái yêu thích vào database hoặc local storage
+  };
   // Dữ liệu mẫu
   const book = {
     id: 1,
@@ -28,6 +33,20 @@ function BookDetail() {
     pages: 292,
     language: "Tiếng Việt",
     isbn: "978-604-1-XXXXX-X",
+    chapters: [
+      "Chương 1: Nghệ thuật ứng xử cơ bản",
+      "Chương 2: Sáu cách tạo thiện cảm",
+      "Chương 3: Cách thuyết phục người khác",
+      "Chương 4: Trở thành nhà lãnh đạo",
+      "Chương 5: Cải thiện cuộc sống gia đình",
+      "Chương 6: Làm cho công việc trở nên thú vị"
+    ],
+    producer: {
+      name: "Công ty Sách Thành Công",
+      address: "123 Đường Sách, Quận 1, TP.HCM",
+      phone: "028 1234 5678",
+      email: "info@sachthanhcong.com"
+    }
   };
 
   const author = {
@@ -41,26 +60,37 @@ function BookDetail() {
     { id: 4, title: "Từ Điển Tiếng Em", author: "Khotudien", cover: img2 }
   ];
 
+  const handleAuthorClick = () => {
+    navigate(`/author/${author.name}`, { state: { user } });
+  };
+
+  const handleRelatedBookClick = (bookId) => {
+    navigate(`/book/${bookId}`, { state: { user } });
+  };
+
   return (
     <div className="book-detail-page">
       <HomeNav />
       <div className="book-detail-content">
         <div className="book-main-info">
-          <div className="book-cover">
+          <div className="bookDetail-cover">
             <img src={book.cover} alt={book.title} />
           </div>
           <div className="bookDetail-info">
             <h1>{book.title}</h1>
-            <p className="author">Tác giả: <Link to={`/author/${author.name}`}>{book.author}</Link></p>
+            <p className="author">Tác giả: <span onClick={handleAuthorClick} style={{ cursor: 'pointer', color: 'blue' }}>{book.author}</span></p>
             <div className="genre-list">
               {book.genre.map((genre, index) => (
                 <span key={index} className="genre-tag">{genre}</span>
               ))}
             </div>
             <p className="description">{book.description}</p>
-            <div>
+            <div className="bookDetail-actions">
               <button className="read-button">Đọc sách</button>
               <button className="buy-button">Mượn sách</button>
+              <button className="favorite-button" onClick={handleFavoriteClick}>
+                {isFavorite ? <FaHeart color="red" /> : <FaRegHeart />}
+              </button>
             </div>
           </div>
         </div>
@@ -83,15 +113,32 @@ function BookDetail() {
           <p>{author.bio}</p>
         </div>
 
+        <div className="book-chapters">
+          <h2>Danh sách các chương</h2>
+          <ul>
+            {book.chapters.map((chapter, index) => (
+              <li key={index}>{chapter}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="producer-info">
+          <h2>Thông tin nhà sản xuất</h2>
+          <p><strong>Tên:</strong> {book.producer.name}</p>
+          <p><strong>Địa chỉ:</strong> {book.producer.address}</p>
+          <p><strong>Điện thoại:</strong> {book.producer.phone}</p>
+          <p><strong>Email:</strong> {book.producer.email}</p>
+        </div>
+
         <div className="related-books">
           <h2>Một số tác phẩm khác</h2>
           <div className="book-grid">
             {relatedBooks.map(book => (
-              <Link to={`/book/${book.id}`} key={book.id} className="book-card">
+              <div key={book.id} className="book-card" onClick={() => handleRelatedBookClick(book.id)} style={{ cursor: 'pointer' }}>
                 <img src={book.cover} alt={book.title} />
                 <h3>{book.title}</h3>
                 <p>{book.author}</p>
-              </Link>
+              </div>
             ))}
           </div>
         </div>

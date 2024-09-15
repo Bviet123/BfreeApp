@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaBars, FaTimes, FaBook, FaUser, FaInfoCircle, FaSave } from 'react-icons/fa';
+import { FaBars, FaTimes, FaBook, FaUser, FaInfoCircle, FaSave, FaBookOpen } from 'react-icons/fa';
 import '../../../pageCSS/Admin/BookListCss/EditBookCss.css';
 import Aside from '../Aside/Aside';
 
@@ -10,38 +10,58 @@ function EditBook() {
   const [isAsideVisible, setIsAsideVisible] = useState(true);
 
   const [book, setBook] = useState({
+    id: "",
     title: "",
     authorId: "",
     coverUrl: "",
-    genres: [],
+    genreIds: [],
+    publisherId: "",
     description: "",
     publicationDate: "",
-    publisher: "",
-    pages: "",
+    pages: 0,
     language: "",
     isbn: "",
     availability: {
       status: "",
       copiesAvailable: 0
+    },
+    content: {
+      totalChapters: 0,
+      lastUpdated: "",
+      chapters: []
     }
   });
 
   useEffect(() => {
     // Fetch book data (placeholder)
     setBook({
+      id: "book1",
       title: "Đắc Nhân Tâm",
       authorId: "author1",
       coverUrl: "https://example.com/images/dacnhantam.jpg",
-      genres: ["self-help", "psychology"],
+      genreIds: ["genre1", "genre2"],
+      publisherId: "publisher1",
       description: "Đắc Nhân Tâm của Dale Carnegie là một trong những cuốn sách bán chạy nhất mọi thời đại. Đây là cuốn sách dạy về cách ứng xử, cư xử trong cuộc sống để đạt được thành công.",
       publicationDate: "1936-10-17",
-      publisher: "Simon and Schuster",
       pages: 292,
       language: "Tiếng Việt",
       isbn: "978-604-1-XXXXX-X",
       availability: {
         status: "available",
         copiesAvailable: 5
+      },
+      content: {
+        totalChapters: 30,
+        lastUpdated: "2024-09-08T10:00:00Z",
+        chapters: [
+          {
+            chapterNumber: 1,
+            title: "Chương 1: Nghệ thuật ứng xử",
+            content: "Nội dung của chương 1...",
+            createdAt: "2024-01-01T08:00:00Z",
+            updatedAt: "2024-01-01T08:00:00Z"
+          },
+        ]
       }
     });
   }, [id]);
@@ -55,10 +75,10 @@ function EditBook() {
   };
 
   const handleGenreChange = (e) => {
-    const genres = e.target.value.split(',').map(genre => genre.trim());
+    const genreIds = e.target.value.split(',').map(genre => genre.trim());
     setBook(prevBook => ({
       ...prevBook,
-      genres: genres
+      genreIds: genreIds
     }));
   };
 
@@ -69,6 +89,17 @@ function EditBook() {
       availability: {
         ...prevBook.availability,
         [name]: name === 'copiesAvailable' ? parseInt(value) : value
+      }
+    }));
+  };
+
+  const handleContentChange = (e) => {
+    const { name, value } = e.target;
+    setBook(prevBook => ({
+      ...prevBook,
+      content: {
+        ...prevBook.content,
+        [name]: name === 'totalChapters' ? parseInt(value) : value
       }
     }));
   };
@@ -112,8 +143,12 @@ function EditBook() {
                 <input type="text" id="coverUrl" name="coverUrl" value={book.coverUrl} onChange={handleChange} required />
               </div>
               <div className="form-group">
-                <label htmlFor="genres">Thể loại (phân cách bằng dấu phẩy):</label>
-                <input type="text" id="genres" name="genres" value={book.genres.join(', ')} onChange={handleGenreChange} required />
+                <label htmlFor="genreIds">Thể loại IDs (phân cách bằng dấu phẩy):</label>
+                <input type="text" id="genreIds" name="genreIds" value={book.genreIds.join(', ')} onChange={handleGenreChange} required />
+              </div>
+              <div className="form-group">
+                <label htmlFor="publisherId">ID Nhà xuất bản:</label>
+                <input type="text" id="publisherId" name="publisherId" value={book.publisherId} onChange={handleChange} required />
               </div>
             </div>
             <div className="edit-book-section">
@@ -136,10 +171,6 @@ function EditBook() {
             <div className="edit-book-section">
               <h2><FaUser /> Thông tin xuất bản</h2>
               <div className="form-group">
-                <label htmlFor="publisher">Nhà xuất bản:</label>
-                <input type="text" id="publisher" name="publisher" value={book.publisher} onChange={handleChange} required />
-              </div>
-              <div className="form-group">
                 <label htmlFor="publicationDate">Ngày xuất bản:</label>
                 <input type="date" id="publicationDate" name="publicationDate" value={book.publicationDate} onChange={handleChange} required />
               </div>
@@ -161,6 +192,18 @@ function EditBook() {
                 <label htmlFor="copiesAvailable">Số lượng có sẵn:</label>
                 <input type="number" id="copiesAvailable" name="copiesAvailable" value={book.availability.copiesAvailable} onChange={handleAvailabilityChange} required />
               </div>
+            </div>
+            <div className="edit-book-section">
+              <h2><FaBookOpen /> Nội dung sách</h2>
+              <div className="form-group">
+                <label htmlFor="totalChapters">Tổng số chương:</label>
+                <input type="number" id="totalChapters" name="totalChapters" value={book.content.totalChapters} onChange={handleContentChange} required />
+              </div>
+              <div className="form-group">
+                <label htmlFor="lastUpdated">Cập nhật lần cuối:</label>
+                <input type="datetime-local" id="lastUpdated" name="lastUpdated" value={book.content.lastUpdated.slice(0, -1)} onChange={handleContentChange} required />
+              </div>
+              {/* Note: Chapter management would require a more complex UI, possibly a separate page or modal */}
             </div>
           </div>
         </form>

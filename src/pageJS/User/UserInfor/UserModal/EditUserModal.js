@@ -5,14 +5,11 @@ import '../../../../pageCSS/User/UserProfileCss/UserModalCss/EditUserModalCss.cs
 const EditUserModal = ({ user, onClose, onUpdate }) => {
   const [editedUser, setEditedUser] = useState({ ...user });
   const [genres, setGenres] = useState([]);
-  const [publishers, setPublishers] = useState([]);
   const [selectedGenres, setSelectedGenres] = useState([]);
   const [imagePreview, setImagePreview] = useState(user.avatar);
   const [isGenreDropdownOpen, setIsGenreDropdownOpen] = useState(false);
-  const [isPublisherDropdownOpen, setIsPublisherDropdownOpen] = useState(false);
   const [error, setError] = useState(null);
   const genreDropdownRef = useRef(null);
-  const publisherDropdownRef = useRef(null);
 
   useEffect(() => {
     const db = getDatabase();
@@ -35,7 +32,6 @@ const EditUserModal = ({ user, onClose, onUpdate }) => {
     };
 
     const unsubscribeCategories = fetchData('categories', setGenres);
-    const unsubscribePublishers = fetchData('producers', setPublishers);
 
     if (user.favoriteGenres && typeof user.favoriteGenres === 'object') {
       setSelectedGenres(Object.entries(user.favoriteGenres).map(([id, name]) => ({ id, name })));
@@ -45,16 +41,12 @@ const EditUserModal = ({ user, onClose, onUpdate }) => {
       if (genreDropdownRef.current && !genreDropdownRef.current.contains(event.target)) {
         setIsGenreDropdownOpen(false);
       }
-      if (publisherDropdownRef.current && !publisherDropdownRef.current.contains(event.target)) {
-        setIsPublisherDropdownOpen(false);
-      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
       unsubscribeCategories();
-      unsubscribePublishers();
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [user]);
@@ -74,14 +66,6 @@ const EditUserModal = ({ user, onClose, onUpdate }) => {
         ? prevSelected.filter(g => g.id !== genre.id)
         : [...prevSelected, genre];
     });
-  }, []);
-
-  const handlePublisherSelect = useCallback((publisher) => {
-    setEditedUser(prevState => ({
-      ...prevState,
-      publisher: publisher
-    }));
-    setIsPublisherDropdownOpen(false);
   }, []);
 
   const handleImageChange = useCallback((e) => {
@@ -217,29 +201,6 @@ const EditUserModal = ({ user, onClose, onUpdate }) => {
               )}
             </div>
           </div>
-          
-          <div className="form-group" ref={publisherDropdownRef}>
-            <label htmlFor="publisher">Nhà xuất bản yêu thích</label>
-            <div className="custom-dropdown">
-              <div className="dropdown-toggle" onClick={() => setIsPublisherDropdownOpen(!isPublisherDropdownOpen)}>
-                {editedUser.publisher ? editedUser.publisher.name : 'Chọn nhà xuất bản...'}
-              </div>
-              {isPublisherDropdownOpen && (
-                <div className="dropdown-menu">
-                  {publishers.map(publisher => (
-                    <div
-                      key={publisher.id}
-                      className="dropdown-item"
-                      onClick={() => handlePublisherSelect(publisher)}
-                    >
-                      {publisher.name}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          
           <div className="form-group">
             <label htmlFor="readingGoal">Mục tiêu đọc sách</label>
             <textarea

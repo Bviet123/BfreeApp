@@ -29,14 +29,12 @@ const UserProfile = () => {
           // Fetch categories
           onValue(categoriesRef, (snapshot) => {
             const data = snapshot.val();
-            //console.log("Categories data:", data);
             setCategories(data || {});
           });
 
           // Fetch user data
           const unsubscribe = onValue(userRef, (snapshot) => {
             const data = snapshot.val();
-            //console.log("User data:", data);
             if (data) {
               setUser({
                 ...data,
@@ -44,7 +42,6 @@ const UserProfile = () => {
                 borrowedBooks: data.borrowedBooks && typeof data.borrowedBooks === 'object' ? data.borrowedBooks : { default: "Chưa có" },
               });
               setFavoriteGenres(data.favoriteGenres || {});
-              //console.log("Favorite genres:", data.favoriteGenres);
             } else {
               setError("Không tìm thấy dữ liệu người dùng");
             }
@@ -84,7 +81,6 @@ const UserProfile = () => {
     setUser(updatedUser);
     setFavoriteGenres(updatedUser.favoriteGenres || {});
     setShouldReload(true);
-    //console.log('Updated user:', updatedUser);
   }, []);
 
   useEffect(() => {

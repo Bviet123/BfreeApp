@@ -20,22 +20,16 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.book-cover img {
-  max-width: 300px;
-  border-radius: 5px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
 .bookDetail-info {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.book-info h1 {
+.bookDetail-info h1 {
   font-size: 2.5em;
   color: #333;
-  margin: 0;
+  margin: 0 0 10px 0;
   padding-bottom: 10px;
   border-bottom: 2px solid #e0e0e0;
 }
@@ -43,14 +37,16 @@
 .author {
   font-size: 1.2em;
   color: #555;
+  margin-bottom: 10px;
 }
 
-.author a {
+.author span {
   color: #1a73e8;
-  text-decoration: none;
+  cursor: pointer;
 }
 
-.author a:hover {
+.author span:hover {
+  text-decoration: underline;
   color: #174ea6;
 }
 
@@ -58,6 +54,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  margin-bottom: 15px;
 }
 
 .genre-tag {
@@ -68,35 +65,45 @@
   font-size: 0.9em;
 }
 
-.genre-tag:hover {
-  background-color: #d0d0d0;
-}
-
 .description {
   line-height: 1.6;
   margin-bottom: 20px;
   color: #555;
 }
 
+.bookDetail-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
 .read-button,
-.buy-button {
+.buy-button,
+.favorite-button {
   padding: 12px 24px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 1em;
   font-weight: bold;
+  transition: all 0.3s;
 }
 
 .read-button {
   background-color: #4CAF50;
   color: white;
-  margin-right: 15px;
 }
 
 .buy-button {
   background-color: #f0c14b;
   color: #111;
+}
+
+.favorite-button {
+  background-color: transparent;
+  color: #ff4d4d;
+  font-size: 1.5em;
+  padding: 8px 12px;
 }
 
 .read-button:hover {
@@ -107,12 +114,30 @@
   background-color: #e6b63b;
 }
 
+.favorite-button:hover {
+  transform: scale(1.1);
+}
+
 .book-additional-info,
 .author-info,
+.book-chapters,
+.producer-info,
 .related-books {
   background-color: #f9f9f9;
   padding: 20px;
   border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.book-additional-info h2,
+.author-info h2,
+.book-chapters h2,
+.producer-info h2,
+.related-books h2 {
+  color: #333;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 10px;
+  margin-top: 0;
 }
 
 .book-additional-info table {
@@ -120,11 +145,27 @@
 }
 
 .book-additional-info td {
-  padding: 5px 0;
+  padding: 8px 0;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-.author-info ul {
-  padding-left: 20px;
+.book-additional-info td:first-child {
+  font-weight: bold;
+  width: 40%;
+}
+
+.book-chapters ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.book-chapters li {
+  padding: 8px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.producer-info p {
+  margin: 10px 0;
 }
 
 .related-books .book-grid {
@@ -134,19 +175,26 @@
 }
 
 .book-card {
-  text-decoration: none;
-  color: inherit;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.book-card:hover {
+  transform: translateY(-5px);
 }
 
 .book-card img {
   width: 100%;
-  height: 250px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .book-card h3 {
   margin: 10px 0 5px;
   font-size: 1em;
+  color: #333;
 }
 
 .book-card p {

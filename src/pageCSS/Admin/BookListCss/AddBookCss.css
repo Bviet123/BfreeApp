@@ -1,0 +1,205 @@
+/* AddBookCss.css */
+
+:root {
+  --primary-color: #2c3e50;
+  --secondary-color: #e74c3c;
+  --background-color: #ecf0f1;
+  --text-color: #34495e;
+  --card-background: #ffffff;
+  --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  --aside-width: 250px;
+  --border-radius: 4px;
+  --transition-speed: 0.3s;
+}
+
+.add-book-container {
+  display: flex;
+  height: 100vh;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.add-book-main {
+  margin-left: 250px;
+  flex-grow: 1;
+  padding: 20px;
+  transition: margin-left 0.3s;
+}
+
+.add-book-main.full-width {
+  margin-left: 0;
+}
+
+.add-book-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.add-book-toggle {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-aside-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-right: 10px;
+  color: var(--primary-color);
+}
+
+.add-book-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.add-book-column {
+  flex: 1;
+  min-width: 300px;
+}
+
+.add-book-section {
+  background-color: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--card-shadow);
+}
+
+.add-book-section h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  color: var(--primary-color);
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group input[type="datetime-local"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--primary-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  color: var(--text-color);
+  background-color: var(--card-background);
+}
+
+.form-group textarea {
+  height: 100px;
+  resize: vertical;
+}
+
+.save-button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: var(--secondary-color);
+  color: var(--card-background);
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.save-button:hover {
+  background-color: #c0392b;
+}
+
+/* Enhanced styles for MultiSelect component */
+.custom-multi-select {
+  position: relative;
+}
+
+.select-header {
+  padding: 8px;
+  border: 1px solid var(--primary-color);
+  border-radius: var(--border-radius);
+  background-color: var(--card-background);
+  color: var(--text-color);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.select-header::after {
+  content: '\25BC';
+  font-size: 0.8em;
+  color: var(--primary-color);
+}
+
+.options-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: var(--card-background);
+  border: 1px solid var(--primary-color);
+  border-top: none;
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+  z-index: 10;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.options-list li {
+  padding: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.options-list li:hover {
+  background-color: #f0f0f0;
+}
+
+.options-list li.selected {
+  background-color: #e0e0e0;
+  font-weight: bold;
+}
+
+.options-list li.selected::before {
+  content: '\2713';
+  margin-right: 5px;
+  color: var(--secondary-color);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .add-book-form {
+    flex-direction: column;
+  }
+
+  .add-book-column {
+    width: 100%;
+  }
+}
+
+/* Styles for the Aside component */
+.visible {
+  margin-left: 0;
+}
+
+.hidden {
+  margin-left: calc(var(--aside-width) * -1);
+}

@@ -12,6 +12,7 @@ import EditBook from './pageJS/Admin/BookList/EditBook';
 import AuthorList from './pageJS/Admin/AuthorList/AuthorList';
 import OtherList from './pageJS/Admin/OtherList/OtherList';
 import BorrowList from './pageJS/Admin/BorrowList/BorrowList';
+import AddBook from './pageJS/Admin/BookList/AddBook';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/user/bookshelf" element={<Bookshelf />} />
         <Route path="/admin/books" element={<BookList />} />
         <Route path="/admin/books/edit/" element={<EditBook />} />
+        <Route path="/admin/books/add/" element={<AddBook />} />
         <Route path="/admin/authors" element={<AuthorList />} />
         <Route path="/admin/other" element={<OtherList />} />
         <Route path="/admin/borrows" element={<BorrowList />} />
