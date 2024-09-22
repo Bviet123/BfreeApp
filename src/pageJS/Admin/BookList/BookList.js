@@ -1,45 +1,54 @@
-import React, { useState } from 'react';
-import { FaBars, FaTimes, FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaBars, FaTimes, FaEdit, FaTrash, FaSearch, FaPlus } from 'react-icons/fa';
 import Aside from '../Aside/Aside.js';
 import '../../../pageCSS/Admin/BookListCss/BookListCss.css';
-
-const initialBooks = [
-  {
-    id: "book1",
-    title: "Đắc Nhân Tâm",
-    authorId: "author1",
-    coverUrl: "https://example.com/images/dacnhantam.jpg",
-    genreIds: ["genre1", "genre2"],
-    publisherId: "publisher1",
-    description: "Đắc Nhân Tâm của Dale Carnegie là một trong những cuốn sách bán chạy nhất mọi thời đại. Đây là cuốn sách dạy về cách ứng xử, cư xử trong cuộc sống để đạt được thành công.",
-    publicationDate: "1936-10-17",
-    pages: 292,
-    language: "Tiếng Việt",
-    isbn: "978-604-1-XXXXX-X",
-    availability: {
-      status: "available",
-      copiesAvailable: 5
-    },
-    content: {
-      totalChapters: 30,
-      lastUpdated: "2024-09-08T10:00:00Z",
-      chapters: [
-        {
-          chapterNumber: 1,
-          title: "Chương 1: Nghệ thuật ứng xử",
-          content: "Nội dung của chương 1...",
-          createdAt: "2024-01-01T08:00:00Z",
-          updatedAt: "2024-01-01T08:00:00Z"
-        },
-      ]
-    }
-  }
-];
+import { database } from '../../../firebaseConfig';
+import { ref, onValue, remove } from 'firebase/database';
+import { useNavigate } from 'react-router-dom';
+import DeleteBookModal from './BookModal/DeleteModal.js';
 
 function BookCardList() {
-    const [books, setBooks] = useState(initialBooks);
+    const [books, setBooks] = useState([]);
+    const [authors, setAuthors] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
     const [isAsideVisible, setIsAsideVisible] = useState(true);
+    const [loading, setLoading] = useState(true);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [bookToDelete, setBookToDelete] = useState(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const booksRef = ref(database, 'books');
+        const unsubscribe = onValue(booksRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const booksArray = Object.entries(data).map(([id, book]) => ({
+                    id,
+                    ...book
+                }));
+                setBooks(booksArray);
+            } else {
+                setBooks([]);
+            }
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    useEffect(() => {
+        const authorsRef = ref(database, 'authors');
+        const unsubscribe = onValue(authorsRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                setAuthors(data);
+            } else {
+                setAuthors({});
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     const toggleAside = () => {
         setIsAsideVisible(!isAsideVisible);
@@ -54,12 +63,41 @@ function BookCardList() {
     );
 
     const handleEdit = (id) => {
-        console.log('Edit book with id:', id);
+        navigate(`/admin/books/BookDetail/${id}`);
     };
 
-    const handleDelete = (id) => {
-        setBooks(books.filter(book => book.id !== id));
+    const handleDelete = (book) => {
+        setBookToDelete(book);
+        setIsDeleteModalOpen(true);
     };
+
+    const confirmDelete = () => {
+        if (bookToDelete) {
+            const bookRef = ref(database, `books/${bookToDelete.id}`);
+            remove(bookRef)
+                .then(() => {
+                    console.log('Book deleted successfully');
+                    setIsDeleteModalOpen(false);
+                    setBookToDelete(null);
+                })
+                .catch((error) => {
+                    console.error('Error deleting book: ', error);
+                });
+        }
+    };
+
+    const handleAddBook = () => {
+        navigate('/admin/books/add');
+    };
+
+    const getAuthorNames = (authorIds) => {
+        if (!authorIds) return 'Unknown';
+        return authorIds.map(id => authors[id]?.name || 'Unknown').join(', ');
+    };
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <div className="book-list-container">
@@ -72,6 +110,9 @@ function BookCardList() {
                         </button>
                         <h2>Danh sách sách</h2>
                     </div>
+                    <button className="add-book-btn" onClick={handleAddBook}>
+                        <FaPlus /> Thêm sách
+                    </button>
                 </div>
 
                 <div className="book-list-search">
@@ -90,24 +131,28 @@ function BookCardList() {
                             <img src={book.coverUrl} alt={book.title} className="book-cover" />
                             <div className="book-info">
                                 <h3>{book.title}</h3>
-                                <p><strong>ISBN:</strong> {book.isbn}</p>
+                                <p><strong>Tác giả:</strong> {getAuthorNames(book.authorIds)}</p>
                                 <p><strong>Ngôn ngữ:</strong> {book.language}</p>
                                 <p><strong>Số trang:</strong> {book.pages}</p>
-                                <p><strong>Ngày xuất bản:</strong> {book.publicationDate}</p>
-                                <p className="book-description">{book.description}</p>
-                            </div>
-                            <div className="book-actions">
-                                <button onClick={() => handleEdit(book.id)} className="edit-btn">
-                                    <FaEdit />
-                                </button>
-                                <button onClick={() => handleDelete(book.id)} className="delete-btn">
-                                    <FaTrash />
-                                </button>
+                                <div className="book-actions">
+                                    <button onClick={() => handleEdit(book.id)} className="edit-btn">
+                                        <FaEdit />
+                                    </button>
+                                    <button onClick={() => handleDelete(book.id)} className="delete-btn">
+                                        <FaTrash />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}
                 </div>
             </div>
+            <DeleteBookModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                bookTitle={bookToDelete?.title}
+            />
         </div>
     );
 }

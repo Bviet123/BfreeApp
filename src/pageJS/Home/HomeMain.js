@@ -85,7 +85,7 @@ function HomeMain() {
   ];
 
   return (
-    <main>
+    <div className='HomeMain'>
       <section className="featured-books">
         <h2>Sách nổi bật</h2>
         <div className="book-grid">
@@ -116,7 +116,7 @@ function HomeMain() {
           ))}
         </ul>
       </section>
-    </main>
+    </div>
   );
 }
 

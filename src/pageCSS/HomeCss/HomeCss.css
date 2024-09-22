@@ -164,7 +164,7 @@ nav ul li a:hover {
 }
 
 /* Main content */
-main {
+.HomeMain {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;

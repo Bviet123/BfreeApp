@@ -1,0 +1,92 @@
+/* AdminAddChapterCss.css */
+
+.add-chapter-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .add-chapter-title {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .add-chapter-form {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  
+  /* CKEditor styles */
+  .ck-editor__editable {
+    min-height: 300px;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+  
+  .ck.ck-editor__editable_inline {
+    border: 1px solid var(--border-color) !important;
+    border-radius: 4px !important;
+  }
+  
+  .ck.ck-editor__editable_inline:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2) !important;
+  }
+  
+  .submit-button {
+    background-color: var(--secondary-color);
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s;
+    margin-top: 1rem;
+  }
+  
+  .submit-button:hover {
+    background-color: var(--primary-color);
+  }
+  
+  @media (max-width: 768px) {
+    .add-chapter-container {
+      padding: 1rem;
+    }
+  
+    .add-chapter-form {
+      padding: 1.5rem;
+    }
+  
+    .ck-editor__editable {
+      min-height: 200px;
+    }
+  }

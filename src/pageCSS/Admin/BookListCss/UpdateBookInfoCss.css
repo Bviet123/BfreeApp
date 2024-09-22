@@ -1,0 +1,204 @@
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #e74c3c;
+    --background-color: #ecf0f1;
+    --text-color: #34495e;
+    --link-color: #3498db;
+  }
+  
+  .ubi-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      background-color: var(--background-color);
+  }
+  
+  .ubi-main {
+      width: 100%;
+      max-width: 800px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      padding: 20px 30px;
+  }
+  
+  .ubi-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+  }
+  
+  .ubi-title {
+      font-size: 24px;
+      color: var(--primary-color);
+  }
+  
+  .ubi-back-button {
+      background-color: var(--primary-color);
+      color: #ffffff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+  }
+  
+  .ubi-back-button:hover {
+      background-color: var(--secondary-color);
+  }
+  
+  .ubi-form {
+      display: grid;
+      gap: 20px;
+  }
+  
+  .ubi-form-group {
+      display: flex;
+      flex-direction: column;
+  }
+  
+  .ubi-form-group label {
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: var(--text-color);
+  }
+  
+  .ubi-form-group input,
+  .ubi-form-group select,
+  .ubi-form-group textarea,
+  .custom-select .select-control {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--primary-color);
+      border-radius: 4px;
+      font-size: 16px;
+      color: var(--text-color);
+  }
+  
+  .ubi-form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+  }
+  
+  .cover-image-upload {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+  }
+  
+  .upload-button {
+      background-color: var(--secondary-color);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+  }
+  
+  .upload-button:hover {
+      background-color: #c0392b;
+  }
+  
+  .cover-preview {
+      max-width: 200px;
+      max-height: 300px;
+      object-fit: contain;
+  }
+  
+  .ubi-submit-button {
+      background-color: var(--secondary-color);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+  }
+  
+  .ubi-submit-button:hover {
+      background-color: #c0392b;
+  }
+  
+  /* Styles for MultiSelect component */
+  .custom-select {
+      position: relative;
+      width: 100%;
+  }
+  
+  .select-control {
+      padding: 10px;
+      border: 1px solid var(--primary-color);
+      border-radius: 4px;
+      background-color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      min-height: 42px;
+      color: var(--text-color);
+  }
+  
+  .select-options {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: white;
+      border: 1px solid var(--primary-color);
+      border-top: none;
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      border-radius: 0 0 4px 4px;
+  }
+  
+  .select-options li {
+      padding: 10px;
+      cursor: pointer;
+      color: var(--text-color);
+  }
+  
+  .select-options li:hover {
+      background-color: var(--background-color);
+  }
+  
+  .select-options li.selected {
+      background-color: var(--link-color);
+      color: white;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 600px) {
+      .ubi-main {
+          padding: 15px;
+      }
+  
+      .ubi-title {
+          font-size: 20px;
+      }
+  
+      .ubi-form-group input,
+      .ubi-form-group select,
+      .ubi-form-group textarea,
+      .custom-select .select-control {
+          font-size: 14px;
+      }
+  
+      .ubi-submit-button {
+          font-size: 16px;
+      }
+  }

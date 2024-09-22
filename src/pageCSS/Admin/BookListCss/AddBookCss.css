@@ -6,7 +6,7 @@
   --background-color: #ecf0f1;
   --text-color: #34495e;
   --card-background: #ffffff;
-  --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  --card-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   --aside-width: 250px;
   --border-radius: 4px;
   --transition-speed: 0.3s;
@@ -20,7 +20,6 @@
 }
 
 .add-book-main {
-  margin-left: 250px;
   flex-grow: 1;
   padding: 20px;
   transition: margin-left 0.3s;
@@ -60,6 +59,27 @@
 .add-book-column {
   flex: 1;
   min-width: 300px;
+}
+
+.cover-image-upload {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upload-button {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cover-preview {
+  max-width: 100px;
+  max-height: 150px;
+  object-fit: cover;
 }
 
 .add-book-section {
@@ -160,7 +180,9 @@
   border-top: none;
   border-radius: 0 0 var(--border-radius) var(--border-radius);
   z-index: 10;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  list-style-type: none; 
+  padding-left: 0;
 }
 
 .options-list li {
@@ -174,14 +196,7 @@
 }
 
 .options-list li.selected {
-  background-color: #e0e0e0;
-  font-weight: bold;
-}
-
-.options-list li.selected::before {
-  content: '\2713';
-  margin-right: 5px;
-  color: var(--secondary-color);
+  background-color: #e6e6e6;
 }
 
 /* Responsive design */

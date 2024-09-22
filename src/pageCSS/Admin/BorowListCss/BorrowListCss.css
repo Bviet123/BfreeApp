@@ -5,258 +5,260 @@
     --background-color: #ecf0f1;
     --text-color: #34495e;
     --card-background: #ffffff;
-    --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    --card-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     --aside-width: 250px;
     --border-radius: 8px;
     --transition: all 0.3s ease;
-  }
-  
-  body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--background-color);
-      color: var(--text-color);
-      line-height: 1.6;
-  }
-  
-  /* Layout */
-  .book-lending-container {
-      display: flex;
-      min-height: 100vh;
-  }
-  
-  .book-lending-main {
-      flex-grow: 1;
-      padding: 2rem;
-      margin-left: var(--aside-width);
-      transition: var(--transition);
-  }
-  
-  .book-lending-main.full-width {
-      margin-left: 0;
-  }
-  
-  /* Header */
-  .book-lending-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-  }
-  
-  .book-lending-toggle {
-      display: flex;
-      align-items: center;
-  }
-  
-  .toggle-aside-btn {
-      background-color: var(--primary-color);
-      color: var(--card-background);
-      border: none;
-      padding: 0.5rem;
-      border-radius: 50%;
-      cursor: pointer;
-      transition: var(--transition);
-      margin-right: 1rem;
-  }
-  
-  .toggle-aside-btn:hover {
-      background-color: var(--secondary-color);
-  }
-  
-  /* Tabs */
-  .book-lending-tabs {
-      display: flex;
-      margin-bottom: 2rem;
-      background-color: var(--card-background);
-      border-radius: var(--border-radius);
-      overflow: hidden;
-      box-shadow: var(--card-shadow);
-  }
-  
-  .tab-btn {
-      flex: 1;
-      padding: 1rem;
-      background-color: transparent;
-      border: none;
-      cursor: pointer;
-      transition: var(--transition);
-      font-weight: bold;
-      color: var(--text-color);
-  }
-  
-  .tab-btn.active {
-      background-color: var(--primary-color);
-      color: var(--card-background);
-  }
-  
-  /* Search */
-  .book-lending-search {
-      position: relative;
-      margin-bottom: 2rem;
-  }
-  
-  .search-icon {
-      position: absolute;
-      left: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-color);
-  }
-  
-  .book-lending-search input {
-      width: 320px;
-      padding: 1rem 1rem 1rem 3rem;
-      border: none;
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      box-shadow: var(--card-shadow);
-      transition: var(--transition);
-  }
-  
-  .book-lending-search input:focus {
-      outline: none;
-      box-shadow: 0 0 0 2px var(--primary-color);
-  }
-  
-  /* Tables */
-  .borrow-requests-table,
-  .borrowed-books-table {
-      width: 100%;
-      overflow-x: auto;
-      background-color: var(--card-background);
-      border-radius: var(--border-radius);
-      box-shadow: var(--card-shadow);
-  }
-  
-  table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-  }
-  
-  th, td {
-      padding: 1rem;
-      text-align: left;
-      border-bottom: 1px solid var(--background-color);
-  }
-  
-  th {
-      background-color: var(--primary-color);
-      color: var(--card-background);
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-  }
-  
-  th:first-child {
-      border-top-left-radius: var(--border-radius);
-  }
-  
-  th:last-child {
-      border-top-right-radius: var(--border-radius);
-  }
-  
-  tr:last-child td:first-child {
-      border-bottom-left-radius: var(--border-radius);
-  }
-  
-  tr:last-child td:last-child {
-      border-bottom-right-radius: var(--border-radius);
-  }
-  
-  tr:hover {
-      background-color: var(--background-color);
-  }
-  
-  /* Buttons */
-  .approve-btn,
-  .reject-btn,
-  .return-btn {
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition: var(--transition);
-      font-weight: bold;
-      margin-right: 0.5rem;
-      color: var(--card-background);
-  }
-  
-  .approve-btn {
-      background-color: #27ae60;
-  }
-  
-  .reject-btn {
-      background-color: var(--secondary-color);
-  }
-  
-  .return-btn {
-      background-color: var(--primary-color);
-  }
-  
-  .approve-btn:hover {
-      background-color: #219653;
-  }
-  
-  .reject-btn:hover {
-      background-color: #c0392b;
-  }
-  
-  .return-btn:hover {
-      background-color: #34495e;
-  }
-  
-  .approve-btn svg,
-  .reject-btn svg,
-  .return-btn svg {
-      margin-right: 0.5rem;
-  }
-  
-  /* Pagination */
-  .pagination {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: 1rem;
-  }
-  
-  .pagination-btn {
-      background-color: var(--primary-color);
-      color: var(--card-background);
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      transition: var(--transition);
-      margin: 0 0.5rem;
-  }
-  
-  .pagination-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-  }
-  
-  .pagination-btn:hover:not(:disabled) {
-      background-color: var(--secondary-color);
-  }
-  
-  /* Responsive design */
-  @media (max-width: 768px) {
-      .book-lending-main {
-          padding: 1rem;
-      }
-  
-      .book-lending-tabs {
-          flex-direction: column;
-      }
-  
-      .tab-btn {
-          width: 100%;
-      }
-  
-      th, td {
-          padding: 0.75rem;
-      }
-  }
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* Layout */
+.book-lending-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.book-lending-main {
+    flex-grow: 1;
+    padding: 2rem;
+    margin-left: var(--aside-width);
+    transition: var(--transition);
+}
+
+.book-lending-main.full-width {
+    margin-left: 0;
+}
+
+/* Header */
+.book-lending-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.book-lending-toggle {
+    display: flex;
+    align-items: center;
+}
+
+.toggle-aside-btn {
+    background-color: var(--primary-color);
+    color: var(--card-background);
+    border: none;
+    padding: 0.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-right: 1rem;
+}
+
+.toggle-aside-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+/* Tabs */
+.book-lending-tabs {
+    display: flex;
+    margin-bottom: 2rem;
+    background-color: var(--card-background);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 1rem;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.tab-btn.active {
+    background-color: var(--primary-color);
+    color: var(--card-background);
+}
+
+/* Search */
+.book-lending-search {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-color);
+}
+
+.book-lending-search input {
+    width: 320px;
+    padding: 1rem 1rem 1rem 3rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+}
+
+.book-lending-search input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+/* Tables */
+.borrow-requests-table,
+.borrowed-books-table {
+    width: 100%;
+    overflow-x: auto;
+    background-color: var(--card-background);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+th,
+td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--background-color);
+}
+
+th {
+    background-color: var(--primary-color);
+    color: var(--card-background);
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+th:first-child {
+    border-top-left-radius: var(--border-radius);
+}
+
+th:last-child {
+    border-top-right-radius: var(--border-radius);
+}
+
+tr:last-child td:first-child {
+    border-bottom-left-radius: var(--border-radius);
+}
+
+tr:last-child td:last-child {
+    border-bottom-right-radius: var(--border-radius);
+}
+
+tr:hover {
+    background-color: var(--background-color);
+}
+
+/* Buttons */
+.approve-btn,
+.reject-btn,
+.return-btn {
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    font-weight: bold;
+    margin-right: 0.5rem;
+    color: var(--card-background);
+}
+
+.approve-btn {
+    background-color: #27ae60;
+}
+
+.reject-btn {
+    background-color: var(--secondary-color);
+}
+
+.return-btn {
+    background-color: var(--primary-color);
+}
+
+.approve-btn:hover {
+    background-color: #219653;
+}
+
+.reject-btn:hover {
+    background-color: #c0392b;
+}
+
+.return-btn:hover {
+    background-color: #34495e;
+}
+
+.approve-btn svg,
+.reject-btn svg,
+.return-btn svg {
+    margin-right: 0.5rem;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.pagination-btn {
+    background-color: var(--primary-color);
+    color: var(--card-background);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    margin: 0 0.5rem;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: var(--secondary-color);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .book-lending-main {
+        padding: 1rem;
+    }
+
+    .book-lending-tabs {
+        flex-direction: column;
+    }
+
+    .tab-btn {
+        width: 100%;
+    }
+
+    th,
+    td {
+        padding: 0.75rem;
+    }
+}

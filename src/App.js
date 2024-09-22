@@ -8,11 +8,13 @@ import BookLibrary from './pageJS/BookLibrary/BookLibrary';
 import UserProfile from './pageJS/User/UserInfor/UserProfile';
 import Bookshelf from './pageJS/User/BookShelf/BookShelf';
 import BookList from './pageJS/Admin/BookList/BookList';
-import EditBook from './pageJS/Admin/BookList/EditBook';
 import AuthorList from './pageJS/Admin/AuthorList/AuthorList';
 import OtherList from './pageJS/Admin/OtherList/OtherList';
 import BorrowList from './pageJS/Admin/BorrowList/BorrowList';
 import AddBook from './pageJS/Admin/BookList/AddBook';
+import AdminBookDetails from './pageJS/Admin/BookList/AdminBookDetails';
+import UpdateBookInfo from './pageJS/Admin/BookList/UpdateBookInfo';
+import AddChapter from './pageJS/Admin/BookList/chapter/AddChapter';
 
 function App() {
   return (
@@ -26,7 +28,9 @@ function App() {
         <Route path="/user/profile/:userId" element={<UserProfile />} />
         <Route path="/user/bookshelf" element={<Bookshelf />} />
         <Route path="/admin/books" element={<BookList />} />
-        <Route path="/admin/books/edit/" element={<EditBook />} />
+        <Route path="/admin/books/BookDetail/:id" element={<AdminBookDetails />} />
+        <Route path="/admin/books/:bookId/AddChapter" element={<AddChapter />} />
+        <Route path="/admin/books/edit" element={<UpdateBookInfo />} />
         <Route path="/admin/books/add/" element={<AddBook />} />
         <Route path="/admin/authors" element={<AuthorList />} />
         <Route path="/admin/other" element={<OtherList />} />
