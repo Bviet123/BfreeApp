@@ -65,8 +65,6 @@ function AdminBookDetails() {
     fetchBookAndRelatedData();
   }, [id]);
 
-
-
   const toggleAside = () => {
     setIsAsideVisible(!isAsideVisible);
   };
@@ -94,23 +92,31 @@ function AdminBookDetails() {
   );
 }
 
-const BookBasicInfo = ({ book, authors, genres, publisher }) => (
-  <section className="ab-section ab-book-basic-info">
-    <h2 className="ab-section-title"><FaBook /> Thông tin cơ bản</h2>
-    <div className="ab-section-content">
-      <div className="ab-cover">
-        <img src={book.coverUrl} alt={book.title} />
-        <button className="ab-edit-button"><FaEdit /> Chỉnh sửa</button>
+const BookBasicInfo = ({ book, authors, genres, publisher }) => {
+  const navigate = useNavigate();
+
+  const handleEdit = () => {
+    navigate(`/admin/books/${book.id}/edit`);
+  };
+
+  return (
+    <section className="ab-section ab-book-basic-info">
+      <h2 className="ab-section-title"><FaBook /> Thông tin cơ bản</h2>
+      <div className="ab-section-content">
+        <div className="ab-cover">
+          <img src={book.coverUrl} alt={book.title} />
+          <button className="ab-edit-button" onClick={handleEdit}><FaEdit /> Chỉnh sửa</button>
+        </div>
+        <div className="ab-basic-info">
+          <p><strong>Tác giả:</strong> {authors.length > 0 ? authors.map(author => author.name).join(', ') : 'Không có thông tin'}</p>
+          <p><strong>Thể loại:</strong> {genres.length > 0 ? genres.map(genre => genre.name).join(', ') : 'Không có thông tin'}</p>
+          <p><strong>Nhà xuất bản:</strong> {publisher?.name || 'Không có thông tin'}</p>
+          <p><strong>Mô tả:</strong> {book.description || 'Không có mô tả'}</p>
+        </div>
       </div>
-      <div className="ab-basic-info">
-        <p><strong>Tác giả:</strong> {authors.length > 0 ? authors.map(author => author.name).join(', ') : 'Không có thông tin'}</p>
-        <p><strong>Thể loại:</strong> {genres.length > 0 ? genres.map(genre => genre.name).join(', ') : 'Không có thông tin'}</p>
-        <p><strong>Nhà xuất bản:</strong> {publisher?.name || 'Không có thông tin'}</p>
-        <p><strong>Mô tả:</strong> {book.description || 'Không có mô tả'}</p>
-      </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 const BookDetails = ({ book }) => (
   <section className="ab-section ab-book-details">
@@ -151,23 +157,23 @@ const BookDetails = ({ book }) => (
 );
 
 const ChapterList = ({ book, id }) => {
-  const chapters = book.content?.chapters || [];
-  const totalChapters = book.content?.totalChapters || 0;
-  const lastUpdated = book.content?.lastUpdated || '';
-
+  const [chapters, setChapters] = useState(book.content?.chapters || []);
+  const [totalChapters, setTotalChapters] = useState(book.content?.totalChapters || 0);
   const navigate = useNavigate();
 
   const handleAddChapter = () => {
     navigate(`/admin/books/${id}/AddChapter`);
   };
 
+  const handleEditChapter = (chapterId) => {
+    navigate(`/admin/books/${id}/EditChapter/${chapterId}`);
+  };
+
   const handleDeleteChapter = async (chapterId) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa chương này?')) {
       try {
-        // Xóa chương khỏi danh sách chapters
         const updatedChapters = chapters.filter(chapter => chapter.id !== chapterId);
         
-        // Cập nhật lại thông tin sách
         const bookRef = ref(database, `books/${id}`);
         await update(bookRef, {
           'content.chapters': updatedChapters,
@@ -175,13 +181,12 @@ const ChapterList = ({ book, id }) => {
           'content.lastUpdated': new Date().toISOString()
         });
 
-        // Xóa chương khỏi database (nếu bạn lưu chương riêng)
         const chapterRef = ref(database, `books/${id}/content/chapters/${chapterId}`);
         await remove(chapterRef);
 
+        setChapters(updatedChapters);
+        setTotalChapters(prev => prev - 1);
         alert('Chương đã được xóa thành công!');
-        // Reload the page or update the state to reflect the changes
-        window.location.reload();
       } catch (error) {
         console.error('Lỗi khi xóa chương:', error);
         alert('Có lỗi xảy ra khi xóa chương. Vui lòng thử lại.');
@@ -198,16 +203,21 @@ const ChapterList = ({ book, id }) => {
           <ul className="ab-chapter-list">
             {chapters.map(chapter => (
               <li key={chapter.id} className="ab-chapter-item">
-                {chapter.title}
+                <span className="ab-chapter-title">{chapter.title}</span>
                 <div className="ab-chapter-actions">
-                  <button className="ab-button ab-edit-chapter-button">
-                    <FaEdit /> Sửa
+                  <button 
+                    className="ab-button ab-edit-chapter-button" 
+                    onClick={() => handleEditChapter(chapter.id)}
+                    title="Sửa"
+                  >
+                    <FaEdit />
                   </button>
                   <button 
                     className="ab-button ab-delete-chapter-button"
                     onClick={() => handleDeleteChapter(chapter.id)}
+                    title="Xóa"
                   >
-                    <FaTrash /> Xóa
+                    <FaTrash />
                   </button>
                 </div>
               </li>
@@ -216,7 +226,7 @@ const ChapterList = ({ book, id }) => {
         ) : (
           <p>Chưa có chương nào.</p>
         )}
-        <div className="ab-chapter-actions">
+        <div className="ab-add-chapter-container">
           <button className="ab-button ab-add-chapter-button" onClick={handleAddChapter}>
             <FaPlus /> Thêm chương
           </button>

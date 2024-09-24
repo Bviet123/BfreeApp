@@ -15,6 +15,8 @@ import AddBook from './pageJS/Admin/BookList/AddBook';
 import AdminBookDetails from './pageJS/Admin/BookList/AdminBookDetails';
 import UpdateBookInfo from './pageJS/Admin/BookList/UpdateBookInfo';
 import AddChapter from './pageJS/Admin/BookList/chapter/AddChapter';
+import EditChapter from './pageJS/Admin/BookList/chapter/EditChapter';
+import EditBookDetails from './pageJS/Admin/BookList/EditBookDetails';
 
 function App() {
   return (
@@ -29,7 +31,9 @@ function App() {
         <Route path="/user/bookshelf" element={<Bookshelf />} />
         <Route path="/admin/books" element={<BookList />} />
         <Route path="/admin/books/BookDetail/:id" element={<AdminBookDetails />} />
+        <Route path="/admin/books/:id/edit" element={<EditBookDetails />} />
         <Route path="/admin/books/:bookId/AddChapter" element={<AddChapter />} />
+        <Route path="/admin/books/:bookId/EditChapter/:chapterId" element={<EditChapter />} /> 
         <Route path="/admin/books/edit" element={<UpdateBookInfo />} />
         <Route path="/admin/books/add/" element={<AddBook />} />
         <Route path="/admin/authors" element={<AuthorList />} />

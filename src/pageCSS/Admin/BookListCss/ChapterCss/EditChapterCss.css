@@ -1,0 +1,123 @@
+.ec-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.ec-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.ec-back-button {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 10px;
+    transition: background-color 0.3s;
+}
+
+.ec-back-button:hover {
+    background-color: #e0e0e0;
+}
+
+.ec-back-button svg {
+    margin-right: 5px;
+}
+
+.ec-title {
+    font-size: 20px;
+    color: #333;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    word-wrap: break-word;
+    hyphens: auto;
+}
+
+.ec-title svg {
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.ec-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.ec-form-group {
+    margin-bottom: 20px;
+}
+
+.ec-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.ec-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.ec-editor {
+    margin-bottom: 20px;
+}
+
+.ec-submit-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.ec-submit-button:hover {
+    background-color: #45a049;
+}
+
+.ec-submit-button svg {
+    margin-right: 10px;
+}
+
+.ec-loading {
+    text-align: center;
+    font-size: 18px;
+    color: #666;
+    margin-top: 50px;
+}
+
+@media (max-width: 600px) {
+    .ec-container {
+        padding: 10px;
+    }
+
+    .ec-title {
+        font-size: 18px;
+    }
+
+    .ec-input,
+    .ec-submit-button {
+        font-size: 14px;
+    }
+}

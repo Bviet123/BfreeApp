@@ -175,10 +175,11 @@
 }
 
 .ab-chapter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border-color);
-  font-size: 0.95rem;
-  color: var(--text-color);
   transition: background-color 0.2s;
 }
 
@@ -186,15 +187,21 @@
   background-color: var(--light-gray);
 }
 
+.ab-chapter-title {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 1rem;
+}
+
 .ab-chapter-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 0.5rem;
 }
 
 .ab-button {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem;
   background-color: var(--link-color);
   color: #ffffff;
   border: none;
@@ -204,19 +211,36 @@
   font-size: 0.95rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
 }
 
 .ab-button:hover {
   background-color: var(--primary-color);
 }
 
-.ab-add-chapter-button {
+.ab-edit-chapter-button,
+.ab-delete-chapter-button {
+  width: 32px;
+  height: 32px;
+}
+
+.ab-edit-chapter-button {
   background-color: var(--link-color);
 }
 
-.ab-edit-chapters-button {
+.ab-delete-chapter-button {
   background-color: var(--secondary-color);
+}
+
+.ab-add-chapter-container {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ab-add-chapter-button {
+  background-color: var(--link-color);
+  padding: 0.5rem 1rem;
 }
 
 /* Responsive design */
