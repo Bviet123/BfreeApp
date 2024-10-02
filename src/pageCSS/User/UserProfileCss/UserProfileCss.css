@@ -164,6 +164,22 @@
     left: -25px;
   }
   
+  .action-button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .action-button:hover {
+    background-color: #e0e0e0;
+  }
+  
   p {
     color: var(--text-color);
     line-height: 1.6;

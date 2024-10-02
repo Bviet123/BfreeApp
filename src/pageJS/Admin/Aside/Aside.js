@@ -12,19 +12,19 @@ function Aside({ currentUser, className }) {
       </div>
       <div className="admin-tools-list">
         <ul>
-          <li onClick={() => navigate('/BookList')}>
+          <li onClick={() => navigate('/borrows')}>
             <i className="fas fa-book"></i>
             <span>Quản lý sách</span>
           </li>
-          <li onClick={() => navigate('/UserList')}>
+          <li onClick={() => navigate('')}>
             <i className="fas fa-users"></i>
             <span>Quản lý tài khoản</span>
           </li>
-          <li onClick={() => navigate('/OtherList')}>
+          <li onClick={() => navigate('')}>
             <i className="fas fa-tag"></i>
             <span>Thể loại và NSX</span>
           </li>
-          <li onClick={() => navigate('/BookBorrow')}>
+          <li onClick={() => navigate('')}>
             <i class="fas fa-book"></i>
             <span>Quản lý sách mượn</span>
           </li>

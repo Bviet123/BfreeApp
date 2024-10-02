@@ -17,6 +17,7 @@ import UpdateBookInfo from './pageJS/Admin/BookList/UpdateBookInfo';
 import AddChapter from './pageJS/Admin/BookList/chapter/AddChapter';
 import EditChapter from './pageJS/Admin/BookList/chapter/EditChapter';
 import EditBookDetails from './pageJS/Admin/BookList/EditBookDetails';
+import ChapterDetail from './pageJS/BookDetail/ChapterDetail';
 
 function App() {
   return (
@@ -25,7 +26,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/home/*" element={<Home />} />
         <Route path="/admin/users" element={<UserList />} />
-        <Route path="/BookDetail" element={<BookDetail />} />
+        <Route path="/book/:bookId" element={<BookDetail />} />
         <Route path="/library" element={<BookLibrary />} />
         <Route path="/user/profile/:userId" element={<UserProfile />} />
         <Route path="/user/bookshelf" element={<Bookshelf />} />
@@ -34,6 +35,7 @@ function App() {
         <Route path="/admin/books/:id/edit" element={<EditBookDetails />} />
         <Route path="/admin/books/:bookId/AddChapter" element={<AddChapter />} />
         <Route path="/admin/books/:bookId/EditChapter/:chapterId" element={<EditChapter />} /> 
+        <Route path="/book/:bookId/chapter/:chapterId" element={<ChapterDetail />} />
         <Route path="/admin/books/edit" element={<UpdateBookInfo />} />
         <Route path="/admin/books/add/" element={<AddBook />} />
         <Route path="/admin/authors" element={<AuthorList />} />
