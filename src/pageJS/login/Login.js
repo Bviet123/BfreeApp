@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { ref, set, get, serverTimestamp } from "firebase/database";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { ref, get, serverTimestamp, set } from "firebase/database";
 import '../../pageCSS/login/Login.css';
 import { auth, database } from '../../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
@@ -10,53 +10,22 @@ import 'react-toastify/dist/ReactToastify.css';
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState(null);
-    const [isSignUp, setIsSignUp] = useState(false);
 
     const navigate = useNavigate();
 
-    // Add user to Realtime Database
-    const addUserToDatabase = async (user) => {
-        try {
-            const userData = {
-                avatar: "",
-                email: user.email,
-                password: user.password,
-                role: "Người dùng",
-                fullName: "",
-                birthDate: "",
-                gender: "",
-                favoriteGenres: { default: "Chưa có" },
-                readingGoal: "",
-                favoriteBooks: { default: "Chưa có" },
-                borrowedBooks: { default: "Chưa có" },
-                createdAt: serverTimestamp(),
-                lastUpdated: serverTimestamp(),
-            };
-            await set(ref(database, 'users/' + user.uid), userData);
-            console.log("Thông tin người dùng đã được thêm vào Database");
-            return userData;
-        } catch (error) {
-            console.error("Lỗi khi thêm thông tin người dùng vào Database:", error);
-            throw error;
-        }
-    };
-
-    // Fetch user data from Realtime Database
     const fetchUserData = async (uid) => {
         try {
             const userRef = ref(database, 'users/' + uid);
             const snapshot = await get(userRef);
             if (snapshot.exists()) {
                 const userData = snapshot.val();
-                // Đảm bảo rằng tất cả các trường được trả về
                 return {
                     uid,
                     avatar: userData.avatar || "",
                     email: userData.email,
                     password: userData.password,
-                    role: userData.role || "Người dùng",
+                    role: userData.role || "user",
                     fullName: userData.fullName || "",
                     birthDate: userData.birthDate || "",
                     gender: userData.gender || "",
@@ -77,36 +46,14 @@ function Login() {
         }
     };
 
-    const handleAuth = async (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
         setError(null);
 
-        if (isSignUp && password !== confirmPassword) {
-            setError("Mật khẩu không khớp");
-            return;
-        }
-
         try {
-            let userCredential;
-            let userData;
-            if (isSignUp) {
-                userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const userInfo = {
-                    email: userCredential.user.email,
-                    password: password,
-                    uid: userCredential.user.uid,
-                };
-                userData = await addUserToDatabase(userInfo);
-                toast.success("Tài khoản đã được tạo thành công!");
-                setIsSignUp(false);
-                setEmail('');
-                setPassword('');
-                setConfirmPassword('');
-            } else {
-                userCredential = await signInWithEmailAndPassword(auth, email, password);
-                userData = await fetchUserData(userCredential.user.uid);
-                toast.success("Đăng nhập thành công!");
-            }
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const userData = await fetchUserData(userCredential.user.uid);
+            toast.success("Đăng nhập thành công!");
             navigate('/Home', { state: { user: userData } });
         } catch (error) {
             handleAuthError(error);
@@ -142,18 +89,35 @@ function Login() {
         return snapshot.exists();
     };
 
+    const addUserToDatabase = async (user) => {
+        try {
+            const userData = {
+                avatar: "",
+                email: user.email,
+                password: user.password,
+                role: "user",
+                fullName: "",
+                birthDate: "",
+                gender: "",
+                favoriteGenres: { default: "Chưa có" },
+                readingGoal: "",
+                favoriteBooks: { default: "Chưa có" },
+                borrowedBooks: { default: "Chưa có" },
+                createdAt: serverTimestamp(),
+                lastUpdated: serverTimestamp(),
+            };
+            await set(ref(database, 'users/' + user.uid), userData);
+            console.log("Thông tin người dùng đã được thêm vào Database");
+            return userData;
+        } catch (error) {
+            console.error("Lỗi khi thêm thông tin người dùng vào Database:", error);
+            throw error;
+        }
+    };
+
     const handleAuthError = (error) => {
         let errorMessage;
         switch (error.code) {
-            case 'auth/email-already-in-use':
-                errorMessage = 'Email này đã được sử dụng. Vui lòng chọn email khác.';
-                break;
-            case 'auth/invalid-email':
-                errorMessage = 'Email không hợp lệ. Vui lòng kiểm tra lại.';
-                break;
-            case 'auth/weak-password':
-                errorMessage = 'Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn.';
-                break;
             case 'auth/user-not-found':
                 errorMessage = 'Tài khoản không tồn tại. Vui lòng kiểm tra lại email hoặc đăng ký mới.';
                 break;
@@ -174,8 +138,8 @@ function Login() {
     return (
         <div className="login-container">
             <ToastContainer />
-            <form onSubmit={handleAuth} className="login-form">
-                <h2>{isSignUp ? 'Đăng ký' : 'Đăng nhập'}</h2>
+            <form onSubmit={handleLogin} className="login-form">
+                <h2>Đăng nhập</h2>
                 {error && <p className="error-message">{error}</p>}
                 <div className="login-form-group">
                     <label htmlFor="email">Email:</label>
@@ -197,27 +161,15 @@ function Login() {
                         required
                     />
                 </div>
-                {isSignUp && (
-                    <div className="login-form-group">
-                        <label htmlFor="confirmPassword">Nhập lại mật khẩu:</label>
-                        <input
-                            type="password"
-                            id="confirmPassword"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                )}
-
-                <button type="submit" className="auth-button">
-                    {isSignUp ? 'Đăng ký' : 'Đăng nhập'}
-                </button>
+                <button type="submit" className="auth-button">Đăng nhập</button>
                 <button type="button" onClick={handleGoogleSignIn} className="google-button">
                     <i className="fab fa-google"></i> Đăng nhập bằng Google
                 </button>
-                <p className="switch-mode" onClick={() => setIsSignUp(!isSignUp)}>
-                    {isSignUp ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký'}
+                <p className="switch-mode" onClick={() => navigate('/signup')}>
+                    Chưa có tài khoản? Đăng ký
+                </p>
+                <p className="switch-mode" onClick={() => navigate('/ForgotPassword')}>
+                    Quên tài khoản?
                 </p>
             </form>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { ref, get, onValue, remove, update, push, set, serverTimestamp } from 'firebase/database';
 import { auth, database } from '../../../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +7,6 @@ import '../../../pageCSS/Admin/UserListCss/UserListCss.css';
 import Aside from '../Aside/Aside.js';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import UserModal from './Model/UserModel';
-
 
 function UserList() {
     const [users, setUsers] = useState([]);
@@ -41,7 +40,6 @@ function UserList() {
                             ...usersData[key],
                         }));
                         setUsers(usersList);
-                        // Khởi tạo state cho việc ẩn/hiện mật khẩu
                         const initialShowPasswords = {};
                         usersList.forEach(user => {
                             initialShowPasswords[user.id] = false;
@@ -105,11 +103,10 @@ function UserList() {
     const handleSubmit = async (userData) => {
         try {
             if (modalAction === 'add') {
-                // Tạo user mới trong Authentication
+                // Existing code for adding a new user
                 const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
                 const user = userCredential.user;
-    
-                // Thêm thông tin user vào Realtime Database
+        
                 await set(ref(database, 'users/' + user.uid), {
                     email: userData.email,
                     password: userData.password,
@@ -125,27 +122,49 @@ function UserList() {
                     avatar: null,
                     borrowedBooks: ["book1"],
                     favoriteBooks: ["book1"],
-
                 });
-    
+        
                 setUsers([...users, { id: user.uid, ...userData }]);
             } else if (modalAction === 'edit') {
-                // Cập nhật thông tin user
+                // Update user information in Realtime Database
                 await update(ref(database, `users/${selectedUser.id}`), {
                     email: userData.email,
-                    password: userData.password,
                     role: userData.role,
                     lastUpdated: serverTimestamp()
                 });
+    
+                // Update password in Authentication if it has changed
+                if (userData.password !== selectedUser.password) {
+                    const user = auth.currentUser;
+                    if (user) {
+                        try {
+                            // Attempt to reauthenticate before updating password
+                            const credential = EmailAuthProvider.credential(user.email, selectedUser.password);
+                            await reauthenticateWithCredential(user, credential);
+                            await updatePassword(user, userData.password);
+                            
+                            // Update password in Realtime Database
+                            await update(ref(database, `users/${selectedUser.id}`), {
+                                password: userData.password
+                            });
+                        } catch (error) {
+                            console.error('Error updating password:', error);
+                            throw new Error('Không thể cập nhật mật khẩu. Vui lòng đăng nhập lại và thử lại.');
+                        }
+                    } else {
+                        console.warn("Password update skipped: user not authenticated");
+                    }
+                }
+    
                 setUsers(users.map(user => user.id === selectedUser.id ? { ...user, ...userData } : user));
             } else if (modalAction === 'delete') {
-                // Xóa user
                 await remove(ref(database, `users/${selectedUser.id}`));
                 setUsers(users.filter(user => user.id !== selectedUser.id));
             }
             closeModal();
         } catch (error) {
             console.error('Error:', error);
+            alert(error.message || 'Đã xảy ra lỗi. Vui lòng thử lại.');
         }
     };
 

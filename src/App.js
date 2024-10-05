@@ -18,12 +18,16 @@ import AddChapter from './pageJS/Admin/BookList/chapter/AddChapter';
 import EditChapter from './pageJS/Admin/BookList/chapter/EditChapter';
 import EditBookDetails from './pageJS/Admin/BookList/EditBookDetails';
 import ChapterDetail from './pageJS/BookDetail/ChapterDetail';
+import SignUp from './pageJS/SignUp/SignUp';
+import ForgotPassword from './pageJS/ForgotPassWord/ForgotPassword';
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/ForgotPassword" element={<ForgotPassword />} />
         <Route path="/home/*" element={<Home />} />
         <Route path="/admin/users" element={<UserList />} />
         <Route path="/book/:bookId" element={<BookDetail />} />
