@@ -1,17 +1,24 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaHome, FaBook, FaUser, FaBookmark } from 'react-icons/fa';
+import { FaHome, FaBook, FaUser, FaBookmark, FaHandHoldingHeart } from 'react-icons/fa';
 
 const UserAside = ({ activeItem, user }) => {
   const navigate = useNavigate();
 
   const handleNavigation = (path) => {
-    navigate(path);
+    navigate(path, { state: { user } });
   };
 
-  // Sử dụng dữ liệu người dùng hoặc giá trị mặc định nếu không có
-  const userName = user?.fullName ||   "Người dùng";
-  const userAvatar = user?.avatar || "/path/to/default-avatar.png"; // Thay thế bằng đường dẫn đến avatar mặc định của bạn
+  const userName = user?.fullName || user?.email || "Người dùng";
+  const userAvatar = user?.avatar || "/path/to/default-avatar.png";
+
+  const menuItems = [
+    { path: '/Home', icon: FaHome, label: 'Trang chủ', id: 'Home' },
+    { path: '/BookLibrary', icon: FaBook, label: 'Thư viện sách', id: 'BookLibrary' },
+    { path: '/Bookshelf', icon: FaBookmark, label: 'Tủ sách của tôi', id: 'Bookshelf', count: user?.bookshelfCount },
+    { path: '/user/borrowedbooklist', icon: FaHandHoldingHeart, label: 'Sách đang mượn', id: 'BorrowedBooks', count: user?.borrowedBooksCount },
+    { path: `/user/profile/${user?.uid}`, icon: FaUser, label: 'Thông tin cá nhân', id: 'UserProfile' },
+  ];
 
   return (
     <aside className="sidebar">
@@ -21,10 +28,18 @@ const UserAside = ({ activeItem, user }) => {
       </div>
       <div>
         <ul>
-          <li><button onClick={() => handleNavigation('/Home')} className={activeItem === 'Home' ? 'active' : ''}><FaHome /> Trang chủ</button></li>
-          <li><button onClick={() => handleNavigation('/BookLibrary')} className={activeItem === 'BookLibrary' ? 'active' : ''}><FaBook /> Thư viện sách</button></li>
-          <li><button onClick={() => handleNavigation('/Bookshelf')} className={activeItem === 'Bookshelf' ? 'active' : ''}><FaBookmark /> Tủ sách của tôi</button></li>
-          <li><button onClick={() => handleNavigation('/UserProfile')} className={activeItem === 'UserProfile' ? 'active' : ''}><FaUser /> Thông tin cá nhân</button></li>
+          {menuItems.map((item) => (
+            <li key={item.id}>
+              <button 
+                onClick={() => handleNavigation(item.path)} 
+                className={activeItem === item.id ? 'active' : ''}
+              >
+                <item.icon />
+                {item.label}
+                {item.count !== undefined && <span className="count">({item.count})</span>}
+              </button>
+            </li>
+          ))}
         </ul>
       </div>
     </aside>

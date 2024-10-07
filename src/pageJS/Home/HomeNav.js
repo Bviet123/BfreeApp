@@ -10,7 +10,6 @@ function HomeNav() {
   const user = location.state?.user;
   const [categories, setCategories] = useState([]);
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [userAvatar, setUserAvatar] = useState('');
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -118,15 +117,6 @@ function HomeNav() {
     }
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // Implement search functionality here
-      console.log('Searching for:', searchQuery);
-      setSearchQuery('');
-    }
-  };
-
   const handleLogout = async () => {
     const auth = getAuth();
     try {
@@ -145,7 +135,7 @@ function HomeNav() {
     return (
       <div className="user-section" ref={userDropdownRef}>
         <div className={`avatar ${isUserDropdownOpen ? 'open' : ''}`}>
-          <div className="user-info" onClick={toggleUserDropdown}>
+          <div className="NavUser-info" onClick={toggleUserDropdown}>
             <span>{user.email}</span>
             {userAvatar ? (
               <img src={userAvatar} alt="User Avatar" />
@@ -176,19 +166,6 @@ function HomeNav() {
       
       <header className={isNavOpen ? 'open' : ''}>
         <nav>
-          <div className="searchAvatar">
-            <form className="search-bar" onSubmit={handleSearch}>
-              <input
-                type="text"
-                placeholder="Tìm kiếm sách..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button type="submit">Tìm</button>
-            </form>
-            {!isMobile && user && renderUserInfo()}
-          </div>
-
           <ul className="nav-list">
             <li>
               <div onClick={() => handleNavigation('/Home')}>Trang chủ</div>
@@ -231,7 +208,9 @@ function HomeNav() {
               </>
             )}
           </ul>
-
+          <div className="userSection">
+            {!isMobile && user && renderUserInfo()}
+          </div>
           {!user && (
             <div className="login-button" onClick={() => handleNavigation('/login')}>
               Đăng nhập

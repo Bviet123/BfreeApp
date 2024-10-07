@@ -20,6 +20,7 @@ import EditBookDetails from './pageJS/Admin/BookList/EditBookDetails';
 import ChapterDetail from './pageJS/BookDetail/ChapterDetail';
 import SignUp from './pageJS/SignUp/SignUp';
 import ForgotPassword from './pageJS/ForgotPassWord/ForgotPassword';
+import BorrowedBooksList from './pageJS/User/UserInfor/BorrowedBookList';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
         <Route path="/library" element={<BookLibrary />} />
         <Route path="/user/profile/:userId" element={<UserProfile />} />
         <Route path="/user/bookshelf" element={<Bookshelf />} />
+        <Route path="/user/borrowedbooklist" element={<BorrowedBooksList />} />
         <Route path="/admin/books" element={<BookList />} />
         <Route path="/admin/books/BookDetail/:id" element={<AdminBookDetails />} />
         <Route path="/admin/books/:id/edit" element={<EditBookDetails />} />
