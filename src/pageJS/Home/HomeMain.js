@@ -8,7 +8,7 @@ function HomeMain() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = location.state?.user;
-
+  
   const [books, setBooks] = useState([]);
   const [genres, setGenres] = useState({});
   const [searchTerm, setSearchTerm] = useState('');

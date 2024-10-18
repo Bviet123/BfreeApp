@@ -193,7 +193,7 @@ function HomeNav() {
               <div onClick={() => handleNavigation('/Author')}>Tác giả</div>
             </li>
             <li>
-              <div onClick={() => handleNavigation('/BookLibrary')}>Kho sách</div>
+              <div onClick={() => handleNavigation('/library')}>Kho sách</div>
             </li>
             {isMobile && user && (
               <>

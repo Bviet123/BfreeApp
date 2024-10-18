@@ -4,21 +4,28 @@ import { FaHome, FaBook, FaUser, FaBookmark, FaHandHoldingHeart } from 'react-ic
 
 const UserAside = ({ activeItem, user }) => {
   const navigate = useNavigate();
-
-  const handleNavigation = (path) => {
-    navigate(path, { state: { user } });
-  };
-
   const userName = user?.fullName || user?.email || "Người dùng";
   const userAvatar = user?.avatar || "/path/to/default-avatar.png";
 
   const menuItems = [
-    { path: '/Home', icon: FaHome, label: 'Trang chủ', id: 'Home' },
-    { path: '/BookLibrary', icon: FaBook, label: 'Thư viện sách', id: 'BookLibrary' },
-    { path: '/Bookshelf', icon: FaBookmark, label: 'Tủ sách của tôi', id: 'Bookshelf', count: user?.bookshelfCount },
-    { path: '/user/borrowedbooklist', icon: FaHandHoldingHeart, label: 'Sách đang mượn', id: 'BorrowedBooks', count: user?.borrowedBooksCount },
+    { path: '/home', icon: FaHome, label: 'Trang chủ', id: 'Home' },
+    { path: '/library', icon: FaBook, label: 'Thư viện sách', id: 'BookLibrary' },
+    { path: '/user/bookshelf', icon: FaBookmark, label: 'Tủ sách của tôi', id: 'Bookshelf', count: user?.bookshelfCount },
+    { path: '/user/borrowedbooklist', icon: FaHandHoldingHeart, label: 'Sách đang mượn', id: 'BorrowedBooks', count: Object.keys(user?.borrowedBooks || {}).filter(key => key !== 'default').length },
     { path: `/user/profile/${user?.uid}`, icon: FaUser, label: 'Thông tin cá nhân', id: 'UserProfile' },
   ];
+
+  const handleNavigation = (path) => {
+    try {
+      navigate(path, {
+        replace: true, 
+        state: { user }
+      });
+    } catch (error) {
+      console.error('Navigation error:', error);
+      window.location.href = path;
+    }
+  };
 
   return (
     <aside className="sidebar">
@@ -30,13 +37,15 @@ const UserAside = ({ activeItem, user }) => {
         <ul>
           {menuItems.map((item) => (
             <li key={item.id}>
-              <button 
-                onClick={() => handleNavigation(item.path)} 
-                className={activeItem === item.id ? 'active' : ''}
+              <button
+                onClick={() => handleNavigation(item.path)}
+                className={`nav-button ${activeItem === item.id ? 'active' : ''}`}
               >
                 <item.icon />
-                {item.label}
-                {item.count !== undefined && <span className="count">({item.count})</span>}
+                <span>{item.label}</span>
+                {item.count !== undefined && (
+                  <span className="count">({item.count})</span>
+                )}
               </button>
             </li>
           ))}

@@ -1,0 +1,166 @@
+.fm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.fm-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.fm-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fm-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.fm-close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.fm-body {
+  padding: 20px;
+}
+
+.fm-section {
+  margin-bottom: 20px;
+}
+
+.fm-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.fm-input {
+  width: 95%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.fm-author-input {
+  position: relative;
+}
+
+.fm-author-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.fm-author-dropdown-item {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.fm-author-dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.fm-genre-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.fm-genre-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fm-year-range {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fm-year-input {
+  flex: 1;
+}
+
+.fm-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.fm-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.fm-reset-button {
+  background-color: white;
+  border: 1px solid #ddd;
+  color: #666;
+}
+
+.fm-reset-button:hover {
+  background-color: #f5f5f5;
+}
+
+.fm-apply-button {
+  background-color: #007bff;
+  border: none;
+  color: white;
+}
+
+.fm-apply-button:hover {
+  background-color: #0056b3;
+}
+
+@media (max-width: 480px) {
+  .fm-content {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .fm-genre-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}

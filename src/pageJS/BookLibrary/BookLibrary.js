@@ -1,144 +1,202 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { FaSearch, FaFilter } from 'react-icons/fa';
+import { database } from '../../firebaseConfig';
+import { ref, onValue } from 'firebase/database';
 import '../../pageCSS/BookLibraryCss/BookLibraryCss.css';
-import HomeFoot from '../Home/HomeFoot';
 import HomeNav from '../Home/HomeNav';
+import HomeFoot from '../Home/HomeFoot';
+import FilterModal from './FilterModal';
 
 function BookLibrary() {
-    const [currentPage, setCurrentPage] = useState(1);
-    const [booksPerPage] = useState(4);
-    const [books, setBooks] = useState([]);
-    const navigate = useNavigate();
-    const location = useLocation();
-    const user = location.state?.user;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const user = location.state?.user;
 
-    useEffect(() => {
-        setBooks(sampleBooks);
-    }, []);
+  const [books, setBooks] = useState([]);
+  const [authors, setAuthors] = useState({});
+  const [genres, setGenres] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [booksPerPage] = useState(12);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [activeFilters, setActiveFilters] = useState({
+    genres: [],
+    author: '',
+    yearRange: { start: '', end: '' }
+  });
 
-    const sampleBooks = [
-        {
-            id: 1,
-            title: "Đắc Nhân Tâm",
-            author: "Dale Carnegie",
-            cover: "https://salt.tikicdn.com/cache/w1200/ts/product/5e/18/24/2a6154ba08df6ce6161c13f4303fa19e.jpg",
-            genre: "Tự giúp bản thân",
-            description: "Đắc nhân tâm của Dale Carnegie là quyển sách nổi tiếng nhất, bán chạy nhất và có tầm ảnh hưởng nhất của mọi thời đại. Tác phẩm đã được chuyển ngữ sang hầu hết các thứ tiếng trên thế giới và có mặt ở hàng trăm quốc gia.",
-            rating: 4.5,
-            price: 86000
-        },
-        {
-            id: 2,
-            title: "Nhà Giả Kim",
-            author: "Paulo Coelho",
-            cover: "https://salt.tikicdn.com/cache/w1200/ts/product/5e/18/24/2a6154ba08df6ce6161c13f4303fa19e.jpg",
-            genre: "Tiểu thuyết",
-            description: "Tác phẩm Nhà giả kim của Paulo Coelho như một câu chuyện cổ tích giản dị, nhân ái, giàu chất thơ, thấm đẫm những minh triết huyền bí của phương Đông.",
-            rating: 4.7,
-            price: 69000
-        },
-        {
-            id: 3,
-            title: "Cây Cam Ngọt Của Tôi",
-            author: "José Mauro de Vasconcelos",
-            cover: "https://salt.tikicdn.com/cache/w1200/ts/product/5e/18/24/2a6154ba08df6ce6161c13f4303fa19e.jpg",
-            genre: "Văn học",
-            description: "Cây Cam Ngọt Của Tôi là một tác phẩm tự truyện đầy xúc động của nhà văn Brazil José Mauro de Vasconcelos. Cuốn sách kể về Zezé, một cậu bé tinh nghịch và mơ mộng.",
-            rating: 4.8,
-            price: 108000
-        },
-        {
-            id: 4,
-            title: "Sapiens: Lược Sử Loài Người",
-            author: "Yuval Noah Harari",
-            cover: "https://salt.tikicdn.com/cache/w1200/ts/product/5e/18/24/2a6154ba08df6ce6161c13f4303fa19e.jpg",
-            genre: "Khoa học",
-            description: "Sapiens là một câu chuyện lớn về sự tiến hóa của loài người. Yuval Noah Harari sử dụng kiến thức từ sinh học, nhân chủng học, cổ sinh vật học và kinh tế học để giải thích làm thế nào Homo sapiens trở thành loài sinh vật thống trị trên Trái đất.",
-            rating: 4.9,
-            price: 299000
-        },
-        {
-            id: 5,
-            title: "Tôi Tài Giỏi, Bạn Cũng Thế",
-            author: "Adam Khoo",
-            cover: "https://salt.tikicdn.com/cache/w1200/ts/product/5e/18/24/2a6154ba08df6ce6161c13f4303fa19e.jpg",
-            genre: "Giáo dục",
-            description: "Tôi Tài Giỏi, Bạn Cũng Thế! là cuốn sách bán chạy nhất của Adam Khoo, đã được dịch ra 25 thứ tiếng và bán ra hơn 1 triệu bản trên toàn thế giới.",
-            rating: 4.6,
-            price: 110000
-        },
-        {
-            id: 6,
-            title: "Điều Kỳ Diệu Của Tiệm Tạp Hóa Namiya",
-            author: "Higashino Keigo",
-            cover: "https://salt.tikicdn.com/cache/w1200/ts/product/5e/18/24/2a6154ba08df6ce6161c13f4303fa19e.jpg",
-            genre: "Tiểu thuyết",
-            description: "Điều Kỳ Diệu Của Tiệm Tạp Hóa Namiya là câu chuyện li kì, hấp dẫn về một tiệm tạp hóa cũ với những bức thư bí ẩn. Với ngòi bút tài hoa, Keigo Higashino đã tạo nên một tác phẩm vừa hồi hộp vừa ấm áp tình người.",
-            rating: 4.7,
-            price: 105000
-        }
-    ];
+  useEffect(() => {
+    const booksRef = ref(database, 'books');
+    const authorsRef = ref(database, 'authors');
+    const genresRef = ref(database, 'categories');
 
-    const handleBookClick = (book) => {
-        navigate('/BookDetail', { state: { user, book } });
+    const unsubscribeBooks = onValue(booksRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const booksArray = Object.entries(data).map(([id, book]) => ({
+          id,
+          ...book
+        }));
+        setBooks(booksArray);
+      }
+    });
+
+    const unsubscribeAuthors = onValue(authorsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const authorsMap = Object.entries(data).reduce((acc, [id, author]) => {
+          acc[id] = author.name;
+          return acc;
+        }, {});
+        setAuthors(authorsMap);
+      }
+    });
+
+    const unsubscribeGenres = onValue(genresRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setGenres(data);
+      }
+    });
+
+    return () => {
+      unsubscribeBooks();
+      unsubscribeAuthors();
+      unsubscribeGenres();
     };
+  }, []);
 
-    const indexOfLastBook = currentPage * booksPerPage;
-    const indexOfFirstBook = indexOfLastBook - booksPerPage;
-    const currentBooks = books.slice(indexOfFirstBook, indexOfLastBook);
+  const handleBookClick = (bookId) => {
+    navigate(`/book/${bookId}`, { state: { user } });
+  };
 
-    // Thay đổi trang
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+    setCurrentPage(1);
+  };
 
-    return (
+  const handleApplyFilters = (filters) => {
+    setActiveFilters(filters);
+    setCurrentPage(1);
+  };
 
-        <div className="book-library">
-            <HomeNav />
-            <div className="book-list">
-                {currentBooks.map(book => (
-                    <div key={book.id} onClick={() => handleBookClick(book)} className="book-item">
-                        <img src={book.cover} alt={book.title} className="book-cover-library" />
-                        <div className="book-info-library">
-                            <h3 className="book-title">{book.title}</h3>
-                            <p className="book-author">{book.author}</p>
-                            <p className="book-genre">{book.genre}</p>
-                            <p className="book-description">{book.description.substring(0, 100)}...</p>
-                        </div>
-                    </div>
-                ))}
-                
+  const filteredBooks = books.filter((book) => {
+    const matchesSearch = book.title && book.title.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesAuthor = !activeFilters.author || 
+      (book.authorIds && book.authorIds.some(authorId => 
+        authors[authorId] && authors[authorId].toLowerCase() === activeFilters.author.toLowerCase()
+      ));
+
+    const matchesGenres = activeFilters.genres.length === 0 ||
+      (book.genreIds && book.genreIds.some(id => activeFilters.genres.includes(id)));
+
+    const publishYear = book.publicationDate ? parseInt(book.publicationDate.split('-')[0]) : null;
+    const matchesYear = (!activeFilters.yearRange.start || (publishYear && publishYear >= parseInt(activeFilters.yearRange.start))) &&
+      (!activeFilters.yearRange.end || (publishYear && publishYear <= parseInt(activeFilters.yearRange.end)));
+
+    return matchesSearch && matchesAuthor && matchesGenres && matchesYear;
+  });
+
+  const indexOfLastBook = currentPage * booksPerPage;
+  const indexOfFirstBook = indexOfLastBook - booksPerPage;
+  const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const getGenreNames = (genreIds) => {
+    if (!genreIds || !Array.isArray(genreIds)) return 'Không xác định';
+    return genreIds.map(id => genres[id]?.name || 'Không xác định').join(', ');
+  };
+
+  return (
+    <div className='book-library'>
+      <HomeNav />
+      <h1>Kho sách</h1>
+
+      <div className="book-list-controls">
+        <div className="book-list-search">
+          <FaSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Tìm kiếm sách..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </div>
+        <button
+          className="filter-button"
+          onClick={() => setIsFilterModalOpen(true)}
+        >
+          <FaFilter /> Bộ lọc
+        </button>
+      </div>
+
+      <div className="active-filters">
+        {activeFilters.author && (
+          <span className="filter-tag">
+            Tác giả: {activeFilters.author}
+          </span>
+        )}
+        {activeFilters.genres.length > 0 && (
+          <span className="filter-tag">
+            Thể loại: {activeFilters.genres.map(id => genres[id]?.name).join(', ')}
+          </span>
+        )}
+        {(activeFilters.yearRange.start || activeFilters.yearRange.end) && (
+          <span className="filter-tag">
+            Năm: {activeFilters.yearRange.start || '*'} - {activeFilters.yearRange.end || '*'}
+          </span>
+        )}
+      </div>
+
+      <div className="book-list">
+        {currentBooks.map(book => (
+          <div key={book.id} onClick={() => handleBookClick(book.id)} className="book-item">
+            <img src={book.coverUrl || '/placeholder-image.jpg'} alt={book.title || 'Không có tiêu đề'} className="book-cover-library" />
+            <div className="book-info-library">
+              <h3 className="book-title">{book.title || 'Không có tiêu đề'}</h3>
+              <p className="book-author">
+                {book.authorIds 
+                  ? book.authorIds.map(id => authors[id] || 'Không xác định').join(', ')
+                  : 'Không xác định'}
+              </p>
+              <p className="book-genre">{getGenreNames(book.genreIds)}</p>
+              <p className="book-description">{(book.description && book.description.substring(0, 100) + '...') || 'Không có mô tả'}</p>
             </div>
-            <Pagination
-                booksPerPage={booksPerPage}
-                totalBooks={books.length}
-                paginate={paginate}
-                currentPage={currentPage}
-            />
-            <HomeFoot />
+          </div>
+        ))}
+      </div>
+
+      {filteredBooks.length === 0 && (
+        <div className="no-results">
+          Không tìm thấy sách phù hợp với điều kiện tìm kiếm
         </div>
-    );
+      )}
+
+      <div className="pagination">
+        {Array.from({ length: Math.ceil(filteredBooks.length / booksPerPage) }, (_, i) => (
+          <button
+            key={i}
+            onClick={() => paginate(i + 1)}
+            className={currentPage === i + 1 ? 'active' : ''}
+          >
+            {i + 1}
+          </button>
+        ))}
+      </div>
+
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        genres={genres}
+        onApplyFilters={handleApplyFilters}
+      />
+
+      <HomeFoot />
+    </div>
+  );
 }
 
-
-function Pagination({ booksPerPage, totalBooks, paginate, currentPage }) {
-    const pageNumbers = [];
-
-    for (let i = 1; i <= Math.ceil(totalBooks / booksPerPage); i++) {
-        pageNumbers.push(i);
-    }
-
-    return (
-        <div className='pagination-container'>
-            <ul className='pagination'>
-                {pageNumbers.map(number => (
-                    <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
-                        <a onClick={() => paginate(number)} href='#!' className='page-link'>
-                            {number}
-                        </a>
-                    </li>
-                ))}
-            </ul>
-        </div>
-    );
-}
 export default BookLibrary;
