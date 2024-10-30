@@ -46,6 +46,18 @@ function Login() {
         }
     };
 
+    const handleUserNavigation = (userData) => {
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        if (userData.role === 'Admin') {
+            toast.success("Đăng nhập thành công! Chuyển hướng đến trang quản trị.");
+            navigate('/admin/users', { state: { user: userData } });
+        } else {
+            toast.success("Đăng nhập thành công!");
+            navigate('/Home', { state: { user: userData } });
+        }
+    };
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setError(null);
@@ -53,8 +65,12 @@ function Login() {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const userData = await fetchUserData(userCredential.user.uid);
-            toast.success("Đăng nhập thành công!");
-            navigate('/Home', { state: { user: userData } });
+            
+            if (userData) {
+                handleUserNavigation(userData);
+            } else {
+                throw new Error('Không tìm thấy thông tin người dùng');
+            }
         } catch (error) {
             handleAuthError(error);
         }
@@ -66,6 +82,7 @@ function Login() {
             const result = await signInWithPopup(auth, provider);
             const userExists = await checkUserExists(result.user.uid);
             let userData;
+            
             if (!userExists) {
                 const userInfo = {
                     email: result.user.email,
@@ -76,8 +93,12 @@ function Login() {
             } else {
                 userData = await fetchUserData(result.user.uid);
             }
-            toast.success("Đăng nhập bằng Google thành công!");
-            navigate('/Home', { state: { user: userData } });
+
+            if (userData) {
+                handleUserNavigation(userData);
+            } else {
+                throw new Error('Không tìm thấy thông tin người dùng');
+            }
         } catch (error) {
             handleAuthError(error);
         }
@@ -95,7 +116,7 @@ function Login() {
                 avatar: "",
                 email: user.email,
                 password: user.password,
-                role: "user",
+                role: "user", // Mặc định role là "user" cho người dùng mới
                 fullName: "",
                 birthDate: "",
                 gender: "",
@@ -108,7 +129,7 @@ function Login() {
             };
             await set(ref(database, 'users/' + user.uid), userData);
             console.log("Thông tin người dùng đã được thêm vào Database");
-            return userData;
+            return { ...userData, uid: user.uid };
         } catch (error) {
             console.error("Lỗi khi thêm thông tin người dùng vào Database:", error);
             throw error;

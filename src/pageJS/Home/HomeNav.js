@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getDatabase, ref, onValue } from "firebase/database";
-import '../../pageCSS/HomeCss/HomeNavCss.css';
 import { getAuth, signOut } from 'firebase/auth';
+import '../../pageCSS/HomeCss/HomeNavCss.css';
 
-function HomeNav() {
+const HomeNav = ({ user: userProp }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const user = location.state?.user;
+  const user = userProp || location.state?.user;
   const [categories, setCategories] = useState([]);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [userAvatar, setUserAvatar] = useState('');
@@ -49,6 +49,7 @@ function HomeNav() {
   useEffect(() => {
     const db = getDatabase();
     const categoriesRef = ref(db, 'categories');
+    
     const unsubscribeCategories = onValue(categoriesRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -90,8 +91,13 @@ function HomeNav() {
     };
   }, [isNavOpen]);
 
-  const handleNavigation = (path, userId) => {
-    navigate(path, { state: { user, userId } });
+  const handleNavigation = (path, navigationState = {}) => {
+    navigate(path, { 
+      state: { 
+        ...navigationState,
+        user, 
+      } 
+    });
     setIsNavOpen(false);
     setIsUserDropdownOpen(false);
     setIsDropdownOpen(false);
@@ -128,8 +134,8 @@ function HomeNav() {
   };
 
   const renderUserInfo = () => {
-    if (isMobile) {
-      return null; // Mobile user info is rendered in the main menu
+    if (isMobile || !user) {
+      return null; 
     }
 
     return (
@@ -147,7 +153,7 @@ function HomeNav() {
           </div>
           {isUserDropdownOpen && (
             <div className="user-dropdown">
-              <div onClick={() => handleNavigation(`/user/profile/${user.uid}`, user.uid)}>
+              <div onClick={() => handleNavigation(`/user/profile/${user.uid}`)}>
                 Thông tin
               </div>
               <div onClick={handleLogout}>Đăng xuất</div>
@@ -163,7 +169,7 @@ function HomeNav() {
       <button className="nav-toggle" onClick={toggleNav}>
         {isNavOpen ? '✕' : '☰'}
       </button>
-      
+
       <header className={isNavOpen ? 'open' : ''}>
         <nav>
           <ul className="nav-list">
@@ -178,9 +184,9 @@ function HomeNav() {
                 {(!isMobile || isDropdownOpen) && (
                   <div className="dropdown-content">
                     {categories.map((category) => (
-                      <div 
+                      <div
                         key={category.id}
-                        onClick={() => handleNavigation(`/category/${category.id}`, { categoryId: category.id })}
+                        onClick={() => handleNavigation('/library', { categoryId: category.id })}
                       >
                         {category.name}
                       </div>
@@ -190,15 +196,12 @@ function HomeNav() {
               </div>
             </li>
             <li>
-              <div onClick={() => handleNavigation('/Author')}>Tác giả</div>
-            </li>
-            <li>
               <div onClick={() => handleNavigation('/library')}>Kho sách</div>
             </li>
             {isMobile && user && (
               <>
                 <li>
-                  <div onClick={() => handleNavigation(`/user/profile/${user.uid}`, user.uid)}>
+                  <div onClick={() => handleNavigation(`/user/profile/${user.uid}`)}>
                     Thông tin
                   </div>
                 </li>

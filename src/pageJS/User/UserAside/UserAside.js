@@ -11,7 +11,7 @@ const UserAside = ({ activeItem, user }) => {
     { path: '/home', icon: FaHome, label: 'Trang chủ', id: 'Home' },
     { path: '/library', icon: FaBook, label: 'Thư viện sách', id: 'BookLibrary' },
     { path: '/user/bookshelf', icon: FaBookmark, label: 'Tủ sách của tôi', id: 'Bookshelf', count: user?.bookshelfCount },
-    { path: '/user/borrowedbooklist', icon: FaHandHoldingHeart, label: 'Sách đang mượn', id: 'BorrowedBooks', count: Object.keys(user?.borrowedBooks || {}).filter(key => key !== 'default').length },
+    { path: '/user/borrowedbooklist', icon: FaHandHoldingHeart, label: 'Sách đang mượn', id: 'BorrowedBooks'},
     { path: `/user/profile/${user?.uid}`, icon: FaUser, label: 'Thông tin cá nhân', id: 'UserProfile' },
   ];
 

@@ -5,16 +5,28 @@ import '../../../pageCSS/User/BookShelfCss/BookShelfCss.css';
 import UserAside from '../UserAside/UserAside';
 import { database, auth } from '../../../firebaseConfig';
 import { ref, onValue, update } from 'firebase/database';
+import FilterModal from '../../BookLibrary/FilterModal';
 
 const Bookshelf = () => {
+    // State Management
     const [books, setBooks] = useState([]);
+    const [genres, setGenres] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [booksPerPage] = useState(6);
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+    const [selectedAuthor, setSelectedAuthor] = useState(null);
+    const [activeFilters, setActiveFilters] = useState({
+        genres: [],
+        author: { id: '', name: '' },
+        yearRange: { start: '', end: '' }
+    });
+
     const navigate = useNavigate();
 
+    // Fetch user data
     useEffect(() => {
         const currentUser = auth.currentUser;
         if (!currentUser) {
@@ -37,6 +49,21 @@ const Bookshelf = () => {
         return () => unsubscribeUser();
     }, []);
 
+    // Fetch genres data
+    useEffect(() => {
+        const genresRef = ref(database, 'categories');
+        const unsubscribeGenres = onValue(genresRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                setGenres(data);
+            }
+        }, (error) => {
+            console.error("Error fetching genres:", error);
+        });
+
+        return () => unsubscribeGenres();
+    }, []);
+
     // Fetch books data
     useEffect(() => {
         if (!user?.favoriteBooks) {
@@ -55,6 +82,7 @@ const Bookshelf = () => {
                         ...value
                     }));
                 setBooks(bookList);
+                console.log('Fetched books:', bookList); // Debug log
             } else {
                 setBooks([]);
             }
@@ -65,19 +93,101 @@ const Bookshelf = () => {
         return () => unsubscribeBooks();
     }, [user?.favoriteBooks]);
 
+    // Filter books
     const filteredBooks = useMemo(() => {
-        const lowercasedTerm = searchTerm.toLowerCase().trim();
-        if (lowercasedTerm === '') {
-            return books;
-        }
-        return books.filter(book =>
-            (book.title && book.title.toLowerCase().includes(lowercasedTerm)) ||
-            (book.author && book.author.toLowerCase().includes(lowercasedTerm)) ||
-            (book.genre && book.genre.toLowerCase().includes(lowercasedTerm)) ||
-            (book.description && book.description.toLowerCase().includes(lowercasedTerm))
-        );
-    }, [books, searchTerm]);
+        console.log('Filtering with:', { 
+            activeFilters, 
+            totalBooks: books.length,
+            searchTerm
+        }); // Debug log
 
+        const lowercasedTerm = searchTerm.toLowerCase().trim();
+
+        const filtered = books.filter(book => {
+            // Search matching
+            const matchesSearch = !lowercasedTerm || 
+                (book.title && book.title.toLowerCase().includes(lowercasedTerm)) ||
+                (book.author && book.author.toLowerCase().includes(lowercasedTerm));
+
+            // Author filter matching
+            const matchesAuthor = !activeFilters.author.id || 
+                (book.authorIds && book.authorIds.includes(activeFilters.author.id));
+
+            // Genre filter matching
+            const matchesGenres = activeFilters.genres.length === 0 ||
+                (book.genreIds && book.genreIds.some(genreId => 
+                    activeFilters.genres.includes(genreId)
+                ));
+
+            // Year range filter matching
+            const yearStart = activeFilters.yearRange.start ? parseInt(activeFilters.yearRange.start) : null;
+            const yearEnd = activeFilters.yearRange.end ? parseInt(activeFilters.yearRange.end) : null;
+            const publishYear = book.publicationYear ? parseInt(book.publicationYear) : null;
+
+            const matchesYear = (!yearStart || (publishYear && publishYear >= yearStart)) &&
+                (!yearEnd || (publishYear && publishYear <= yearEnd));
+
+            const result = matchesSearch && matchesAuthor && matchesGenres && matchesYear;
+
+            // Debug log for each book
+            console.log('Book filtering:', {
+                id: book.id,
+                title: book.title,
+                matchesSearch,
+                matchesAuthor,
+                matchesGenres,
+                matchesYear,
+                result
+            });
+
+            return result;
+        });
+
+        console.log('Filtered result:', filtered.length, 'books'); // Debug log
+        return filtered;
+    }, [books, searchTerm, activeFilters]);
+
+    // Handle filter application
+    const handleApplyFilters = useCallback((filters) => {
+        console.log('Applying filters:', filters); // Debug log
+        setActiveFilters({
+            genres: filters.genres,
+            author: {
+                id: filters.author.id || '',
+                name: filters.author.name || ''
+            },
+            yearRange: {
+                start: filters.yearRange.start || '',
+                end: filters.yearRange.end || ''
+            }
+        });
+        setCurrentPage(1);
+    }, []);
+
+    // Remove filter handlers
+    const handleRemoveAuthorFilter = useCallback(() => {
+        setActiveFilters(prev => ({
+            ...prev,
+            author: { id: '', name: '' }
+        }));
+        setSelectedAuthor(null);
+    }, []);
+
+    const handleRemoveGenreFilters = useCallback(() => {
+        setActiveFilters(prev => ({
+            ...prev,
+            genres: []
+        }));
+    }, []);
+
+    const handleRemoveYearFilter = useCallback(() => {
+        setActiveFilters(prev => ({
+            ...prev,
+            yearRange: { start: '', end: '' }
+        }));
+    }, []);
+
+    // Handle book removal from favorites
     const removeFromFavorites = useCallback(async (bookId, e) => {
         e.stopPropagation();
         if (!auth.currentUser || !user) return;
@@ -100,19 +210,23 @@ const Bookshelf = () => {
         }
     }, [user, currentPage, filteredBooks.length]);
 
+    // Handle search input change
     const handleSearchChange = useCallback((e) => {
         setSearchTerm(e.target.value);
         setCurrentPage(1);
     }, []);
 
+    // Handle book click navigation
     const handleBookClick = useCallback((bookId) => {
         navigate(`/book/${bookId}`, { state: { user } });
     }, [navigate, user]);
 
+    // Calculate pagination
     const indexOfLastBook = currentPage * booksPerPage;
     const indexOfFirstBook = indexOfLastBook - booksPerPage;
     const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
 
+    // Loading state
     if (isLoading) {
         return (
             <div className="bs-loading-container">
@@ -126,6 +240,8 @@ const Bookshelf = () => {
             <UserAside activeItem="Bookshelf" user={user} />
             <div className="bs-bookshelf">
                 <h1>Sách yêu thích của tôi</h1>
+
+                {/* Search and Filter Section */}
                 <div className="bs-bookshelf-actions">
                     <div className="bs-search-bar">
                         <input
@@ -138,11 +254,65 @@ const Bookshelf = () => {
                             <FaSearch />
                         </button>
                     </div>
-                    <button type="button" className="bs-filter-button">
+                    <button
+                        type="button"
+                        className="bs-filter-button"
+                        onClick={() => setIsFilterModalOpen(true)}
+                    >
                         <FaFilter /> Lọc
                     </button>
                 </div>
 
+                {/* Filter Modal */}
+                <FilterModal
+                    isOpen={isFilterModalOpen}
+                    onClose={() => setIsFilterModalOpen(false)}
+                    genres={genres}
+                    onApplyFilters={handleApplyFilters}
+                    selectedAuthor={selectedAuthor}
+                    onAuthorSelect={setSelectedAuthor}
+                />
+
+                {/* Active Filters Display */}
+                <div className="bs-active-filters">
+                    {activeFilters.author.name && (
+                        <span className="bs-filter-tag">
+                            Tác giả: {activeFilters.author.name}
+                            <button
+                                onClick={handleRemoveAuthorFilter}
+                                className="bs-remove-filter"
+                            >
+                                ×
+                            </button>
+                        </span>
+                    )}
+                    {activeFilters.genres.length > 0 && (
+                        <span className="bs-filter-tag">
+                            Thể loại: {activeFilters.genres.map(genreId =>
+                                genres[genreId]?.name
+                            ).join(', ')}
+                            <button
+                                onClick={handleRemoveGenreFilters}
+                                className="bs-remove-filter"
+                            >
+                                ×
+                            </button>
+                        </span>
+                    )}
+                    {(activeFilters.yearRange.start || activeFilters.yearRange.end) && (
+                        <span className="bs-filter-tag">
+                            Năm: {activeFilters.yearRange.start || '*'} - {activeFilters.yearRange.end || '*'}
+                            <button
+                                onClick={handleRemoveYearFilter}
+                                className="bs-remove-filter"
+                            >
+                                ×
+                            </button>
+                        </span>
+                    )}
+                </div>
+
+                {/* Books Grid */}
                 <div className="bs-bookshelf-list">
                     {currentBooks.length > 0 ? (
                         currentBooks.map(book => (
@@ -152,7 +322,9 @@ const Bookshelf = () => {
                                     <div className="bs-book-info-library">
                                         <h3 className="bs-book-title">{book.title}</h3>
                                         <p className="bs-book-author">{book.author}</p>
-                                        <p className="bs-book-genre">{book.genre}</p>
+                                        <p className="bs-book-genre">
+                                            {book.genreIds?.map(genreId => genres[genreId]?.name).join(', ')}
+                                        </p>
                                         <p className="bs-book-description">
                                             {book.description?.substring(0, 100)}...
                                         </p>
@@ -169,11 +341,16 @@ const Bookshelf = () => {
                         ))
                     ) : (
                         <div className="bs-no-books-message">
-                            <p>{searchTerm ? 'Không tìm thấy sách phù hợp' : 'Bạn chưa có sách yêu thích nào'}</p>
+                            <p>{searchTerm || Object.values(activeFilters).some(f => 
+                                Array.isArray(f) ? f.length > 0 : 
+                                typeof f === 'object' ? Object.values(f).some(v => v !== '') : 
+                                f !== ''
+                            ) ? 'Không tìm thấy sách phù hợp' : 'Bạn chưa có sách yêu thích nào'}</p>
                         </div>
                     )}
                 </div>
 
+                {/* Pagination */}
                 {filteredBooks.length > booksPerPage && (
                     <Pagination
                         booksPerPage={booksPerPage}
@@ -187,6 +364,7 @@ const Bookshelf = () => {
     );
 };
 
+// Pagination Component
 const Pagination = ({ booksPerPage, totalBooks, paginate, currentPage }) => {
     const pageNumbers = [];
 

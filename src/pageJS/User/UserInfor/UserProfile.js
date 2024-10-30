@@ -2,8 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getDatabase, onValue, ref, get } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
-import { 
-  FaEdit, FaEnvelope, FaBirthdayCake, FaVenusMars, 
+import {
+  FaEdit, FaEnvelope, FaBirthdayCake, FaVenusMars,
   FaBullseye, FaHeart, FaCalendarAlt, FaClock
 } from 'react-icons/fa';
 import UserAside from '../UserAside/UserAside';
@@ -185,16 +185,16 @@ const UserProfile = () => {
             <h3>Sở thích đọc sách</h3>
             <div className="info-grid">
               <div className="info-item">
-                <FaBullseye className="info-icon" />
                 <div className="info-text">
+                  <FaBullseye className="info-icon" />
                   <strong>Mục tiêu đọc sách:</strong>
                   <span>{user.readingGoal || 'Chưa đặt mục tiêu'}</span>
                 </div>
               </div>
 
               <div className="info-item favorite-genres">
-                <FaHeart className="info-icon" />
                 <div className="info-text">
+                  <FaHeart className="info-icon" />
                   <strong>Thể loại yêu thích:</strong>
                   <div className="genres-container">
                     {Object.keys(favoriteGenres).length > 0 ? (
@@ -222,7 +222,7 @@ const UserProfile = () => {
                 <div className="info-text">
                   <strong>Ngày tạo tài khoản:</strong>
                   <span>
-                    {user.createdAt 
+                    {user.createdAt
                       ? new Date(user.createdAt).toLocaleDateString('vi-VN')
                       : 'Không có thông tin'
                     }
@@ -235,7 +235,7 @@ const UserProfile = () => {
                 <div className="info-text">
                   <strong>Cập nhật lần cuối:</strong>
                   <span>
-                    {user.lastUpdated 
+                    {user.lastUpdated
                       ? new Date(user.lastUpdated).toLocaleDateString('vi-VN')
                       : 'Không có thông tin'
                     }

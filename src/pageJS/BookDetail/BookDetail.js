@@ -6,28 +6,34 @@ import { ref, get, update, push, set } from 'firebase/database';
 import '../../pageCSS/BookDetailCss/BookDetailCss.css'
 import HomeNav from '../Home/HomeNav';
 import HomeFoot from '../Home/HomeFoot';
+import AuthorInfo from './AuthorInfor';
 
 function BookDetail() {
   const { bookId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const user = location.state?.user;
+  const [user, setUser] = useState(location.state?.user || JSON.parse(localStorage.getItem('user')));
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [book, setBook] = useState(null);
-  const [author, setAuthor] = useState(null);
+  const [authors, setAuthors] = useState([]);
   const [producer, setProducer] = useState(null);
   const [genres, setGenres] = useState([]);
   const [relatedBooks, setRelatedBooks] = useState([]);
   const [sameGenreBooks, setSameGenreBooks] = useState([]);
   const [chapters, setChapters] = useState([]);
-  const [hasBorrowed, setHasBorrowed] = useState(false);
+  const [borrowStatus, setBorrowStatus] = useState('available'); // 'available', 'borrowed', 'pending'
 
   useEffect(() => {
+    if (!user && localStorage.getItem('user')) {
+      setUser(JSON.parse(localStorage.getItem('user')));
+    }
+
     const fetchBookData = async () => {
       try {
+        // Fetch book data
         const bookRef = ref(database, `books/${bookId}`);
         const bookSnapshot = await get(bookRef);
         const bookData = bookSnapshot.val();
@@ -40,6 +46,7 @@ function BookDetail() {
 
         setBook(bookData);
 
+        // Fetch chapters
         if (bookData.content && bookData.content.chapters) {
           const chaptersList = Object.entries(bookData.content.chapters).map(([id, chapter]) => ({
             id,
@@ -51,15 +58,23 @@ function BookDetail() {
           setChapters([]);
         }
 
+        // Fetch authors
         if (bookData.authorIds && bookData.authorIds.length > 0) {
-          const authorId = bookData.authorIds[0];
-          const authorSnapshot = await get(ref(database, `authors/${authorId}`));
-          const authorData = authorSnapshot.val();
-          if (authorData) {
-            setAuthor({ id: authorId, ...authorData });
-          }
+          const authorPromises = bookData.authorIds.map(authorId =>
+            get(ref(database, `authors/${authorId}`))
+              .then(snapshot => ({ id: authorId, ...snapshot.val() }))
+          );
+
+          Promise.all(authorPromises)
+            .then(authorsData => {
+              setAuthors(authorsData.filter(Boolean));
+            })
+            .catch(error => {
+              console.error("Error fetching authors:", error);
+            });
         }
 
+        // Fetch producer
         if (bookData.publisherId) {
           const producerSnapshot = await get(ref(database, `producers/${bookData.publisherId}`));
           const producerData = producerSnapshot.val();
@@ -68,6 +83,7 @@ function BookDetail() {
           }
         }
 
+        // Fetch genres
         if (bookData.genreIds && Array.isArray(bookData.genreIds)) {
           const genrePromises = bookData.genreIds.map(genreId =>
             get(ref(database, `categories/${genreId}`))
@@ -77,6 +93,7 @@ function BookDetail() {
           setGenres(genreData);
         }
 
+        // Fetch related books
         const relatedBooksRef = ref(database, 'books');
         const relatedBooksSnapshot = await get(relatedBooksRef);
         const allBooks = relatedBooksSnapshot.val();
@@ -90,21 +107,39 @@ function BookDetail() {
           setRelatedBooks(related);
         }
 
-        // Check if the book is in user's favorites
+        // Check favorites and borrow status
         if (user && user.uid) {
+          // Check favorites
           const userRef = ref(database, `users/${user.uid}`);
           const userSnapshot = await get(userRef);
           const userData = userSnapshot.val();
           if (userData && userData.favoriteBooks) {
             setIsFavorite(userData.favoriteBooks.hasOwnProperty(bookId));
           }
+
+          // Check borrow status
+          const borrowRequestsRef = ref(database, 'borrowRequests');
+          const borrowRequestsSnapshot = await get(borrowRequestsRef);
+          const borrowRequests = borrowRequestsSnapshot.val();
           
-          // Check if the user has borrowed this book
-          const userBorrowedBooksRef = ref(database, `users/${user.uid}/borrowedBooks/${bookId}`);
-          const userBorrowedBooksSnapshot = await get(userBorrowedBooksRef);
-          setHasBorrowed(userBorrowedBooksSnapshot.exists());
+          if (borrowRequests) {
+            const userRequests = Object.values(borrowRequests).filter(request => 
+              request.requesterId === user.uid && 
+              request.bookId === bookId
+            );
+
+            if (userRequests.length > 0) {
+              const latestRequest = userRequests[userRequests.length - 1];
+              if (latestRequest.status === 'approved') {
+                setBorrowStatus('borrowed');
+              } else if (latestRequest.status === 'pending') {
+                setBorrowStatus('pending');
+              }
+            }
+          }
         }
 
+        // Fetch same genre books
         if (bookData.genreIds && bookData.genreIds.length > 0) {
           const mainGenreId = bookData.genreIds[0];
           const sameGenreBooksRef = ref(database, 'books');
@@ -116,7 +151,7 @@ function BookDetail() {
                 id !== bookId && genreBook.genreIds && genreBook.genreIds.includes(mainGenreId)
               )
               .map(([id, book]) => ({ id, ...book }))
-              .slice(0, 5); // Limit to 5 books
+              .slice(0, 5);
             setSameGenreBooks(sameGenre);
           }
         }
@@ -159,10 +194,6 @@ function BookDetail() {
     }
   };
 
-  const handleAuthorClick = (authorId) => {
-    navigate(`/author/${authorId}`, { state: { user } });
-  };
-
   const handleRelatedBookClick = (relatedBookId) => {
     navigate(`/book/${relatedBookId}`, { state: { user } });
   };
@@ -182,64 +213,57 @@ function BookDetail() {
       return;
     }
 
-    if (hasBorrowed) {
-      alert("Bạn đã mượn cuốn sách này rồi.");
+    if (borrowStatus !== 'available') {
+      alert(borrowStatus === 'pending' 
+        ? "Bạn đã gửi yêu cầu mượn sách này và đang chờ xét duyệt." 
+        : "Bạn đang mượn sách này.");
       return;
     }
 
     try {
-      // Kiểm tra số lượng sách có sẵn
-      const bookRef = ref(database, `books/${bookId}`);
-      const bookSnapshot = await get(bookRef);
-      const bookData = bookSnapshot.val();
+      const borrowRequest = {
+        bookId: bookId,
+        title: book.title,
+        author: authors.map(author => author.name).join(', '),
+        requester: user.displayName || user.email,
+        requesterId: user.uid,
+        requestDate: new Date().toISOString().split('T')[0],
+        status: 'pending',
+        coverUrl: book.coverUrl,
+        requestType: 'borrow',
+      };
 
-      if (bookData.availability && bookData.availability.copiesAvailable > 0) {
-        // Giảm số lượng sách có sẵn
-        const newAvailability = {
-          ...bookData.availability,
-          copiesAvailable: bookData.availability.copiesAvailable - 1
-        };
-
-        // Cập nhật số lượng sách trong database
-        await update(bookRef, { availability: newAvailability });
-
-        // Thêm sách vào danh sách đã mượn của người dùng
-        const userBorrowedBooksRef = ref(database, `users/${user.uid}/borrowedBooks/${bookId}`);
-        await set(userBorrowedBooksRef, true);
-
-        // Cập nhật state
-        setBook({ ...book, availability: newAvailability });
-        setHasBorrowed(true);
-
-        alert("Bạn đã mượn sách thành công!");
-      } else {
-        alert("Xin lỗi, hiện tại sách đã hết.");
-      }
+      const borrowRequestsRef = ref(database, 'borrowRequests');
+      await push(borrowRequestsRef, borrowRequest);
+      
+      setBorrowStatus('pending');
+      alert("Yêu cầu mượn sách đã được gửi thành công! Vui lòng đợi quản trị viên xét duyệt.");
     } catch (error) {
-      console.error("Error borrowing book:", error);
-      alert("Có lỗi xảy ra khi mượn sách.");
+      console.error("Error sending borrow request:", error);
+      alert("Có lỗi xảy ra khi gửi yêu cầu mượn sách.");
     }
   };
 
+  
   if (isLoading) return <div>Đang tải...</div>;
   if (error) return <div>Lỗi: {error}</div>;
   if (!book) return <div>Không tìm thấy sách</div>;
 
   return (
     <div className="dt-book-detail-page">
-      <HomeNav />
+      <HomeNav user={user} />
       <div className="dt-book-detail-content">
-        <BookMainInfo
+      <BookMainInfo
           book={book}
           genres={genres}
           isFavorite={isFavorite}
           handleFavoriteClick={handleFavoriteClick}
           handleReadBook={handleReadBook}
           handleBorrowRequest={handleBorrowRequest}
-          hasBorrowed={hasBorrowed}
+          borrowStatus={borrowStatus}
         />
         <BookAdditionalInfo book={book} />
-        <AuthorInfo author={author} />
+        <AuthorInfo authors={authors} />
         <ProducerInfo producer={producer} />
         {chapters.length > 0 ? (
           <ChaptersList chapters={chapters} bookId={bookId} />
@@ -254,7 +278,18 @@ function BookDetail() {
   );
 }
 
-function BookMainInfo({ book, genres, isFavorite, handleFavoriteClick, handleReadBook, handleBorrowRequest, hasBorrowed }) {
+function BookMainInfo({ book, genres, isFavorite, handleFavoriteClick, handleReadBook, handleBorrowRequest, borrowStatus }) {
+  const getBorrowButtonText = (status) => {
+    switch (status) {
+      case 'borrowed':
+        return "Đang mượn sách";
+      case 'pending':
+        return "Đang chờ xét duyệt";
+      default:
+        return "Mượn sách";
+    }
+  };
+
   return (
     <div className="dt-book-main-info">
       <div className="dt-bookDetail-cover">
@@ -269,13 +304,19 @@ function BookMainInfo({ book, genres, isFavorite, handleFavoriteClick, handleRea
         </div>
         {book.description && <p className="dt-description">{book.description}</p>}
         <div className="dt-bookDetail-actions">
-          <button className="dt-read-button" onClick={handleReadBook}>Đọc sách</button>
-          <button 
-            className="dt-borrow-button" 
+          <button className="dt-read-button" onClick={handleReadBook}>
+            Đọc sách
+          </button>
+          <button
+            className="dt-borrow-button"
             onClick={handleBorrowRequest}
-            disabled={hasBorrowed || (book.availability && book.availability.copiesAvailable <= 0)}
+            disabled={borrowStatus !== 'available'}
+            style={{
+              opacity: borrowStatus !== 'available' ? 0.6 : 1,
+              cursor: borrowStatus !== 'available' ? 'not-allowed' : 'pointer'
+            }}
           >
-            {hasBorrowed ? "Đã mượn" : `Mượn sách (${book.availability ? book.availability.copiesAvailable : 0} có sẵn)`}
+            {getBorrowButtonText(borrowStatus)}
           </button>
           <button className="dt-favorite-button" onClick={handleFavoriteClick}>
             {isFavorite ? <FaHeart color="red" /> : <FaRegHeart />}
@@ -304,19 +345,7 @@ function BookAdditionalInfo({ book }) {
   );
 }
 
-function AuthorInfo({ author }) {
-  if (!author) return <p>Không có thông tin về tác giả.</p>;
 
-  return (
-    <div className="dt-author-info">
-      <h2>Thông tin tác giả</h2>
-      <p><strong>Tên:</strong> {author.name}</p>
-      <p><strong>Ngày sinh:</strong> {author.birthdate}</p>
-      <p><strong>Quốc tịch:</strong> {author.nationality}</p>
-      <p><strong>Giới thiệu:</strong> {author.introduction}</p>
-    </div>
-  );
-}
 
 function ProducerInfo({ producer }) {
   if (!producer) return <p>Không có thông tin về nhà sản xuất.</p>;

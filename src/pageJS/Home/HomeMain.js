@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
 import { database } from '../../firebaseConfig';
 import { ref, onValue } from 'firebase/database';
 
 function HomeMain() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const user = location.state?.user;
+  const user = JSON.parse(localStorage.getItem('user'));
   
   const [books, setBooks] = useState([]);
   const [genres, setGenres] = useState({});
@@ -16,6 +15,16 @@ function HomeMain() {
   const [booksPerPage] = useState(6);
 
   useEffect(() => {
+    console.log('Checking user in HomeMain');
+    const userData = localStorage.getItem('user');
+    console.log('User data:', userData);
+
+    if (!userData) {
+        console.log('No user found, redirecting to login');
+        navigate('/login');
+        return;
+    }
+
     const booksRef = ref(database, 'books');
     const genresRef = ref(database, 'categories');
 
@@ -41,10 +50,10 @@ function HomeMain() {
       unsubscribeBooks();
       unsubscribeGenres();
     };
-  }, []);
+  }, [navigate]);
 
   const handleBookClick = (bookId) => {
-    navigate(`/book/${bookId}`, { state: { user } });
+    navigate(`/book/${bookId}`);
   };
 
   const handleSearch = (event) => {
@@ -67,7 +76,6 @@ function HomeMain() {
     return genreIds.map(id => genres[id]?.name || 'Không xác định').join(', ');
   };
 
-  // Sort books by publication date (newest first)
   const sortedNewBooks = [...books].sort((a, b) => 
     new Date(b.publicationDate) - new Date(a.publicationDate)
   );

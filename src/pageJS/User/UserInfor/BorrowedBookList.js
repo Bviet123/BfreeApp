@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getDatabase, ref, update, get } from 'firebase/database';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { getDatabase, ref, update, get, onValue, push } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
 import {
   FaHandHoldingHeart, FaInfoCircle, FaBook, FaCalendarAlt,
   FaSearch, FaRedo, FaExclamationCircle, FaEdit
@@ -10,98 +10,107 @@ import UserAside from '../UserAside/UserAside';
 import '../../../pageCSS/User/UserProfileCss/BorrowedBookListCss.css';
 
 const BorrowedBooksList = () => {
+  const location = useLocation();
+  const userFromState = location.state?.user;
   const navigate = useNavigate();
+  
+  // State declarations
   const [user, setUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('dueDate');
   const [showRenewalConfirm, setShowRenewalConfirm] = useState(false);
   const [selectedBook, setSelectedBook] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [borrowedBooks, setBorrowedBooks] = useState({});
-  const [booksDetails, setBooksDetails] = useState({});
+  const [borrowedBooks, setBorrowedBooks] = useState([]);
 
   useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        // Fetch additional user data from your database
-        const db = getDatabase();
-        const userRef = ref(db, `users/${currentUser.uid}`);
-        get(userRef).then((snapshot) => {
-          if (snapshot.exists()) {
-            setUser({ ...currentUser, ...snapshot.val() });
-          } else {
-            setUser(currentUser);
-          }
-        }).catch((error) => {
-          console.error("Error fetching user data:", error);
-        });
-      } else {
-        navigate('/Home');
+    const fetchData = async () => {
+      const auth = getAuth();
+      let currentUser = userFromState || auth.currentUser;
+
+      if (!currentUser) {
+        setError("Vui lòng đăng nhập để xem thông tin");
+        setLoading(false);
+        navigate('/login');
+        return;
       }
-    });
 
-    return () => unsubscribe();
-  }, [navigate]);
-
-  useEffect(() => {
-    const fetchBooksDetails = async () => {
-      if (!user?.uid) return;
-
-      setLoading(true);
-      const db = getDatabase();
-      const userBorrowedBooksRef = ref(db, `users/${user.uid}/borrowedBooks`);
+      const database = getDatabase();
+      const userRef = ref(database, `users/${currentUser.uid}`);
+      const borrowedBooksRef = ref(database, 'borrowedBooks');
 
       try {
-        const snapshot = await get(userBorrowedBooksRef);
-        const borrowedBooksData = snapshot.val() || {};
+        const userSnapshot = await get(userRef);
+        if (!userSnapshot.exists()) {
+          setError("Không tìm thấy dữ liệu người dùng");
+          setLoading(false);
+          return;
+        }
 
-        const validBorrowedBooks = Object.entries(borrowedBooksData)
-          .filter(([key, value]) => key !== 'default' && value === true)
-          .reduce((acc, [key]) => {
-            acc[key] = true;
-            return acc;
-          }, {});
-
-        setBorrowedBooks(validBorrowedBooks);
-
-        const booksRef = ref(db, 'books');
-        const booksSnapshot = await get(booksRef);
-        const booksData = booksSnapshot.val() || {};
-
-        const relevantBooksDetails = Object.keys(validBorrowedBooks).reduce((acc, bookId) => {
-          if (booksData[bookId]) {
-            acc[bookId] = booksData[bookId];
+        const userData = userSnapshot.val();
+        
+        const unsubscribeUser = onValue(userRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            setUser(prevUser => ({
+              ...currentUser,
+              ...data,
+            }));
           }
-          return acc;
-        }, {});
+        });
 
-        setBooksDetails(relevantBooksDetails);
-      } catch (err) {
-        console.error('Error fetching books:', err);
-        setError('Có lỗi xảy ra khi tải dữ liệu sách. Vui lòng thử lại sau.');
+        const unsubscribeBorrowedBooks = onValue(borrowedBooksRef, (snapshot) => {
+          try {
+            const data = snapshot.val();
+            if (data) {
+              const userBooks = Object.entries(data)
+                .map(([id, book]) => ({
+                  id,
+                  ...book
+                }))
+                .filter(book => book.requesterId === currentUser.uid);
+              
+              setBorrowedBooks(userBooks);
+              
+              setUser(prevUser => ({
+                ...prevUser,
+                borrowedBooks: userBooks
+              }));
+            } else {
+              setBorrowedBooks([]);
+            }
+          } catch (err) {
+            console.error('Error processing borrowed books:', err);
+            setError('Có lỗi xảy ra khi tải dữ liệu sách. Vui lòng thử lại sau.');
+          }
+        });
+
+        return () => {
+          unsubscribeUser();
+          unsubscribeBorrowedBooks();
+        };
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("Lỗi khi tải dữ liệu: " + error.message);
       } finally {
         setLoading(false);
       }
     };
 
-    if (user?.uid) {
-      fetchBooksDetails();
-    }
-  }, [user?.uid]);
+    fetchData();
+  }, [userFromState, navigate]);
 
-  const calculateDaysRemaining = (borrowDate) => {
+  // Existing helper functions
+  const calculateDaysRemaining = (borrowDate, dueDate) => {
     const today = new Date();
-    const borrowed = new Date(borrowDate);
-    const dueDate = new Date(borrowed);
-    dueDate.setDate(dueDate.getDate() + 14);
-    return Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+    const due = new Date(dueDate);
+    return Math.ceil((due - today) / (1000 * 60 * 60 * 24));
   };
 
-  const getBookStatus = (borrowDate) => {
-    const daysRemaining = calculateDaysRemaining(borrowDate);
+  const getBookStatus = (borrowDate, dueDate) => {
+    const daysRemaining = calculateDaysRemaining(borrowDate, dueDate);
     if (daysRemaining < 0) {
       return { status: 'overdue', className: 'bb-status-overdue', text: 'Quá hạn' };
     } else if (daysRemaining <= 3) {
@@ -111,20 +120,19 @@ const BorrowedBooksList = () => {
   };
 
   const filteredAndSortedBooks = useMemo(() => {
-    return Object.entries(booksDetails)
-      .filter(([bookId, book]) => {
-        if (!borrowedBooks[bookId]) return false;
+    return borrowedBooks
+      .filter(book => {
         const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase());
-        const bookStatus = getBookStatus(book.borrowDate).status;
+        const bookStatus = getBookStatus(book.borrowDate, book.dueDate).status;
         return statusFilter === 'all' || bookStatus === statusFilter ? matchesSearch : false;
       })
       .sort((a, b) => {
         if (sortBy === 'dueDate') {
-          return new Date(a[1].borrowDate) - new Date(b[1].borrowDate);
+          return new Date(a.dueDate) - new Date(b.dueDate);
         }
-        return a[1].title.localeCompare(b[1].title);
+        return a.title.localeCompare(b.title);
       });
-  }, [booksDetails, borrowedBooks, searchTerm, statusFilter, sortBy]);
+  }, [borrowedBooks, searchTerm, statusFilter, sortBy]);
 
   const handleRenewBook = async (bookId) => {
     setLoading(true);
@@ -132,25 +140,59 @@ const BorrowedBooksList = () => {
 
     try {
       const db = getDatabase();
-      const bookRef = ref(db, `books/${bookId}`);
-      const newBorrowDate = new Date().toISOString();
+      const requestsRef = ref(db, 'requests');
+      
+      // Create renewal request
+      const renewalRequest = {
+        bookId: selectedBook.id,
+        title: selectedBook.title,
+        author: selectedBook.author,
+        requester: user.displayName || user.email,
+        requesterId: user.uid,
+        requestDate: new Date().toISOString().split('T')[0],
+        status: 'pending',
+        coverUrl: selectedBook.coverUrl,
+        requestType: 'renewal',
+        currentDueDate: selectedBook.dueDate,
+        renewalCount: selectedBook.renewalCount || 0
+      };
 
-      await update(bookRef, { borrowDate: newBorrowDate });
+      // Push the renewal request to the database
+      await push(requestsRef, renewalRequest);
 
-      setBooksDetails(prev => ({
-        ...prev,
-        [bookId]: { ...prev[bookId], borrowDate: newBorrowDate }
-      }));
+      // Show success message
+      alert('Yêu cầu gia hạn đã được gửi. Vui lòng đợi quản trị viên phê duyệt.');
 
       setShowRenewalConfirm(false);
       setSelectedBook(null);
     } catch (error) {
-      console.error("Error renewing book:", error);
-      setError("Có lỗi xảy ra khi gia hạn sách. Vui lòng thử lại sau.");
+      console.error("Error sending renewal request:", error);
+      setError("Có lỗi xảy ra khi gửi yêu cầu gia hạn. Vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }
   };
+
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Đang tải thông tin...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="error-container">
+        <p className="error-message">{error}</p>
+        <button onClick={() => navigate('/home')} className="return-home-button">
+          Trở về trang chủ
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="user-profile-container">
@@ -158,8 +200,9 @@ const BorrowedBooksList = () => {
       <main className="user-profile">
         <h1>Sách đang mượn</h1>
         <button className="edit-button" onClick={() => navigate('/search-books')}>
-          <FaEdit /> Mượn thêm sách
+          <FaEdit /> Mượn thêm sách            
         </button>
+
         <div className="profile-content">
           <section className="borrowed-books">
             <h3>
@@ -210,12 +253,12 @@ const BorrowedBooksList = () => {
                 </div>
 
                 <div className="bb-grid">
-                  {filteredAndSortedBooks.map(([bookId, book]) => {
-                    const { status, className, text } = getBookStatus(book.borrowDate);
-                    const daysRemaining = calculateDaysRemaining(book.borrowDate);
+                  {filteredAndSortedBooks.map((book) => {
+                    const { className, text } = getBookStatus(book.borrowDate, book.dueDate);
+                    const daysRemaining = calculateDaysRemaining(book.borrowDate, book.dueDate);
 
                     return (
-                      <div key={bookId} className={`bb-card ${className}`}>
+                      <div key={book.id} className={`bb-card ${className}`}>
                         <div className="bb-card-content">
                           <h4>{book.title}</h4>
                           <div className="bb-meta">
@@ -227,23 +270,28 @@ const BorrowedBooksList = () => {
                             </span>
                             <span className={`bb-status ${className}`}>{text}</span>
                           </div>
+                          {book.renewalCount > 0 && (
+                            <div className="bb-renewal-count">
+                              Đã gia hạn: {book.renewalCount} lần
+                            </div>
+                          )}
                         </div>
 
                         <div className="bb-actions">
                           <button
                             className="bb-btn bb-btn-renew"
                             onClick={() => {
-                              setSelectedBook({ id: bookId, ...book });
+                              setSelectedBook(book);
                               setShowRenewalConfirm(true);
                             }}
-                            disabled={status === 'overdue'}
+                            disabled={book.renewalCount >= 2 || daysRemaining < 0}
                           >
                             <FaRedo /> Gia hạn
                           </button>
 
                           <button
                             className="bb-btn bb-btn-details"
-                            onClick={() => navigate(`/book/${bookId}`)}
+                            onClick={() => navigate(`/book/${book.id}`)}
                           >
                             <FaInfoCircle /> Chi tiết
                           </button>
@@ -266,17 +314,17 @@ const BorrowedBooksList = () => {
       {showRenewalConfirm && selectedBook && (
         <div className="bb-modal-overlay">
           <div className="bb-modal">
-            <h3>Xác nhận gia hạn sách</h3>
-            <p>Bạn có chắc muốn gia hạn sách "{selectedBook.title}"?</p>
-            <p>Thời hạn mới sẽ là 14 ngày kể từ hôm nay.</p>
-
+            <h3>Xác nhận gửi yêu cầu gia hạn sách</h3>
+            <p>Bạn có chắc muốn gửi yêu cầu gia hạn sách "{selectedBook.title}"?</p>
+            <p>Sau khi được duyệt, thời hạn mới sẽ là 7 ngày kể từ ngày duyệt.</p>
+            <p className="bb-modal-note">Lưu ý: Mỗi cuốn sách chỉ được gia hạn tối đa 2 lần</p>
             <div className="bb-modal-actions">
               <button
                 onClick={() => handleRenewBook(selectedBook.id)}
                 disabled={loading}
                 className="bb-btn-primary"
               >
-                {loading ? 'Đang xử lý...' : 'Xác nhận'}
+                {loading ? 'Đang xử lý...' : 'Gửi yêu cầu'}
               </button>
               <button
                 onClick={() => {

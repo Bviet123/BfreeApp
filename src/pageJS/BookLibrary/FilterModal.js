@@ -3,16 +3,26 @@ import { ref, onValue } from 'firebase/database';
 import '../../pageCSS/BookLibraryCss/FilterModalCss.css';
 import { database } from '../../firebaseConfig';
 
-const FilterModal = ({ isOpen, onClose, genres, onApplyFilters }) => {
-  const [selectedGenres, setSelectedGenres] = useState([]);
-  const [authorFilter, setAuthorFilter] = useState('');
-  const [yearStart, setYearStart] = useState('');
-  const [yearEnd, setYearEnd] = useState('');
+const FilterModal = ({ isOpen, onClose, genres, onApplyFilters, initialFilters }) => {
+  // Khởi tạo state với giá trị từ initialFilters
+  const [selectedGenres, setSelectedGenres] = useState(initialFilters?.genres || []);
+  const [authorFilter, setAuthorFilter] = useState(initialFilters?.author || '');
+  const [yearStart, setYearStart] = useState(initialFilters?.yearRange?.start || '');
+  const [yearEnd, setYearEnd] = useState(initialFilters?.yearRange?.end || '');
   const [authors, setAuthors] = useState([]);
   const [filteredAuthors, setFilteredAuthors] = useState([]);
   const [showAuthorDropdown, setShowAuthorDropdown] = useState(false);
   const authorInputRef = useRef(null);
 
+  // Cập nhật state khi initialFilters thay đổi
+  useEffect(() => {
+    setSelectedGenres(initialFilters?.genres || []);
+    setAuthorFilter(initialFilters?.author || '');
+    setYearStart(initialFilters?.yearRange?.start || '');
+    setYearEnd(initialFilters?.yearRange?.end || '');
+  }, [initialFilters]);
+
+  // Fetch authors from database
   useEffect(() => {
     const authorsRef = ref(database, 'authors');
     const unsubscribe = onValue(authorsRef, (snapshot) => {
@@ -31,6 +41,7 @@ const FilterModal = ({ isOpen, onClose, genres, onApplyFilters }) => {
     return () => unsubscribe();
   }, []);
 
+  // Filter authors based on input
   useEffect(() => {
     if (authors.length === 0) {
       setFilteredAuthors([]);
@@ -47,6 +58,7 @@ const FilterModal = ({ isOpen, onClose, genres, onApplyFilters }) => {
     }
   }, [authorFilter, authors]);
 
+  // Handle click outside author dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (authorInputRef.current && !authorInputRef.current.contains(event.target)) {

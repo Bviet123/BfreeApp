@@ -12,6 +12,7 @@ function BookLibrary() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = location.state?.user;
+  const categoryId = location.state?.categoryId; // Get categoryId from location state
 
   const [books, setBooks] = useState([]);
   const [authors, setAuthors] = useState({});
@@ -26,45 +27,63 @@ function BookLibrary() {
     yearRange: { start: '', end: '' }
   });
 
+  // Set initial filters when component mounts or categoryId changes
   useEffect(() => {
-    const booksRef = ref(database, 'books');
-    const authorsRef = ref(database, 'authors');
-    const genresRef = ref(database, 'categories');
+    if (categoryId) {
+      setActiveFilters(prev => ({
+        ...prev,
+        genres: [categoryId]
+      }));
+      setCurrentPage(1);
+    }
+  }, [categoryId]);
 
-    const unsubscribeBooks = onValue(booksRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const booksArray = Object.entries(data).map(([id, book]) => ({
-          id,
-          ...book
-        }));
-        setBooks(booksArray);
-      }
-    });
+  // Fetch data from Firebase
+  useEffect(() => {
+    const fetchData = () => {
+      const booksRef = ref(database, 'books');
+      const authorsRef = ref(database, 'authors');
+      const genresRef = ref(database, 'categories');
 
-    const unsubscribeAuthors = onValue(authorsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const authorsMap = Object.entries(data).reduce((acc, [id, author]) => {
-          acc[id] = author.name;
-          return acc;
-        }, {});
-        setAuthors(authorsMap);
-      }
-    });
+      const unsubscribeBooks = onValue(booksRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const booksArray = Object.entries(data)
+            .map(([id, book]) => ({
+              id,
+              ...book
+            }))
+            .sort((a, b) => (b.publicationDate || '').localeCompare(a.publicationDate || ''));
+          setBooks(booksArray);
+        }
+      });
 
-    const unsubscribeGenres = onValue(genresRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        setGenres(data);
-      }
-    });
+      const unsubscribeAuthors = onValue(authorsRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const authorsMap = Object.entries(data).reduce((acc, [id, author]) => {
+            acc[id] = author.name;
+            return acc;
+          }, {});
+          setAuthors(authorsMap);
+        }
+      });
 
-    return () => {
-      unsubscribeBooks();
-      unsubscribeAuthors();
-      unsubscribeGenres();
+      const unsubscribeGenres = onValue(genresRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setGenres(data);
+        }
+      });
+
+      return () => {
+        unsubscribeBooks();
+        unsubscribeAuthors();
+        unsubscribeGenres();
+      };
     };
+
+    return fetchData();
   }, []);
 
   const handleBookClick = (bookId) => {
@@ -81,33 +100,100 @@ function BookLibrary() {
     setCurrentPage(1);
   };
 
+  // Filter books based on search term and active filters
   const filteredBooks = books.filter((book) => {
-    const matchesSearch = book.title && book.title.toLowerCase().includes(searchTerm.toLowerCase());
+    // Search term filter
+    const matchesSearch = book.title && 
+      book.title.toLowerCase().includes(searchTerm.toLowerCase());
 
+    // Author filter
     const matchesAuthor = !activeFilters.author || 
       (book.authorIds && book.authorIds.some(authorId => 
-        authors[authorId] && authors[authorId].toLowerCase() === activeFilters.author.toLowerCase()
+        authors[authorId] && 
+        authors[authorId].toLowerCase() === activeFilters.author.toLowerCase()
       ));
 
+    // Genre filter
     const matchesGenres = activeFilters.genres.length === 0 ||
-      (book.genreIds && book.genreIds.some(id => activeFilters.genres.includes(id)));
+      (book.genreIds && book.genreIds.some(id => 
+        activeFilters.genres.includes(id)
+      ));
 
-    const publishYear = book.publicationDate ? parseInt(book.publicationDate.split('-')[0]) : null;
-    const matchesYear = (!activeFilters.yearRange.start || (publishYear && publishYear >= parseInt(activeFilters.yearRange.start))) &&
-      (!activeFilters.yearRange.end || (publishYear && publishYear <= parseInt(activeFilters.yearRange.end)));
+    // Year range filter
+    const publishYear = book.publicationDate ? 
+      parseInt(book.publicationDate.split('-')[0]) : null;
+    const matchesYear = (!activeFilters.yearRange.start || 
+      (publishYear && publishYear >= parseInt(activeFilters.yearRange.start))) &&
+      (!activeFilters.yearRange.end || 
+      (publishYear && publishYear <= parseInt(activeFilters.yearRange.end)));
 
     return matchesSearch && matchesAuthor && matchesGenres && matchesYear;
   });
 
+  // Pagination logic
   const indexOfLastBook = currentPage * booksPerPage;
   const indexOfFirstBook = indexOfLastBook - booksPerPage;
   const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
+  const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   const getGenreNames = (genreIds) => {
     if (!genreIds || !Array.isArray(genreIds)) return 'Không xác định';
-    return genreIds.map(id => genres[id]?.name || 'Không xác định').join(', ');
+    return genreIds
+      .map(id => genres[id]?.name || 'Không xác định')
+      .join(', ');
+  };
+
+  // Render pagination controls
+  const renderPaginationButtons = () => {
+    const buttons = [];
+    const maxVisibleButtons = 5;
+
+    if (totalPages <= maxVisibleButtons) {
+      for (let i = 1; i <= totalPages; i++) {
+        buttons.push(i);
+      }
+    } else {
+      buttons.push(1);
+      
+      if (currentPage > 3) {
+        buttons.push('...');
+      }
+
+      for (let i = Math.max(2, currentPage - 1); 
+           i <= Math.min(totalPages - 1, currentPage + 1); 
+           i++) {
+        buttons.push(i);
+      }
+
+      if (currentPage < totalPages - 2) {
+        buttons.push('...');
+      }
+
+      if (totalPages > 1) {
+        buttons.push(totalPages);
+      }
+    }
+
+    return buttons.map((button, index) => 
+      button === '...' ? (
+        <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
+      ) : (
+        <button
+          key={button}
+          onClick={() => paginate(button)}
+          className={currentPage === button ? 'active' : ''}
+        >
+          {button}
+        </button>
+      )
+    );
   };
 
   return (
@@ -153,17 +239,32 @@ function BookLibrary() {
 
       <div className="book-list">
         {currentBooks.map(book => (
-          <div key={book.id} onClick={() => handleBookClick(book.id)} className="book-item">
-            <img src={book.coverUrl || '/placeholder-image.jpg'} alt={book.title || 'Không có tiêu đề'} className="book-cover-library" />
+          <div 
+            key={book.id} 
+            onClick={() => handleBookClick(book.id)} 
+            className="book-item"
+          >
+            <img 
+              src={book.coverUrl || '/placeholder-image.jpg'} 
+              alt={book.title || 'Không có tiêu đề'} 
+              className="book-cover-library"
+              onError={(e) => {
+                e.target.onerror = null; 
+                e.target.src = '/placeholder-image.jpg';
+              }}
+            />
             <div className="book-info-library">
-              <h3 className="book-title">{book.title || 'Không có tiêu đề'}</h3>
+              <h3 className="book-title">
+                {book.title || 'Không có tiêu đề'}
+              </h3>
               <p className="book-author">
                 {book.authorIds 
                   ? book.authorIds.map(id => authors[id] || 'Không xác định').join(', ')
                   : 'Không xác định'}
               </p>
-              <p className="book-genre">{getGenreNames(book.genreIds)}</p>
-              <p className="book-description">{(book.description && book.description.substring(0, 100) + '...') || 'Không có mô tả'}</p>
+              <p className="book-genre">
+                {getGenreNames(book.genreIds)}
+              </p>
             </div>
           </div>
         ))}
@@ -175,23 +276,32 @@ function BookLibrary() {
         </div>
       )}
 
-      <div className="pagination">
-        {Array.from({ length: Math.ceil(filteredBooks.length / booksPerPage) }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => paginate(i + 1)}
-            className={currentPage === i + 1 ? 'active' : ''}
+      {filteredBooks.length > 0 && (
+        <div className="pagination">
+          <button 
+            onClick={() => paginate(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="pagination-arrow"
           >
-            {i + 1}
+            &lt;
           </button>
-        ))}
-      </div>
+          {renderPaginationButtons()}
+          <button 
+            onClick={() => paginate(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="pagination-arrow"
+          >
+            &gt;
+          </button>
+        </div>
+      )}
 
       <FilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
         genres={genres}
         onApplyFilters={handleApplyFilters}
+        initialFilters={activeFilters}
       />
 
       <HomeFoot />

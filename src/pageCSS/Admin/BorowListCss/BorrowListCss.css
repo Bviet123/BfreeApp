@@ -1,97 +1,107 @@
-/* Base styles */
+/* Base styles và variables */
 :root {
-    --primary-color: #2c3e50;
-    --secondary-color: #e74c3c;
-    --background-color: #ecf0f1;
-    --text-color: #34495e;
+    --primary-color: #2563eb;
+    --secondary-color: #ef4444;
+    --success-color: #22c55e;
+    --background-color: #f1f5f9;
+    --text-color: #334155;
     --card-background: #ffffff;
-    --card-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     --aside-width: 250px;
+    --header-height: 60px;
     --border-radius: 8px;
-    --transition: all 0.3s ease;
+    --transition: all 0.2s ease;
 }
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    line-height: 1.6;
-}
-
-/* Layout */
+/* Layout Container */
 .book-lending-container {
     display: flex;
     min-height: 100vh;
 }
 
+/* Main Content Area */
 .book-lending-main {
     flex-grow: 1;
-    padding: 2rem;
     margin-left: var(--aside-width);
     transition: var(--transition);
+    padding: 1.5rem;
 }
 
 .book-lending-main.full-width {
     margin-left: 0;
 }
 
-/* Header */
+/* Header Styles */
 .book-lending-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    height: var(--header-height);
+    padding: 0 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: var(--border-radius);
 }
 
 .book-lending-toggle {
     display: flex;
     align-items: center;
+    gap: 1rem;
 }
 
 .toggle-aside-btn {
-    background-color: var(--primary-color);
-    color: var(--card-background);
+    background: none;
     border: none;
-    padding: 0.5rem;
-    border-radius: 50%;
+    color: var(--text-color);
     cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: var(--transition);
-    margin-right: 1rem;
 }
 
 .toggle-aside-btn:hover {
-    background-color: var(--secondary-color);
+    color: var(--primary-color);
 }
 
-/* Tabs */
+.ListContent {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* Tab Navigation */
 .book-lending-tabs {
     display: flex;
-    margin-bottom: 2rem;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
     background-color: var(--card-background);
+    padding: 0.5rem;
     border-radius: var(--border-radius);
-    overflow: hidden;
     box-shadow: var(--card-shadow);
 }
 
 .tab-btn {
-    flex: 1;
-    padding: 1rem;
-    background-color: transparent;
+    padding: 0.75rem 1.5rem;
+    background: none;
     border: none;
+    border-radius: var(--border-radius);
     cursor: pointer;
-    transition: var(--transition);
-    font-weight: bold;
+    font-weight: 500;
     color: var(--text-color);
+    transition: var(--transition);
 }
 
 .tab-btn.active {
     background-color: var(--primary-color);
-    color: var(--card-background);
+    color: white;
 }
 
-/* Search */
+/* Search Box */
 .book-lending-search {
     position: relative;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .search-icon {
@@ -99,97 +109,105 @@ body {
     left: 1rem;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--text-color);
+    color: #94a3b8;
 }
 
 .book-lending-search input {
-    width: 320px;
-    padding: 1rem 1rem 1rem 3rem;
-    border: none;
+    width: 100%;
+    max-width: 400px;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #e2e8f0;
     border-radius: var(--border-radius);
-    font-size: 1rem;
-    box-shadow: var(--card-shadow);
+    font-size: 0.95rem;
     transition: var(--transition);
 }
 
 .book-lending-search input:focus {
     outline: none;
-    box-shadow: 0 0 0 2px var(--primary-color);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
-/* Tables */
-.borrow-requests-table,
-.borrowed-books-table {
-    width: 100%;
-    overflow-x: auto;
+/* Card Grid */
+.book-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Book Card */
+.book-card {
     background-color: var(--card-background);
     border-radius: var(--border-radius);
-    box-shadow: var(--card-shadow);
-}
-
-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-}
-
-th,
-td {
     padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid var(--background-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
 }
 
-th {
-    background-color: var(--primary-color);
-    color: var(--card-background);
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+.book-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-th:first-child {
-    border-top-left-radius: var(--border-radius);
+.book-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-th:last-child {
-    border-top-right-radius: var(--border-radius);
+.book-card-title h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
 }
 
-tr:last-child td:first-child {
-    border-bottom-left-radius: var(--border-radius);
+.book-icon {
+    color: var(--primary-color);
+    font-size: 1.2rem;
 }
 
-tr:last-child td:last-child {
-    border-bottom-right-radius: var(--border-radius);
+.book-card-author {
+    font-size: 0.9rem;
+    color: #64748b;
 }
 
-tr:hover {
-    background-color: var(--background-color);
+.book-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
 }
 
-/* Buttons */
+/* Action Buttons */
 .approve-btn,
 .reject-btn,
-.return-btn {
+.return-btn,
+.delete-btn {
+    flex: 1;
+    padding: 0.5rem;
     border: none;
-    padding: 0.5rem 1rem;
     border-radius: var(--border-radius);
     cursor: pointer;
-    display: inline-flex;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--transition);
+    color: white;
+    display: flex;
     align-items: center;
     justify-content: center;
-    transition: var(--transition);
-    font-weight: bold;
-    margin-right: 0.5rem;
-    color: var(--card-background);
+    gap: 0.5rem;
 }
 
 .approve-btn {
-    background-color: #27ae60;
+    background-color: var(--success-color);
 }
 
-.reject-btn {
+.reject-btn,
+.delete-btn {
     background-color: var(--secondary-color);
 }
 
@@ -197,41 +215,31 @@ tr:hover {
     background-color: var(--primary-color);
 }
 
-.approve-btn:hover {
-    background-color: #219653;
-}
-
-.reject-btn:hover {
-    background-color: #c0392b;
-}
-
-.return-btn:hover {
-    background-color: #34495e;
-}
-
-.approve-btn svg,
-.reject-btn svg,
-.return-btn svg {
-    margin-right: 0.5rem;
-}
+.approve-btn:hover { background-color: #16a34a; }
+.reject-btn:hover,
+.delete-btn:hover { background-color: #dc2626; }
+.return-btn:hover { background-color: #1d4ed8; }
 
 /* Pagination */
 .pagination {
     display: flex;
-    justify-content: center;
     align-items: center;
-    margin-top: 1rem;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
 }
 
 .pagination-btn {
-    background-color: var(--primary-color);
-    color: var(--card-background);
+    padding: 0.5rem;
     border: none;
-    padding: 0.5rem 1rem;
     border-radius: var(--border-radius);
+    background-color: var(--card-background);
+    color: var(--text-color);
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: var(--transition);
-    margin: 0 0.5rem;
 }
 
 .pagination-btn:disabled {
@@ -239,13 +247,65 @@ tr:hover {
     cursor: not-allowed;
 }
 
-.pagination-btn:hover:not(:disabled) {
-    background-color: var(--secondary-color);
+.pagination-btn:not(:disabled):hover {
+    background-color: var(--primary-color);
+    color: white;
 }
 
-/* Responsive design */
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: var(--card-background);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    margin-bottom: 1rem;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.modal-body {
+    margin-bottom: 1.5rem;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .book-card-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+}
+
 @media (max-width: 768px) {
     .book-lending-main {
+        margin-left: 0;
         padding: 1rem;
     }
 
@@ -255,10 +315,28 @@ tr:hover {
 
     .tab-btn {
         width: 100%;
+        text-align: center;
     }
 
-    th,
-    td {
-        padding: 0.75rem;
+    .book-card-actions {
+        flex-direction: column;
+    }
+
+    .modal-content {
+        width: 95%;
+    }
+}
+
+@media (max-width: 640px) {
+    .book-card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .book-lending-header {
+        padding: 0 1rem;
+    }
+
+    .ListContent {
+        font-size: 1.1rem;
     }
 }
