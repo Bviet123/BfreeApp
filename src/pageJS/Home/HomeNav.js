@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getDatabase, ref, onValue } from "firebase/database";
 import { getAuth, signOut } from 'firebase/auth';
+import NotificationsModal from './NotificationsModal';
 import '../../pageCSS/HomeCss/HomeNavCss.css';
 
 const HomeNav = ({ user: userProp }) => {
@@ -79,7 +80,6 @@ const HomeNav = ({ user: userProp }) => {
     return () => unsubscribeCategories();
   }, [user]);
 
-  // Handle body class for nav open state
   useEffect(() => {
     if (isNavOpen) {
       document.body.classList.add('nav-open');
@@ -212,7 +212,12 @@ const HomeNav = ({ user: userProp }) => {
             )}
           </ul>
           <div className="userSection">
-            {!isMobile && user && renderUserInfo()}
+            {user && (
+              <>
+                <NotificationsModal user={user} />
+                {!isMobile && renderUserInfo()}
+              </>
+            )}
           </div>
           {!user && (
             <div className="login-button" onClick={() => handleNavigation('/login')}>

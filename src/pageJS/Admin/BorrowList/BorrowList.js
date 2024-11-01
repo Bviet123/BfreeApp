@@ -8,7 +8,7 @@ import Aside from '../Aside/Aside.js';
 import BorrowModal from './BorrowModal/BorrowModal.js';
 import ReturnModal from './BorrowModal/ReturnModal.js';
 import DeleteModal from './DeleteModal.js';
-import { ref, onValue, push, remove, update } from 'firebase/database';
+import { ref, onValue, push, remove, update, serverTimestamp } from 'firebase/database';
 import { database } from '../../../firebaseConfig.js';
 import '../../../pageCSS/Admin/BorowListCss/BorrowListCss.css';
 import DetailModal from './BorrowModal/DetailModal.js';
@@ -63,13 +63,9 @@ const Search = ({ searchTerm, handleSearch }) => (
 );
 
 // Book Card Component
-const BookCard = ({ item, activeTab, openModal, openDeleteModal }) => {
-    const [showDetail, setShowDetail] = useState(false);
-
-    // Kiểm tra trạng thái quá hạn cho sách đang mượn
+const BookCard = ({ item, activeTab, openModal, openDeleteModal, onShowDetail }) => {
     const isOverdue = activeTab === 'borrowed' && new Date(item.dueDate) < new Date();
 
-    // Hiển thị trạng thái sách
     const renderStatus = () => {
         if (activeTab === 'borrowed') {
             return (
@@ -81,52 +77,125 @@ const BookCard = ({ item, activeTab, openModal, openDeleteModal }) => {
         return null;
     };
 
+    // Xử lý hiển thị loại yêu cầu
+    const getRequestTypeDisplay = (type) => {
+        switch (type) {
+            case 'borrow':
+                return 'Mượn sách';
+            case 'extend':
+                return 'Gia hạn';
+            default:
+                return 'Mượn sách';
+        }
+    };
+
+    // Xử lý màu sắc cho loại yêu cầu
+    const getRequestTypeColor = (type) => {
+        switch (type) {
+            case 'borrow':
+                return 'text-blue-600';
+            case 'extend':
+                return 'text-green-600';
+            default:
+                return 'text-blue-600';
+        }
+    };
+
+    const renderRequestInfo = () => {
+        if (activeTab === 'requests') {
+            const requestType = getRequestTypeDisplay(item.requestType);
+            const typeColor = getRequestTypeColor(item.requestType);
+            
+            return (
+                <>
+                    <div className="book-info-row">
+                        <FaUser className="info-icon" />
+                        <span>Người yêu cầu: {item.requester}</span>
+                    </div>
+                    <div className="book-info-row">
+                        <FaBook className="info-icon" />
+                        <span className={typeColor}>Loại yêu cầu: {requestType}</span>
+                    </div>
+                    <div className="book-info-row">
+                        <FaCalendar className="info-icon" />
+                        <span>Ngày yêu cầu: {new Date(item.requestDate).toLocaleDateString('vi-VN')}</span>
+                    </div>
+                    <div className="book-info-row">
+                        <FaCalendar className="info-icon" />
+                        <span>Thời gian mượn: 7 ngày</span>
+                    </div>
+                    {item.requestType === 'extend' && (
+                        <div className="book-info-row text-gray-600">
+                            <FaInfoCircle className="info-icon" />
+                            <span>Sách đang mượn sẽ được gia hạn thêm 7 ngày</span>
+                        </div>
+                    )}
+                </>
+            );
+        }
+
+        if (activeTab === 'borrowed') {
+            return (
+                <>
+                    <div className="book-info-row">
+                        <FaUser className="info-icon" />
+                        <span>Người mượn: {item.borrower}</span>
+                    </div>
+                    <div className="book-info-row">
+                        <FaCalendar className="info-icon" />
+                        <span>Ngày mượn: {new Date(item.borrowDate).toLocaleDateString('vi-VN')}</span>
+                    </div>
+                    <div className="book-info-row">
+                        <FaCalendar className="info-icon" />
+                        <span>Hạn trả: {new Date(item.dueDate).toLocaleDateString('vi-VN')}</span>
+                    </div>
+                </>
+            );
+        }
+
+        if (activeTab === 'returned') {
+            return (
+                <>
+                    <div className="book-info-row">
+                        <FaUser className="info-icon" />
+                        <span>Người trả: {item.borrower}</span>
+                    </div>
+                    <div className="book-info-row">
+                        <FaCalendar className="info-icon" />
+                        <span>Ngày mượn: {new Date(item.borrowDate).toLocaleDateString('vi-VN')}</span>
+                    </div>
+                    <div className="book-info-row">
+                        <FaCalendar className="info-icon" />
+                        <span>Ngày trả: {new Date(item.returnDate).toLocaleDateString('vi-VN')}</span>
+                    </div>
+                </>
+            );
+        }
+    };
+
     return (
-        <div className="book-card">
-            {/* Header */}
-            <div className="book-card-header">
-                <div className="book-card-title">
+        <div className="bl-book-card">
+            <div className="bl-book-card-header">
+                <div className="bl-book-card-title">
                     <FaBook className="book-icon" />
                     <h3>{item.title}</h3>
                 </div>
                 {renderStatus()}
             </div>
 
-            {/* Content */}
-            <div className="book-card-content">
-                {/* Thông tin người mượn */}
-                <div className="book-info-row">
-                    <FaUser className="info-icon" />
-                    <span>{activeTab === 'requests' ? item.requester : item.borrower}</span>
-                </div>
-
-                {/* Thông tin ngày */}
-                <div className="book-info-row">
-                    <FaCalendar className="info-icon" />
-                    {activeTab === 'requests' && (
-                        <span>Yêu cầu: {new Date(item.requestDate).toLocaleDateString('vi-VN')}</span>
-                    )}
-                    {activeTab === 'borrowed' && (
-                        <span>Hạn trả: {new Date(item.dueDate).toLocaleDateString('vi-VN')}</span>
-                    )}
-                    {activeTab === 'returned' && (
-                        <span>Đã trả: {new Date(item.returnDate).toLocaleDateString('vi-VN')}</span>
-                    )}
-                </div>
+            <div className="bl-book-card-content">
+                {renderRequestInfo()}
             </div>
 
-            {/* Actions */}
-            <div className="book-card-actions">
-                {/* Nút chi tiết - hiển thị ở tất cả các tab */}
+            <div className="bl-book-card-actions">
                 <button
-                    onClick={() => setShowDetail(true)}
+                    onClick={() => onShowDetail(item)}
                     className="action-btn detail-btn"
                     title="Xem chi tiết"
                 >
                     <FaInfoCircle /> Chi tiết
                 </button>
 
-                {/* Các nút điều khiển khác tùy theo tab */}
                 {activeTab === 'requests' && (
                     <>
                         <button
@@ -166,30 +235,53 @@ const BookCard = ({ item, activeTab, openModal, openDeleteModal }) => {
                     </button>
                 )}
             </div>
-
-            <DetailModal
-                isOpen={showDetail}
-                onClose={() => setShowDetail(false)}
-                data={item}
-                type={activeTab}
-            />
         </div>
     );
 };
+
 // Card Grid Component
-const CardGrid = ({ items, activeTab, openModal, openDeleteModal }) => (
-    <div className="book-card-grid">
-        {items.map((item) => (
-            <BookCard
-                key={item.id}
-                item={item}
-                activeTab={activeTab}
-                openModal={openModal}
-                openDeleteModal={openDeleteModal}
+const CardGrid = ({ items, activeTab, openModal, openDeleteModal }) => {
+    const [detailItem, setDetailItem] = useState(null);
+
+    const handleShowDetail = (item) => {
+        setDetailItem(item);
+    };
+
+    const handleCloseDetail = () => {
+        setDetailItem(null);
+    };
+
+    return (
+        <>
+            <div className="book-card-grid">
+                {items.map((item) => (
+                    <MemoizedBookCard
+                        key={item.id}
+                        item={item}
+                        activeTab={activeTab}
+                        openModal={openModal}
+                        openDeleteModal={openDeleteModal}
+                        onShowDetail={handleShowDetail}
+                    />
+                ))}
+            </div>
+
+            <DetailModal
+                isOpen={Boolean(detailItem)}
+                onClose={handleCloseDetail}
+                data={detailItem}
+                type={activeTab}
             />
-        ))}
-    </div>
-);
+        </>
+    );
+};
+
+const MemoizedBookCard = React.memo(BookCard, (prevProps, nextProps) => {
+    return (
+        prevProps.item.id === nextProps.item.id &&
+        prevProps.activeTab === nextProps.activeTab
+    );
+});
 
 // Pagination Component
 const Pagination = ({ currentPage, totalPages, paginate }) => (
@@ -234,15 +326,25 @@ function BorrowList() {
         const borrowedBooksRef = ref(database, 'borrowedBooks');
         const returnedBooksRef = ref(database, 'returnedBooks');
 
+        // Giữ nguyên logic cho borrowRequests và returnedBooks
         onValue(borrowRequestsRef, (snapshot) => {
             const data = snapshot.val();
             const borrowRequestsList = data ? Object.entries(data).map(([key, value]) => ({ id: key, ...value })) : [];
             setBorrowRequests(borrowRequestsList);
         });
 
+        // Tối ưu lại cấu trúc dữ liệu cho borrowedBooks
         onValue(borrowedBooksRef, (snapshot) => {
             const data = snapshot.val();
-            const borrowedBooksList = data ? Object.entries(data).map(([key, value]) => ({ id: key, ...value })) : [];
+            const borrowedBooksList = data ? Object.entries(data).map(([key, value]) => ({
+                id: key,
+                bookId: value.bookId,
+                title: value.title,
+                borrower: value.borrower,
+                borrowDate: value.borrowDate,
+                dueDate: value.dueDate,
+                status: value.status || 'active' // Thêm trạng thái mặc định
+            })) : [];
             setBorrowedBooks(borrowedBooksList);
         });
 
@@ -262,17 +364,98 @@ function BorrowList() {
         setCurrentPage(1);
     };
 
-    const handleApproveRequest = (id) => {
-        const approvedRequest = borrowRequests.find(request => request.id === id);
-        const newBorrowedBook = {
-            ...approvedRequest,
-            borrower: approvedRequest.requester,
-            borrowDate: new Date().toISOString().split('T')[0],
-            dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        };
+    const createNotification = async (type, data) => {
+        try {
+            const notificationRef = ref(database, 'notifications');
+            const notification = {
+                type: type, // 'approve', 'reject'
+                bookTitle: data.title,
+                requester: data.requester,
+                message: type === 'approve' 
+                    ? `Yêu cầu mượn sách "${data.title}" của bạn đã được chấp nhận`
+                    : `Yêu cầu mượn sách "${data.title}" của bạn đã bị từ chối${data.rejectReason ? `. Lý do: ${data.rejectReason}` : ''}`,
+                timestamp: serverTimestamp(),
+                isRead: false,
+                userId: data.requesterId // ID của người yêu cầu
+            };
 
-        push(ref(database, 'borrowedBooks'), newBorrowedBook);
-        remove(ref(database, `borrowRequests/${id}`));
+            await push(notificationRef, notification);
+        } catch (error) {
+            console.error("Error creating notification:", error);
+        }
+    };
+
+    const handleApproveRequest = async (id) => {
+        const approvedRequest = borrowRequests.find(request => request.id === id);
+        const today = new Date();
+        let dueDate = new Date(today);
+        dueDate.setDate(today.getDate() + 7);
+
+        try {
+            if (approvedRequest.requestType === 'extend') {
+                const borrowedBook = borrowedBooks.find(book => 
+                    book.bookId === approvedRequest.bookId && 
+                    book.borrower === approvedRequest.requester
+                );
+
+                if (borrowedBook) {
+                    const currentDueDate = new Date(borrowedBook.dueDate);
+                    const newDueDate = new Date(currentDueDate);
+                    newDueDate.setDate(currentDueDate.getDate() + 7);
+
+                    await update(ref(database, `borrowedBooks/${borrowedBook.id}`), {
+                        dueDate: newDueDate.toISOString().split('T')[0]
+                    });
+
+                    // Tạo thông báo cho gia hạn
+                    await createNotification('approve', {
+                        ...approvedRequest,
+                        title: `${approvedRequest.title} (Gia hạn)`
+                    });
+                }
+            } else {
+                const newBorrowedBook = {
+                    bookId: approvedRequest.bookId,
+                    title: approvedRequest.title,
+                    borrower: approvedRequest.requester,
+                    borrowDate: today.toISOString().split('T')[0],
+                    dueDate: dueDate.toISOString().split('T')[0],
+                    status: 'active'
+                };
+
+                await push(ref(database, 'borrowedBooks'), newBorrowedBook);
+                
+                // Tạo thông báo cho mượn mới
+                await createNotification('approve', approvedRequest);
+            }
+
+            // Xóa yêu cầu sau khi xử lý
+            await remove(ref(database, `borrowRequests/${id}`));
+        } catch (error) {
+            console.error("Error handling approve request:", error);
+        }
+    };
+
+    const handleReturnBook = async (book) => {
+        if (book && book.id) {
+            try {
+                await remove(ref(database, `borrowedBooks/${book.id}`));
+
+                const returnedBook = {
+                    bookId: book.bookId,
+                    title: book.title,
+                    borrower: book.borrower,
+                    borrowDate: book.borrowDate,
+                    returnDate: new Date().toISOString().split('T')[0]
+                };
+
+                await push(ref(database, 'returnedBooks'), returnedBook);
+                closeReturnModal();
+                setBorrowedBooks(prev => prev.filter(item => item.id !== book.id));
+            } catch (error) {
+                console.error("Error returning book:", error);
+            }
+        }
     };
 
     const openModal = (action, book) => {
@@ -290,30 +473,6 @@ function BorrowList() {
         setSelectedBook(null);
     };
 
-    const handleReturnBook = async (book) => {
-        if (book && book.id) {
-            try {
-                await remove(ref(database, `borrowedBooks/${book.id}`));
-
-                const returnedBook = {
-                    bookId: book.bookId,
-                    title: book.title,
-                    borrower: book.borrower,
-                    borrowDate: book.borrowDate,
-                    returnDate: new Date().toISOString().split('T')[0]
-                };
-
-                await push(ref(database, 'returnedBooks'), returnedBook);
-
-                closeReturnModal();
-
-                setBorrowedBooks(prev => prev.filter(item => item.id !== book.id));
-            } catch (error) {
-                console.error("Error returning book:", error);
-            }
-        }
-    };
-
     const closeModal = () => {
         setModalOpen(false);
         setModalAction(null);
@@ -329,8 +488,21 @@ function BorrowList() {
         closeModal();
     };
 
-    const handleRejectRequest = (id) => {
-        remove(ref(database, `borrowRequests/${id}`));
+    const handleRejectRequest = async (id, rejectReason) => {
+        try {
+            const rejectedRequest = borrowRequests.find(request => request.id === id);
+            
+            // Tạo thông báo từ chối
+            await createNotification('reject', {
+                ...rejectedRequest,
+                rejectReason: rejectReason
+            });
+
+            // Xóa yêu cầu
+            await remove(ref(database, `borrowRequests/${id}`));
+        } catch (error) {
+            console.error("Error handling reject request:", error);
+        }
     };
 
     const openDeleteModal = (book) => {

@@ -1,114 +1,239 @@
-// DetailModal.js
 import React from 'react';
-import { FaTimes, FaBook, FaUser, FaCalendar } from 'react-icons/fa';
+import { FaTimes, FaBook, FaUser, FaCalendar, FaClock, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import '../../../../pageCSS/Admin/BorowListCss/BorrowModalCss/DetailModalCss.css';
+
 const DetailModal = ({ isOpen, onClose, data, type }) => {
     if (!isOpen || !data) return null;
 
-    const renderContent = () => {
-        switch (type) {
-            case 'requests':
-                return (
-                    <div className="detail-content">
-                        <div className="detail-section">
-                            <h3><FaBook className="detail-icon" /> Thông tin sách</h3>
-                            <p><strong>Tên sách:</strong> {data.title}</p>
-                            <p><strong>Mã sách:</strong> {data.bookId}</p>
-                        </div>
-
-                        <div className="detail-section">
-                            <h3><FaUser className="detail-icon" /> Thông tin người mượn</h3>
-                            <p><strong>Người yêu cầu:</strong> {data.requester}</p>
-                            <p><strong>Email:</strong> {data.requesterEmail}</p>
-                            <p><strong>Số điện thoại:</strong> {data.requesterPhone}</p>
-                        </div>
-
-                        <div className="detail-section">
-                            <h3><FaCalendar className="detail-icon" /> Thông tin yêu cầu</h3>
-                            <p><strong>Ngày yêu cầu:</strong> {new Date(data.requestDate).toLocaleDateString('vi-VN')}</p>
-                            <p><strong>Lý do mượn:</strong> {data.reason}</p>
-                            <p><strong>Thời gian dự kiến mượn:</strong> {data.expectedDuration} ngày</p>
-                        </div>
-                    </div>
-                );
-
-            case 'borrowed':
-                return (
-                    <div className="detail-content">
-                        <div className="detail-section">
-                            <h3><FaBook className="detail-icon" /> Thông tin sách</h3>
-                            <p><strong>Tên sách:</strong> {data.title}</p>
-                            <p><strong>Mã sách:</strong> {data.bookId}</p>
-                        </div>
-
-                        <div className="detail-section">
-                            <h3><FaUser className="detail-icon" /> Thông tin người mượn</h3>
-                            <p><strong>Người mượn:</strong> {data.borrower}</p>
-                            <p><strong>Email:</strong> {data.borrowerEmail}</p>
-                            <p><strong>Số điện thoại:</strong> {data.borrowerPhone}</p>
-                        </div>
-
-                        <div className="detail-section">
-                            <h3><FaCalendar className="detail-icon" /> Thời gian mượn</h3>
-                            <p><strong>Ngày mượn:</strong> {new Date(data.borrowDate).toLocaleDateString('vi-VN')}</p>
-                            <p><strong>Hạn trả:</strong> {new Date(data.dueDate).toLocaleDateString('vi-VN')}</p>
-                            <p><strong>Trạng thái:</strong> {new Date(data.dueDate) < new Date() ? 
-                                <span className="text-red-500">Quá hạn</span> : 
-                                <span className="text-green-500">Trong hạn</span>}
-                            </p>
-                        </div>
-                    </div>
-                );
-
-            case 'returned':
-                return (
-                    <div className="detail-content">
-                        <div className="detail-section">
-                            <h3><FaBook className="detail-icon" /> Thông tin sách</h3>
-                            <p><strong>Tên sách:</strong> {data.title}</p>
-                            <p><strong>Mã sách:</strong> {data.bookId}</p>
-                        </div>
-
-                        <div className="detail-section">
-                            <h3><FaUser className="detail-icon" /> Thông tin người mượn</h3>
-                            <p><strong>Người mượn:</strong> {data.borrower}</p>
-                            <p><strong>Email:</strong> {data.borrowerEmail}</p>
-                            <p><strong>Số điện thoại:</strong> {data.borrowerPhone}</p>
-                        </div>
-
-                        <div className="detail-section">
-                            <h3><FaCalendar className="detail-icon" /> Lịch sử mượn trả</h3>
-                            <p><strong>Ngày mượn:</strong> {new Date(data.borrowDate).toLocaleDateString('vi-VN')}</p>
-                            <p><strong>Ngày trả:</strong> {new Date(data.returnDate).toLocaleDateString('vi-VN')}</p>
-                            <p><strong>Tình trạng trả:</strong> {
-                                new Date(data.returnDate) <= new Date(data.dueDate) 
-                                    ? <span className="text-green-500">Đúng hạn</span>
-                                    : <span className="text-red-500">Trễ hạn</span>
-                            }</p>
-                        </div>
-                    </div>
-                );
-
-            default:
-                return <div>Không có thông tin</div>;
+    const getDueStatus = (dueDate) => {
+        const today = new Date();
+        const due = new Date(dueDate);
+        const diffTime = due - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 0) {
+            return { 
+                text: 'Quá hạn', 
+                className: 'ad-status-overdue',
+                icon: <FaExclamationCircle className="ad-status-icon" />
+            };
+        } else if (diffDays <= 3) {
+            return { 
+                text: `Còn ${diffDays} ngày`, 
+                className: 'ad-status-warning',
+                icon: <FaClock className="ad-status-icon" />
+            };
+        } else {
+            return { 
+                text: 'Trong hạn', 
+                className: 'ad-status-ontime',
+                icon: <FaCheckCircle className="ad-status-icon" />
+            };
         }
     };
 
+    const getReturnStatus = (returnDate, dueDate) => {
+        const returnTime = new Date(returnDate);
+        const dueTime = new Date(dueDate);
+        
+        if (returnTime <= dueTime) {
+            return {
+                text: 'Đã trả đúng hạn',
+                className: 'ad-status-ontime',
+                icon: <FaCheckCircle className="ad-status-icon" />
+            };
+        } else {
+            const diffTime = returnTime - dueTime;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return {
+                text: `Trả trễ ${diffDays} ngày`,
+                className: 'ad-status-overdue',
+                icon: <FaExclamationCircle className="ad-status-icon" />
+            };
+        }
+    };
+
+    const renderBorrowedContent = () => {
+        const status = getDueStatus(data.dueDate);
+        const borrowDuration = Math.ceil(
+            (new Date(data.dueDate) - new Date(data.borrowDate)) / (1000 * 60 * 60 * 24)
+        );
+        
+        return (
+            <div className="ad-detail-content">
+                <div className="ad-detail-section">
+                    <h3 className="ad-section-title">
+                        <FaBook className="ad-section-icon" /> 
+                        Thông tin sách
+                    </h3>
+                    <div className="ad-info-grid">
+                        <div className="ad-info-item">
+                            <label>Tên sách:</label>
+                            <span>{data.title}</span>
+                        </div>
+                        <div className="ad-info-item">
+                            <label>Mã sách:</label>
+                            <span>{data.bookId}</span>
+                        </div>
+                        {data.author && (
+                            <div className="ad-info-item">
+                                <label>Tác giả:</label>
+                                <span>{data.author}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="ad-detail-section">
+                    <h3 className="ad-section-title">
+                        <FaUser className="ad-section-icon" /> 
+                        Thông tin người mượn
+                    </h3>
+                    <div className="ad-info-grid">
+                        <div className="ad-info-item">
+                            <label>Người mượn:</label>
+                            <span>{data.borrower}</span>
+                        </div>
+                        <div className="ad-info-item">
+                            <label>Email:</label>
+                            <span>{data.borrowerEmail}</span>
+                        </div>
+                        <div className="ad-info-item">
+                            <label>Số điện thoại:</label>
+                            <span>{data.borrowerPhone || 'Không có'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="ad-detail-section">
+                    <h3 className="ad-section-title">
+                        <FaClock className="ad-section-icon" /> 
+                        Thông tin mượn sách
+                    </h3>
+                    <div className="ad-info-grid">
+                        <div className="ad-info-item">
+                            <label>Ngày mượn:</label>
+                            <span>{new Date(data.borrowDate).toLocaleDateString('vi-VN')}</span>
+                        </div>
+                        <div className="ad-info-item">
+                            <label>Hạn trả:</label>
+                            <span>{new Date(data.dueDate).toLocaleDateString('vi-VN')}</span>
+                        </div>
+                        <div className="ad-info-item">
+                            <label>Thời hạn mượn:</label>
+                            <span>{borrowDuration} ngày</span>
+                        </div>
+                        <div className="ad-info-item">
+                            <label>Trạng thái:</label>
+                            <div className={`ad-status-display ${status.className}`}>
+                                {status.icon}
+                                <span>{status.text}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const renderReturnedContent = () => {
+        const status = getReturnStatus(data.returnDate, data.dueDate);
+        const actualDuration = Math.ceil(
+            (new Date(data.returnDate) - new Date(data.borrowDate)) / (1000 * 60 * 60 * 24)
+        );
+
+        return (
+            <div className="ad-detail-content">
+                <div className="ad-detail-section">
+                    <h3 className="ad-section-title">
+                        <FaBook className="ad-section-icon" /> 
+                        Thông tin sách
+                    </h3>
+                    <div className="ad-info-grid">
+                        <div className="ad-info-item">
+                            <label>Tên sách:</label>
+                            <span>{data.title}</span>
+                        </div>
+                        <div className="ad-info-item">
+                            <label>Mã sách:</label>
+                            <span>{data.bookId}</span>
+                        </div>
+                        {data.author && (
+                            <div className="ad-info-item">
+                                <label>Tác giả:</label>
+                                <span>{data.author}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="ad-detail-section">
+                    <h3 className="ad-section-title">
+                        <FaUser className="ad-section-icon" /> 
+                        Thông tin người mượn
+                    </h3>
+                    <div className="ad-info-grid">
+                        <div className="ad-info-item">
+                            <label>Người mượn:</label>
+                            <span>{data.borrower}</span>
+                        </div>
+                        <div className="ad-info-item">
+                            <label>Email:</label>
+                            <span>{data.borrowerEmail}</span>
+                        </div>
+                        <div className="ad-info-item">
+                            <label>Số điện thoại:</label>
+                            <span>{data.borrowerPhone || 'Không có'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="ad-detail-section">
+                    <h3 className="ad-section-title">
+                        <FaCalendar className="ad-section-icon" /> 
+                        Lịch sử mượn trả
+                    </h3>
+                    <div className="ad-info-grid">
+                        <div className="ad-info-item">
+                            <label>Ngày mượn:</label>
+                            <span>{new Date(data.borrowDate).toLocaleDateString('vi-VN')}</span>
+                        </div>
+                        <div className="ad-info-item">
+                            <label>Ngày trả:</label>
+                            <span>{new Date(data.returnDate).toLocaleDateString('vi-VN')}</span>
+                        </div>
+                        <div className="ad-info-item">
+                            <label>Thời gian đã mượn:</label>
+                            <span>{actualDuration} ngày</span>
+                        </div>
+                        <div className="ad-info-item">
+                            <label>Tình trạng trả:</label>
+                            <div className={`ad-status-display ${status.className}`}>
+                                {status.icon}
+                                <span>{status.text}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
-        <div className="detail-modal-overlay">
-            <div className="detail-modal">
-                <div className="detail-modal-header">
+        <div className="ad-detail-modal-overlay">
+            <div className="ad-detail-modal">
+                <div className="ad-detail-modal-header">
                     <h2>Chi tiết {
                         type === 'requests' ? 'yêu cầu mượn sách' :
                         type === 'borrowed' ? 'sách đang mượn' : 'sách đã trả'
                     }</h2>
-                    <button onClick={onClose} className="close-btn">
+                    <button onClick={onClose} className="ad-close-btn">
                         <FaTimes />
                     </button>
                 </div>
-                {renderContent()}
-                <div className="detail-modal-footer">
-                    <button onClick={onClose} className="close-button">
+                {type === 'borrowed' ? renderBorrowedContent() : renderReturnedContent()}
+                <div className="ad-detail-modal-footer">
+                    <button onClick={onClose} className="ad-close-button">
                         Đóng
                     </button>
                 </div>

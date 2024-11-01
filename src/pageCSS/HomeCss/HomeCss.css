@@ -94,7 +94,7 @@ h2 {
   bottom: 0;
   left: 0;
   right: 0;
-  transform: translateY(70%);
+  transform: translateY(50%);
   transition: transform 0.3s ease;
 }
 
