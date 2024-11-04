@@ -1,8 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaTimes, FaBook, FaUser, FaCalendar, FaClock, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+import { getDatabase, ref, get } from 'firebase/database';
 import '../../../../pageCSS/Admin/BorowListCss/BorrowModalCss/DetailModalCss.css';
 
 const DetailModal = ({ isOpen, onClose, data, type }) => {
+    const [userData, setUserData] = useState(null);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            if (data?.requesterId) {
+                try {
+                    const db = getDatabase();
+                    const userRef = ref(db, `users/${data.requesterId}`);
+                    const snapshot = await get(userRef);
+                    
+                    if (snapshot.exists()) {
+                        setUserData(snapshot.val());
+                    }
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                }
+            }
+        };
+
+        fetchUserData();
+    }, [data?.requesterId]);
+
     if (!isOpen || !data) return null;
 
     const getDueStatus = (dueDate) => {
@@ -53,6 +76,63 @@ const DetailModal = ({ isOpen, onClose, data, type }) => {
         }
     };
 
+    const renderBookInfo = () => (
+        <div className="ad-detail-section">
+            <h3 className="ad-section-title">
+                <FaBook className="ad-section-icon" /> 
+                Thông tin sách
+            </h3>
+            {data.coverUrl && (
+                <div className="ad-book-cover">
+                    <img 
+                        src={data.coverUrl} 
+                        alt={data.title}
+                        className="ad-book-image"
+                    />
+                </div>
+            )}
+            <div className="ad-info-grid">
+                <div className="ad-info-item">
+                    <label>Tên sách:</label>
+                    <span>{data.title}</span>
+                </div>
+                <div className="ad-info-item">
+                    <label>Mã sách:</label>
+                    <span>{data.bookId}</span>
+                </div>
+                {data.author && (
+                    <div className="ad-info-item">
+                        <label>Tác giả:</label>
+                        <span>{data.author}</span>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
+    const renderBorrowerInfo = () => (
+        <div className="ad-detail-section">
+            <h3 className="ad-section-title">
+                <FaUser className="ad-section-icon" /> 
+                Thông tin người mượn
+            </h3>
+            <div className="ad-info-grid">
+                <div className="ad-info-item">
+                    <label>Người mượn:</label>
+                    <span>{userData?.fullName || data.requester}</span>
+                </div>
+                <div className="ad-info-item">
+                    <label>Mã người mượn:</label>
+                    <span>{data.requesterId}</span>
+                </div>
+                <div className="ad-info-item">
+                    <label>Email:</label>
+                    <span>{userData?.email || data.borrowerEmail}</span>
+                </div>
+            </div>
+        </div>
+    );
+
     const renderBorrowedContent = () => {
         const status = getDueStatus(data.dueDate);
         const borrowDuration = Math.ceil(
@@ -61,50 +141,8 @@ const DetailModal = ({ isOpen, onClose, data, type }) => {
         
         return (
             <div className="ad-detail-content">
-                <div className="ad-detail-section">
-                    <h3 className="ad-section-title">
-                        <FaBook className="ad-section-icon" /> 
-                        Thông tin sách
-                    </h3>
-                    <div className="ad-info-grid">
-                        <div className="ad-info-item">
-                            <label>Tên sách:</label>
-                            <span>{data.title}</span>
-                        </div>
-                        <div className="ad-info-item">
-                            <label>Mã sách:</label>
-                            <span>{data.bookId}</span>
-                        </div>
-                        {data.author && (
-                            <div className="ad-info-item">
-                                <label>Tác giả:</label>
-                                <span>{data.author}</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div className="ad-detail-section">
-                    <h3 className="ad-section-title">
-                        <FaUser className="ad-section-icon" /> 
-                        Thông tin người mượn
-                    </h3>
-                    <div className="ad-info-grid">
-                        <div className="ad-info-item">
-                            <label>Người mượn:</label>
-                            <span>{data.borrower}</span>
-                        </div>
-                        <div className="ad-info-item">
-                            <label>Email:</label>
-                            <span>{data.borrowerEmail}</span>
-                        </div>
-                        <div className="ad-info-item">
-                            <label>Số điện thoại:</label>
-                            <span>{data.borrowerPhone || 'Không có'}</span>
-                        </div>
-                    </div>
-                </div>
-
+                {renderBookInfo()}
+                {renderBorrowerInfo()}
                 <div className="ad-detail-section">
                     <h3 className="ad-section-title">
                         <FaClock className="ad-section-icon" /> 
@@ -144,50 +182,8 @@ const DetailModal = ({ isOpen, onClose, data, type }) => {
 
         return (
             <div className="ad-detail-content">
-                <div className="ad-detail-section">
-                    <h3 className="ad-section-title">
-                        <FaBook className="ad-section-icon" /> 
-                        Thông tin sách
-                    </h3>
-                    <div className="ad-info-grid">
-                        <div className="ad-info-item">
-                            <label>Tên sách:</label>
-                            <span>{data.title}</span>
-                        </div>
-                        <div className="ad-info-item">
-                            <label>Mã sách:</label>
-                            <span>{data.bookId}</span>
-                        </div>
-                        {data.author && (
-                            <div className="ad-info-item">
-                                <label>Tác giả:</label>
-                                <span>{data.author}</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div className="ad-detail-section">
-                    <h3 className="ad-section-title">
-                        <FaUser className="ad-section-icon" /> 
-                        Thông tin người mượn
-                    </h3>
-                    <div className="ad-info-grid">
-                        <div className="ad-info-item">
-                            <label>Người mượn:</label>
-                            <span>{data.borrower}</span>
-                        </div>
-                        <div className="ad-info-item">
-                            <label>Email:</label>
-                            <span>{data.borrowerEmail}</span>
-                        </div>
-                        <div className="ad-info-item">
-                            <label>Số điện thoại:</label>
-                            <span>{data.borrowerPhone || 'Không có'}</span>
-                        </div>
-                    </div>
-                </div>
-
+                {renderBookInfo()}
+                {renderBorrowerInfo()}
                 <div className="ad-detail-section">
                     <h3 className="ad-section-title">
                         <FaCalendar className="ad-section-icon" /> 

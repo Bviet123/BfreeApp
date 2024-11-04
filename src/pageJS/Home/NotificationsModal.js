@@ -16,7 +16,7 @@ const NotificationsModal = ({ user }) => {
     const db = getDatabase();
     const notificationsRef = query(
       ref(db, 'notifications'),
-      orderByChild('userId'),
+      orderByChild('requesterId'),
     );
 
     const unsubscribe = onValue(notificationsRef, (snapshot) => {
@@ -26,7 +26,7 @@ const NotificationsModal = ({ user }) => {
           id: childSnapshot.key,
           ...childSnapshot.val()
         };
-        if (notification.userId === user.uid) {
+        if (notification.requesterId === user.uid) {
           notificationsData.push(notification);
         }
       });

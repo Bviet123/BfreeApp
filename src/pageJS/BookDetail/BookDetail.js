@@ -225,12 +225,12 @@ function BookDetail() {
         bookId: bookId,
         title: book.title,
         author: authors.map(author => author.name).join(', '),
-        requester: user.displayName || user.email,
         requesterId: user.uid,
         requestDate: new Date().toISOString().split('T')[0],
         status: 'pending',
         coverUrl: book.coverUrl,
         requestType: 'borrow',
+        borrowCount: '0'
       };
 
       const borrowRequestsRef = ref(database, 'borrowRequests');

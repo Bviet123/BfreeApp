@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     FaBars, FaTimes, FaSearch, FaCheck, FaTimes as FaTimesCircle,
     FaUndo, FaChevronLeft, FaChevronRight, FaTrash, FaCalendar,
@@ -63,21 +63,9 @@ const Search = ({ searchTerm, handleSearch }) => (
 );
 
 // Book Card Component
-const BookCard = ({ item, activeTab, openModal, openDeleteModal, onShowDetail }) => {
-    const isOverdue = activeTab === 'borrowed' && new Date(item.dueDate) < new Date();
+const BookCard = ({ item, activeTab, openModal, openDeleteModal, onShowDetail, getUserInfo }) => {
+    const userInfo = getUserInfo(item.requesterId);
 
-    const renderStatus = () => {
-        if (activeTab === 'borrowed') {
-            return (
-                <div className={`book-status ${isOverdue ? 'overdue' : 'on-time'}`}>
-                    {isOverdue ? 'Quá hạn' : 'Trong hạn'}
-                </div>
-            );
-        }
-        return null;
-    };
-
-    // Xử lý hiển thị loại yêu cầu
     const getRequestTypeDisplay = (type) => {
         switch (type) {
             case 'borrow':
@@ -85,11 +73,10 @@ const BookCard = ({ item, activeTab, openModal, openDeleteModal, onShowDetail })
             case 'extend':
                 return 'Gia hạn';
             default:
-                return 'Mượn sách';
+                return 'Không xác định';
         }
     };
 
-    // Xử lý màu sắc cho loại yêu cầu
     const getRequestTypeColor = (type) => {
         switch (type) {
             case 'borrow':
@@ -97,7 +84,34 @@ const BookCard = ({ item, activeTab, openModal, openDeleteModal, onShowDetail })
             case 'extend':
                 return 'text-green-600';
             default:
-                return 'text-blue-600';
+                return 'text-gray-600';
+        }
+    };
+
+    const renderStatus = () => {
+        if (activeTab === 'requests') {
+            return (
+                <div className={`status-badge ${item.requestType === 'extend' ? 'extend' : 'borrow'}`}>
+                    {item.requestType === 'extend' ? 'Gia hạn' : 'Mượn mới'}
+                </div>
+            );
+        }
+
+        if (activeTab === 'borrowed') {
+            const isOverdue = new Date(item.dueDate) < new Date();
+            return (
+                <div className={`status-badge ${isOverdue ? 'overdue' : 'borrowed'}`}>
+                    {isOverdue ? 'Quá hạn' : 'Đang mượn'}
+                </div>
+            );
+        }
+
+        if (activeTab === 'returned') {
+            return (
+                <div className="status-badge returned">
+                    Đã trả
+                </div>
+            );
         }
     };
 
@@ -105,12 +119,12 @@ const BookCard = ({ item, activeTab, openModal, openDeleteModal, onShowDetail })
         if (activeTab === 'requests') {
             const requestType = getRequestTypeDisplay(item.requestType);
             const typeColor = getRequestTypeColor(item.requestType);
-            
+
             return (
                 <>
                     <div className="book-info-row">
                         <FaUser className="info-icon" />
-                        <span>Người yêu cầu: {item.requester}</span>
+                        <span>Người yêu cầu: {userInfo.fullName}</span>
                     </div>
                     <div className="book-info-row">
                         <FaBook className="info-icon" />
@@ -120,10 +134,7 @@ const BookCard = ({ item, activeTab, openModal, openDeleteModal, onShowDetail })
                         <FaCalendar className="info-icon" />
                         <span>Ngày yêu cầu: {new Date(item.requestDate).toLocaleDateString('vi-VN')}</span>
                     </div>
-                    <div className="book-info-row">
-                        <FaCalendar className="info-icon" />
-                        <span>Thời gian mượn: 7 ngày</span>
-                    </div>
+
                     {item.requestType === 'extend' && (
                         <div className="book-info-row text-gray-600">
                             <FaInfoCircle className="info-icon" />
@@ -139,7 +150,7 @@ const BookCard = ({ item, activeTab, openModal, openDeleteModal, onShowDetail })
                 <>
                     <div className="book-info-row">
                         <FaUser className="info-icon" />
-                        <span>Người mượn: {item.borrower}</span>
+                        <span>Người mượn: {userInfo.fullName}</span>
                     </div>
                     <div className="book-info-row">
                         <FaCalendar className="info-icon" />
@@ -148,6 +159,10 @@ const BookCard = ({ item, activeTab, openModal, openDeleteModal, onShowDetail })
                     <div className="book-info-row">
                         <FaCalendar className="info-icon" />
                         <span>Hạn trả: {new Date(item.dueDate).toLocaleDateString('vi-VN')}</span>
+                    </div>
+                    <div className="book-info-row">
+                        <FaInfoCircle className="info-icon" />
+                        <span>Số lần gia hạn: {item.borrowCount || 0}</span>
                     </div>
                 </>
             );
@@ -158,7 +173,7 @@ const BookCard = ({ item, activeTab, openModal, openDeleteModal, onShowDetail })
                 <>
                     <div className="book-info-row">
                         <FaUser className="info-icon" />
-                        <span>Người trả: {item.borrower}</span>
+                        <span>Người trả: {userInfo.fullName}</span>
                     </div>
                     <div className="book-info-row">
                         <FaCalendar className="info-icon" />
@@ -167,6 +182,10 @@ const BookCard = ({ item, activeTab, openModal, openDeleteModal, onShowDetail })
                     <div className="book-info-row">
                         <FaCalendar className="info-icon" />
                         <span>Ngày trả: {new Date(item.returnDate).toLocaleDateString('vi-VN')}</span>
+                    </div>
+                    <div className="book-info-row">
+                        <FaInfoCircle className="info-icon" />
+                        <span>Số lần đã gia hạn: {item.borrowCount || 0}</span>
                     </div>
                 </>
             );
@@ -217,7 +236,14 @@ const BookCard = ({ item, activeTab, openModal, openDeleteModal, onShowDetail })
 
                 {activeTab === 'borrowed' && (
                     <button
-                        onClick={() => openModal('return', item)}
+                        onClick={() => openModal('return', {
+                            ...item,
+                            requesterId: item.requesterId,
+                            bookId: item.bookId,
+                            title: item.title,
+                            borrowDate: item.borrowDate,
+                            borrowCount: item.borrowCount
+                        })}
                         className="action-btn return-btn"
                         title="Trả sách"
                     >
@@ -240,7 +266,7 @@ const BookCard = ({ item, activeTab, openModal, openDeleteModal, onShowDetail })
 };
 
 // Card Grid Component
-const CardGrid = ({ items, activeTab, openModal, openDeleteModal }) => {
+const CardGrid = ({ items, activeTab, openModal, openDeleteModal, getUserInfo }) => {
     const [detailItem, setDetailItem] = useState(null);
 
     const handleShowDetail = (item) => {
@@ -262,6 +288,7 @@ const CardGrid = ({ items, activeTab, openModal, openDeleteModal }) => {
                         openModal={openModal}
                         openDeleteModal={openDeleteModal}
                         onShowDetail={handleShowDetail}
+                        getUserInfo={getUserInfo}
                     />
                 ))}
             </div>
@@ -279,7 +306,8 @@ const CardGrid = ({ items, activeTab, openModal, openDeleteModal }) => {
 const MemoizedBookCard = React.memo(BookCard, (prevProps, nextProps) => {
     return (
         prevProps.item.id === nextProps.item.id &&
-        prevProps.activeTab === nextProps.activeTab
+        prevProps.activeTab === nextProps.activeTab &&
+        prevProps.getUserInfo === nextProps.getUserInfo
     );
 });
 
@@ -309,6 +337,7 @@ function BorrowList() {
     const [borrowRequests, setBorrowRequests] = useState([]);
     const [borrowedBooks, setBorrowedBooks] = useState([]);
     const [returnedBooks, setReturnedBooks] = useState([]);
+    const [users, setUsers] = useState({});
     const [activeTab, setActiveTab] = useState('requests');
     const [searchTerm, setSearchTerm] = useState('');
     const [isAsideVisible, setIsAsideVisible] = useState(true);
@@ -319,145 +348,143 @@ function BorrowList() {
     const [selectedBook, setSelectedBook] = useState(null);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [bookToDelete, setBookToDelete] = useState(null);
-    const itemsPerPage = 6; // Adjusted for card layout
+    const itemsPerPage = 6;
+
+    const getUserInfo = useCallback((userId) => {
+        return users[userId] || { fullName: 'Unknown User', email: '' };
+    }, [users]);
 
     useEffect(() => {
         const borrowRequestsRef = ref(database, 'borrowRequests');
         const borrowedBooksRef = ref(database, 'borrowedBooks');
         const returnedBooksRef = ref(database, 'returnedBooks');
+        const usersRef = ref(database, 'users');
 
-        // Giữ nguyên logic cho borrowRequests và returnedBooks
-        onValue(borrowRequestsRef, (snapshot) => {
+        onValue(usersRef, (snapshot) => {
             const data = snapshot.val();
-            const borrowRequestsList = data ? Object.entries(data).map(([key, value]) => ({ id: key, ...value })) : [];
-            setBorrowRequests(borrowRequestsList);
+            if (data) {
+                const usersObject = {};
+                Object.entries(data).forEach(([key, value]) => {
+                    usersObject[key] = { fullName: value.fullName, email: value.email };
+                });
+                setUsers(usersObject);
+            }
         });
 
-        // Tối ưu lại cấu trúc dữ liệu cho borrowedBooks
+        onValue(borrowRequestsRef, (snapshot) => {
+            const data = snapshot.val();
+            setBorrowRequests(data ? Object.entries(data).map(([key, value]) => ({ id: key, ...value })) : []);
+        });
+
         onValue(borrowedBooksRef, (snapshot) => {
             const data = snapshot.val();
-            const borrowedBooksList = data ? Object.entries(data).map(([key, value]) => ({
-                id: key,
-                bookId: value.bookId,
-                title: value.title,
-                borrower: value.borrower,
-                borrowDate: value.borrowDate,
-                dueDate: value.dueDate,
-                status: value.status || 'active' // Thêm trạng thái mặc định
-            })) : [];
-            setBorrowedBooks(borrowedBooksList);
+            setBorrowedBooks(data ? Object.entries(data).map(([key, value]) => ({ id: key, ...value })) : []);
         });
 
         onValue(returnedBooksRef, (snapshot) => {
             const data = snapshot.val();
-            const returnedBooksList = data ? Object.entries(data).map(([key, value]) => ({ id: key, ...value })) : [];
-            setReturnedBooks(returnedBooksList);
+            setReturnedBooks(data ? Object.entries(data).map(([key, value]) => ({ id: key, ...value })) : []);
         });
     }, []);
 
-    const toggleAside = () => {
-        setIsAsideVisible(!isAsideVisible);
-    };
-
-    const handleSearch = (event) => {
-        setSearchTerm(event.target.value);
-        setCurrentPage(1);
-    };
-
-    const createNotification = async (type, data) => {
-        try {
-            const notificationRef = ref(database, 'notifications');
-            const notification = {
-                type: type, // 'approve', 'reject'
-                bookTitle: data.title,
-                requester: data.requester,
-                message: type === 'approve' 
-                    ? `Yêu cầu mượn sách "${data.title}" của bạn đã được chấp nhận`
-                    : `Yêu cầu mượn sách "${data.title}" của bạn đã bị từ chối${data.rejectReason ? `. Lý do: ${data.rejectReason}` : ''}`,
-                timestamp: serverTimestamp(),
-                isRead: false,
-                userId: data.requesterId // ID của người yêu cầu
-            };
-
-            await push(notificationRef, notification);
-        } catch (error) {
-            console.error("Error creating notification:", error);
-        }
-    };
-
     const handleApproveRequest = async (id) => {
-        const approvedRequest = borrowRequests.find(request => request.id === id);
-        const today = new Date();
-        let dueDate = new Date(today);
-        dueDate.setDate(today.getDate() + 7);
-
-        try {
-            if (approvedRequest.requestType === 'extend') {
-                const borrowedBook = borrowedBooks.find(book => 
-                    book.bookId === approvedRequest.bookId && 
-                    book.borrower === approvedRequest.requester
-                );
-
-                if (borrowedBook) {
-                    const currentDueDate = new Date(borrowedBook.dueDate);
-                    const newDueDate = new Date(currentDueDate);
-                    newDueDate.setDate(currentDueDate.getDate() + 7);
-
-                    await update(ref(database, `borrowedBooks/${borrowedBook.id}`), {
-                        dueDate: newDueDate.toISOString().split('T')[0]
-                    });
-
-                    // Tạo thông báo cho gia hạn
-                    await createNotification('approve', {
-                        ...approvedRequest,
-                        title: `${approvedRequest.title} (Gia hạn)`
-                    });
-                }
-            } else {
-                const newBorrowedBook = {
-                    bookId: approvedRequest.bookId,
-                    title: approvedRequest.title,
-                    borrower: approvedRequest.requester,
-                    borrowDate: today.toISOString().split('T')[0],
-                    dueDate: dueDate.toISOString().split('T')[0],
-                    status: 'active'
-                };
-
-                await push(ref(database, 'borrowedBooks'), newBorrowedBook);
-                
-                // Tạo thông báo cho mượn mới
-                await createNotification('approve', approvedRequest);
+        const request = borrowRequests.find(req => req.id === id);
+    
+        if (request.requestType === 'extend') {
+            // Tìm sách đang được mượn
+            const borrowedBook = borrowedBooks.find(book =>
+                book.bookId === request.bookId && book.requesterId === request.requesterId
+            );
+    
+            if (borrowedBook) {
+                // Tính ngày trả mới (thêm 7 ngày từ hạn trả hiện tại)
+                const currentDueDate = new Date(borrowedBook.dueDate);
+                const newDueDate = new Date(currentDueDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+                // Cập nhật thông tin sách đang mượn
+                await update(ref(database, `borrowedBooks/${borrowedBook.id}`), {
+                    dueDate: newDueDate.toISOString().split('T')[0],
+                    borrowCount: (parseInt(borrowedBook.borrowCount || "0") + 1).toString()
+                });
             }
-
-            // Xóa yêu cầu sau khi xử lý
-            await remove(ref(database, `borrowRequests/${id}`));
-        } catch (error) {
-            console.error("Error handling approve request:", error);
+        } else {
+            // Nếu là yêu cầu mượn mới
+            const borrowData = {
+                ...request,
+                borrowDate: new Date().toISOString().split('T')[0],
+                dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                status: 'active',
+                borrowCount: "0"
+            };
+            await push(ref(database, 'borrowedBooks'), borrowData);
         }
+    
+        // Thêm thông báo
+        await push(ref(database, 'notifications'), {
+            type: 'approve',
+            bookTitle: request.title,
+            requesterId: request.requesterId,
+            message: request.requestType === 'extend'
+                ? `Yêu cầu gia hạn sách "${request.title}" của bạn đã được chấp nhận`
+                : `Yêu cầu mượn sách "${request.title}" của bạn đã được chấp nhận`,
+            timestamp: serverTimestamp(),
+            isRead: false
+        });
+    
+        // Xóa yêu cầu
+        await remove(ref(database, `borrowRequests/${id}`));
     };
 
     const handleReturnBook = async (book) => {
-        if (book && book.id) {
-            try {
-                await remove(ref(database, `borrowedBooks/${book.id}`));
+        const returnData = {
+            bookId: book.bookId,
+            title: book.title,
+            requesterId: book.requesterId,
+            borrowDate: book.borrowDate,
+            returnDate: new Date().toISOString().split('T')[0],
+            borrowCount: book.borrowCount || 0
+        };
 
-                const returnedBook = {
-                    bookId: book.bookId,
-                    title: book.title,
-                    borrower: book.borrower,
-                    borrowDate: book.borrowDate,
-                    returnDate: new Date().toISOString().split('T')[0]
-                };
+        await Promise.all([
+            push(ref(database, 'returnedBooks'), returnData),
+            push(ref(database, 'notifications'), {
+                type: 'return',
+                bookTitle: book.title,
+                requesterId: book.requesterId,
+                message: `Sách "${book.title}" đã được trả lại thành công`,
+                timestamp: serverTimestamp(),
+                isRead: false
+            }),
+            remove(ref(database, `borrowedBooks/${book.id}`))
+        ]);
 
-                await push(ref(database, 'returnedBooks'), returnedBook);
-                closeReturnModal();
-                setBorrowedBooks(prev => prev.filter(item => item.id !== book.id));
-            } catch (error) {
-                console.error("Error returning book:", error);
-            }
+        setBorrowedBooks(prev => prev.filter(item => item.id !== book.id));
+    };
+
+
+    const handleRejectRequest = async (id, rejectReason) => {
+        const request = borrowRequests.find(req => req.id === id);
+
+        await push(ref(database, 'notifications'), {
+            type: 'reject',
+            bookTitle: request.title,
+            requesterId: request.requesterId,
+            message: `Yêu cầu mượn sách "${request.title}" của bạn đã bị từ chối${rejectReason ? `. Lý do: ${rejectReason}` : ''}`,
+            timestamp: serverTimestamp(),
+            isRead: false
+        });
+
+        await remove(ref(database, `borrowRequests/${id}`));
+    };
+
+    const handleDeleteBook = () => {
+        if (bookToDelete?.id) {
+            remove(ref(database, `returnedBooks/${bookToDelete.id}`));
+            closeDeleteModal();
         }
     };
 
+    // Modal handling functions
     const openModal = (action, book) => {
         setSelectedBook(book);
         if (action === 'return') {
@@ -468,41 +495,15 @@ function BorrowList() {
         }
     };
 
-    const closeReturnModal = () => {
-        setReturnModalOpen(false);
-        setSelectedBook(null);
-    };
-
     const closeModal = () => {
         setModalOpen(false);
         setModalAction(null);
         setSelectedBook(null);
     };
 
-    const handleConfirmAction = (rejectReason) => {
-        if (modalAction === 'approve') {
-            handleApproveRequest(selectedBook.id);
-        } else if (modalAction === 'reject') {
-            handleRejectRequest(selectedBook.id, rejectReason);
-        }
-        closeModal();
-    };
-
-    const handleRejectRequest = async (id, rejectReason) => {
-        try {
-            const rejectedRequest = borrowRequests.find(request => request.id === id);
-            
-            // Tạo thông báo từ chối
-            await createNotification('reject', {
-                ...rejectedRequest,
-                rejectReason: rejectReason
-            });
-
-            // Xóa yêu cầu
-            await remove(ref(database, `borrowRequests/${id}`));
-        } catch (error) {
-            console.error("Error handling reject request:", error);
-        }
+    const closeReturnModal = () => {
+        setReturnModalOpen(false);
+        setSelectedBook(null);
     };
 
     const openDeleteModal = (book) => {
@@ -515,23 +516,32 @@ function BorrowList() {
         setBookToDelete(null);
     };
 
-    const handleDeleteBook = () => {
-        if (bookToDelete && bookToDelete.id) {
-            remove(ref(database, `returnedBooks/${bookToDelete.id}`));
-            closeDeleteModal();
+    const handleConfirmAction = (rejectReason) => {
+        if (modalAction === 'approve') {
+            handleApproveRequest(selectedBook.id);
+        } else if (modalAction === 'reject') {
+            handleRejectRequest(selectedBook.id, rejectReason);
         }
+        closeModal();
     };
 
-    // Filter items
+    // Filter and pagination logic
     const filteredItems = (activeTab === 'requests' ? borrowRequests :
-        activeTab === 'borrowed' ? borrowedBooks :
-            returnedBooks).filter((item) =>
-                item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                item.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (item.requester || item.borrower).toLowerCase().includes(searchTerm.toLowerCase())
-            );
+        activeTab === 'borrowed' ? borrowedBooks : returnedBooks)
+        .filter((item) => {
+            if (!item) return false;
 
-    // Pagination
+            const userInfo = getUserInfo(item.requesterId) || { fullName: '', email: '' };
+            const title = item.title || '';
+            const author = item.author || '';
+            const searchTermLower = searchTerm.toLowerCase();
+
+            return title.toLowerCase().includes(searchTermLower) ||
+                author.toLowerCase().includes(searchTermLower) ||
+                userInfo.fullName.toLowerCase().includes(searchTermLower) ||
+                userInfo.email.toLowerCase().includes(searchTermLower);
+        });
+
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
@@ -543,14 +553,15 @@ function BorrowList() {
         <div className="book-lending-container">
             <Aside className={isAsideVisible ? 'visible' : 'hidden'} />
             <div className={`book-lending-main ${isAsideVisible ? '' : 'full-width'}`}>
-                <Header isAsideVisible={isAsideVisible} toggleAside={toggleAside} />
+                <Header isAsideVisible={isAsideVisible} toggleAside={() => setIsAsideVisible(!isAsideVisible)} />
                 <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
-                <Search searchTerm={searchTerm} handleSearch={handleSearch} />
+                <Search searchTerm={searchTerm} handleSearch={(e) => setSearchTerm(e.target.value)} />
                 <CardGrid
                     items={currentItems}
                     activeTab={activeTab}
                     openModal={openModal}
                     openDeleteModal={openDeleteModal}
+                    getUserInfo={getUserInfo}
                 />
                 <Pagination
                     currentPage={currentPage}
