@@ -113,16 +113,19 @@ const BorrowedBooksList = () => {
         status: 'pending',
         coverUrl: selectedBook.coverUrl,
         requestType: 'extend',
-        borrowCount: selectedBook.borrowCount?.toString() || "0" // Chuyển sang string
+        borrowCount: selectedBook.borrowCount?.toString() || "0",
+        // Thêm ID của bản ghi đang mượn
+        currentBorrowId: selectedBook.id // ID của bản ghi trong bảng borrowedBooks
       });
 
       alert('Yêu cầu gia hạn đã được gửi. Vui lòng đợi quản trị viên phê duyệt.');
       setShowRenewalConfirm(false);
       setSelectedBook(null);
+      
     } catch (error) {
       alert('Có lỗi xảy ra khi gửi yêu cầu gia hạn. Vui lòng thử lại sau.');
     }
-  };
+};
 
   if (loading) {
     return <div className="loading-spinner">Đang tải thông tin...</div>;

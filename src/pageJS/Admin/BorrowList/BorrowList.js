@@ -8,7 +8,7 @@ import Aside from '../Aside/Aside.js';
 import BorrowModal from './BorrowModal/BorrowModal.js';
 import ReturnModal from './BorrowModal/ReturnModal.js';
 import DeleteModal from './DeleteModal.js';
-import { ref, onValue, push, remove, update, serverTimestamp } from 'firebase/database';
+import { ref, onValue, push, remove, update, serverTimestamp, set, get } from 'firebase/database';
 import { database } from '../../../firebaseConfig.js';
 import '../../../pageCSS/Admin/BorowListCss/BorrowListCss.css';
 import DetailModal from './BorrowModal/DetailModal.js';
@@ -389,50 +389,73 @@ function BorrowList() {
 
     const handleApproveRequest = async (id) => {
         const request = borrowRequests.find(req => req.id === id);
-    
-        if (request.requestType === 'extend') {
-            // Tìm sách đang được mượn
-            const borrowedBook = borrowedBooks.find(book =>
-                book.bookId === request.bookId && book.requesterId === request.requesterId
-            );
-    
-            if (borrowedBook) {
-                // Tính ngày trả mới (thêm 7 ngày từ hạn trả hiện tại)
-                const currentDueDate = new Date(borrowedBook.dueDate);
+        
+        try {
+            if (request.requestType === 'extend') {
+                // Handle extension request
+                const borrowedBookRef = ref(database, `borrowedBooks/${request.currentBorrowId}`);
+                
+                // Get current borrowed book data
+                const snapshot = await get(borrowedBookRef);
+                if (!snapshot.exists()) {
+                    throw new Error('Không tìm thấy thông tin sách đang mượn');
+                }
+                
+                const currentBorrowData = snapshot.val();
+                const currentDueDate = new Date(currentBorrowData.dueDate);
                 const newDueDate = new Date(currentDueDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+                const newBorrowCount = (parseInt(currentBorrowData.borrowCount || "0") + 1).toString();
     
-                // Cập nhật thông tin sách đang mượn
-                await update(ref(database, `borrowedBooks/${borrowedBook.id}`), {
+                // Update the existing borrowed book record
+                await update(borrowedBookRef, {
                     dueDate: newDueDate.toISOString().split('T')[0],
-                    borrowCount: (parseInt(borrowedBook.borrowCount || "0") + 1).toString()
+                    borrowCount: newBorrowCount
+                });
+    
+                // Create extension approval notification
+                await push(ref(database, 'notifications'), {
+                    type: 'extend_approve',
+                    bookTitle: request.title,
+                    requesterId: request.requesterId,
+                    message: `Yêu cầu gia hạn sách "${request.title}" đã được chấp nhận. Hạn mới: ${newDueDate.toLocaleDateString('vi-VN')}`,
+                    timestamp: serverTimestamp(),
+                    isRead: false
+                });
+            } else {
+                // Handle new borrow request
+                const borrowData = {
+                    bookId: request.bookId,
+                    title: request.title,
+                    author: request.author,
+                    requesterId: request.requesterId,
+                    borrowDate: new Date().toISOString().split('T')[0],
+                    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    status: 'active',
+                    borrowCount: "0",
+                    coverUrl: request.coverUrl
+                };
+    
+                // Create new borrowed book record
+                await push(ref(database, 'borrowedBooks'), borrowData);
+    
+                // Create borrow approval notification
+                await push(ref(database, 'notifications'), {
+                    type: 'borrow_approve',
+                    bookTitle: request.title,
+                    requesterId: request.requesterId,
+                    message: `Yêu cầu mượn sách "${request.title}" đã được chấp nhận`,
+                    timestamp: serverTimestamp(),
+                    isRead: false
                 });
             }
-        } else {
-            // Nếu là yêu cầu mượn mới
-            const borrowData = {
-                ...request,
-                borrowDate: new Date().toISOString().split('T')[0],
-                dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                status: 'active',
-                borrowCount: "0"
-            };
-            await push(ref(database, 'borrowedBooks'), borrowData);
+    
+            // Remove the request after processing
+            await remove(ref(database, `borrowRequests/${id}`));
+    
+        } catch (error) {
+            console.error('Error processing request:', error);
+            throw new Error('Có lỗi xảy ra khi xử lý yêu cầu. Vui lòng thử lại.');
         }
-    
-        // Thêm thông báo
-        await push(ref(database, 'notifications'), {
-            type: 'approve',
-            bookTitle: request.title,
-            requesterId: request.requesterId,
-            message: request.requestType === 'extend'
-                ? `Yêu cầu gia hạn sách "${request.title}" của bạn đã được chấp nhận`
-                : `Yêu cầu mượn sách "${request.title}" của bạn đã được chấp nhận`,
-            timestamp: serverTimestamp(),
-            isRead: false
-        });
-    
-        // Xóa yêu cầu
-        await remove(ref(database, `borrowRequests/${id}`));
     };
 
     const handleReturnBook = async (book) => {
