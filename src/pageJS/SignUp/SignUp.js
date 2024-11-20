@@ -21,7 +21,6 @@ function SignUp() {
             const userData = {
                 avatar: "",
                 email: user.email,
-                password: user.password,
                 role: "user",
                 fullName: "",
                 birthDate: "",
@@ -31,8 +30,7 @@ function SignUp() {
                 favoriteBooks: { default: "Chưa có" },
                 borrowedBooks: { default: "Chưa có" },
                 createdAt: serverTimestamp(),
-                lastUpdated: serverTimestamp(),
-                emailVerified: false,
+                lastUpdated: serverTimestamp()
             };
             await set(ref(database, 'users/' + user.uid), userData);
             console.log("Thông tin người dùng đã được thêm vào Database");
@@ -61,7 +59,6 @@ function SignUp() {
 
             const userInfo = {
                 email: user.email,
-                password: password,
                 uid: user.uid,
             };
             await addUserToDatabase(userInfo);

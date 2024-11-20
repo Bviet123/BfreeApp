@@ -83,7 +83,7 @@ function HomeMain() {
   return (
     <div className='HomeMain'>
       <div className="book-list-search">
-        <FaSearch className="search-icon" />
+        <FaSearch />
         <input
           type="text"
           placeholder="Tìm kiếm sách..."

@@ -7,6 +7,7 @@ import '../../pageCSS/BookDetailCss/BookDetailCss.css'
 import HomeNav from '../Home/HomeNav';
 import HomeFoot from '../Home/HomeFoot';
 import AuthorInfo from './AuthorInfor';
+import BookComments from './BookComment';
 
 function BookDetail() {
   const { bookId } = useParams();
@@ -24,7 +25,7 @@ function BookDetail() {
   const [relatedBooks, setRelatedBooks] = useState([]);
   const [sameGenreBooks, setSameGenreBooks] = useState([]);
   const [chapters, setChapters] = useState([]);
-  const [borrowStatus, setBorrowStatus] = useState('available'); // 'available', 'borrowed', 'pending'
+  const [borrowStatus, setBorrowStatus] = useState('available');
 
   useEffect(() => {
     if (!user && localStorage.getItem('user')) {
@@ -33,7 +34,6 @@ function BookDetail() {
 
     const fetchBookData = async () => {
       try {
-        // Fetch book data
         const bookRef = ref(database, `books/${bookId}`);
         const bookSnapshot = await get(bookRef);
         const bookData = bookSnapshot.val();
@@ -117,26 +117,42 @@ function BookDetail() {
             setIsFavorite(userData.favoriteBooks.hasOwnProperty(bookId));
           }
 
-          // Check borrow status
+          // Check borrow status from both borrowRequests and borrowedBooks
           const borrowRequestsRef = ref(database, 'borrowRequests');
           const borrowRequestsSnapshot = await get(borrowRequestsRef);
           const borrowRequests = borrowRequestsSnapshot.val();
-          
-          if (borrowRequests) {
-            const userRequests = Object.values(borrowRequests).filter(request => 
-              request.requesterId === user.uid && 
-              request.bookId === bookId
-            );
 
-            if (userRequests.length > 0) {
-              const latestRequest = userRequests[userRequests.length - 1];
-              if (latestRequest.status === 'approved') {
-                setBorrowStatus('borrowed');
-              } else if (latestRequest.status === 'pending') {
-                setBorrowStatus('pending');
-              }
+          const borrowedBooksRef = ref(database, 'borrowedBooks');
+          const borrowedBooksSnapshot = await get(borrowedBooksRef);
+          const borrowedBooks = borrowedBooksSnapshot.val();
+
+          let currentStatus = 'available';
+
+          // Check in borrowRequests
+          if (borrowRequests) {
+            const pendingRequest = Object.values(borrowRequests).find(request =>
+              request.requesterId === user.uid &&
+              request.bookId === bookId &&
+              request.status === 'pending'
+            );
+            if (pendingRequest) {
+              currentStatus = 'pending';
             }
           }
+
+          // Check in borrowedBooks
+          if (borrowedBooks && currentStatus === 'available') {
+            const activeBooking = Object.values(borrowedBooks).find(book =>
+              book.requesterId === user.uid &&
+              book.bookId === bookId &&
+              book.status === 'active'
+            );
+            if (activeBooking) {
+              currentStatus = 'borrowed';
+            }
+          }
+
+          setBorrowStatus(currentStatus);
         }
 
         // Fetch same genre books
@@ -214,13 +230,18 @@ function BookDetail() {
     }
 
     if (borrowStatus !== 'available') {
-      alert(borrowStatus === 'pending' 
-        ? "Bạn đã gửi yêu cầu mượn sách này và đang chờ xét duyệt." 
+      alert(borrowStatus === 'pending'
+        ? "Bạn đã gửi yêu cầu mượn sách này và đang chờ xét duyệt."
         : "Bạn đang mượn sách này.");
       return;
     }
 
     try {
+      if (book.availability && book.availability.copiesAvailable <= 0) {
+        alert("Rất tiếc, hiện tại sách đã hết.");
+        return;
+      }
+
       const borrowRequest = {
         bookId: bookId,
         title: book.title,
@@ -230,21 +251,23 @@ function BookDetail() {
         status: 'pending',
         coverUrl: book.coverUrl,
         requestType: 'borrow',
-        borrowCount: '0'
+        borrowCount: '0',
       };
 
       const borrowRequestsRef = ref(database, 'borrowRequests');
       await push(borrowRequestsRef, borrowRequest);
-      
+
       setBorrowStatus('pending');
       alert("Yêu cầu mượn sách đã được gửi thành công! Vui lòng đợi quản trị viên xét duyệt.");
+
     } catch (error) {
       console.error("Error sending borrow request:", error);
       alert("Có lỗi xảy ra khi gửi yêu cầu mượn sách.");
     }
   };
 
-  
+
+
   if (isLoading) return <div>Đang tải...</div>;
   if (error) return <div>Lỗi: {error}</div>;
   if (!book) return <div>Không tìm thấy sách</div>;
@@ -253,7 +276,7 @@ function BookDetail() {
     <div className="dt-book-detail-page">
       <HomeNav user={user} />
       <div className="dt-book-detail-content">
-      <BookMainInfo
+        <BookMainInfo
           book={book}
           genres={genres}
           isFavorite={isFavorite}
@@ -272,6 +295,7 @@ function BookDetail() {
         )}
         <RelatedBooks relatedBooks={relatedBooks} handleRelatedBookClick={handleRelatedBookClick} />
         <SameGenreBooks sameGenreBooks={sameGenreBooks} handleRelatedBookClick={handleRelatedBookClick} />
+        <BookComments bookId={bookId} user={user} />
       </div>
       <HomeFoot />
     </div>
@@ -339,13 +363,14 @@ function BookAdditionalInfo({ book }) {
           {book.pages && <tr><td>Số trang:</td><td>{book.pages}</td></tr>}
           {book.language && <tr><td>Ngôn ngữ:</td><td>{book.language}</td></tr>}
           {book.isbn && <tr><td>ISBN:</td><td>{book.isbn}</td></tr>}
+          {book.availability && book.availability.copiesAvailable !== undefined && (
+            <tr><td>Số lượng sách có sẵn:</td><td>{book.availability.copiesAvailable}</td></tr>
+          )}
         </tbody>
       </table>
     </div>
   );
 }
-
-
 
 function ProducerInfo({ producer }) {
   if (!producer) return <p>Không có thông tin về nhà sản xuất.</p>;

@@ -4,7 +4,6 @@ import '../../../pageCSS/Admin/AsideCss.css';
 
 function Aside() {
   const navigate = useNavigate();
-  const currentUser = JSON.parse(localStorage.getItem('user'));
 
   const handleNavigateHome = () => {
     const userData = localStorage.getItem('user');
@@ -16,7 +15,11 @@ function Aside() {
       return;
     }
     
-    navigate('/home');
+    navigate('/home', { 
+      state: { 
+        user: JSON.parse(userData)
+      } 
+    });
   };
 
   return (

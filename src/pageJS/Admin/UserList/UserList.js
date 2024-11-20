@@ -1,31 +1,89 @@
 import React, { useState, useEffect } from 'react';
-import { createUserWithEmailAndPassword, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { ref, get, onValue, remove, update, push, set, serverTimestamp } from 'firebase/database';
+import { createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { ref, get, onValue, remove, push, set, serverTimestamp } from 'firebase/database';
 import { auth, database } from '../../../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 import '../../../pageCSS/Admin/UserListCss/UserListCss.css';
 import Aside from '../Aside/Aside.js';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import UserModal from './Model/UserModel';
+import { toast } from 'react-toastify';
+
+function ResetPasswordModal({ isOpen, onClose, userEmail }) {
+    const [loading, setLoading] = useState(false);
+    const [resetOption, setResetOption] = useState('sendEmail');
+
+    const handleResetPassword = async () => {
+        setLoading(true);
+        try {
+            await sendPasswordResetEmail(auth, userEmail);
+            toast.success('Đã gửi email đặt lại mật khẩu thành công!');
+            onClose();
+        } catch (error) {
+            console.error('Error:', error);
+            toast.error('Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại sau.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="ul-modal-overlay">
+            <div className="ul-modal">
+                <h2>Đặt lại mật khẩu</h2>
+                <div className="ul-modal-content">
+                    <p>Bạn muốn đặt lại mật khẩu cho tài khoản: <strong>{userEmail}</strong></p>
+
+                    <div className="ul-reset-opts">
+                        <div className="ul-form-group">
+                            <label>
+                                <input
+                                    type="radio"
+                                    value="sendEmail"
+                                    checked={resetOption === 'sendEmail'}
+                                    onChange={(e) => setResetOption(e.target.value)}
+                                />
+                                Gửi email đặt lại mật khẩu cho người dùng
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="ul-modal-actions">
+                        <button
+                            className="ul-btn ul-btn-submit"
+                            onClick={handleResetPassword}
+                            disabled={loading}
+                        >
+                            {loading ? 'Đang xử lý...' : 'Gửi yêu cầu đặt lại mật khẩu'}
+                        </button>
+                        <button
+                            className="ul-btn ul-btn-cancel"
+                            onClick={onClose}
+                            disabled={loading}
+                        >
+                            Hủy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 function UserList() {
     const [users, setUsers] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
-    const [showPasswords, setShowPasswords] = useState({});
-
     const [modalAction, setModalAction] = useState(null);
     const [selectedUser, setSelectedUser] = useState(null);
-
     const [currentPage, setCurrentPage] = useState(1);
     const [usersPerPage] = useState(5);
-
     const [isAsideVisible, setIsAsideVisible] = useState(true);
-
-    const toggleAside = () => {
-        setIsAsideVisible(!isAsideVisible);
-    };
+    const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+    const [selectedUserEmail, setSelectedUserEmail] = useState(null);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -40,11 +98,6 @@ function UserList() {
                             ...usersData[key],
                         }));
                         setUsers(usersList);
-                        const initialShowPasswords = {};
-                        usersList.forEach(user => {
-                            initialShowPasswords[user.id] = false;
-                        });
-                        setShowPasswords(initialShowPasswords);
                     } else {
                         setUsers([]);
                     }
@@ -58,36 +111,14 @@ function UserList() {
         return unsubscribe;
     }, []);
 
-    const togglePassword = (userId) => {
-        setShowPasswords(prev => ({
-            ...prev,
-            [userId]: !prev[userId]
-        }));
-    };
-
     const handleSearch = (event) => {
         setSearchTerm(event.target.value);
         setCurrentPage(1);
     };
 
-    const filteredUsers = users.filter((user) =>
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const indexOfLastUser = currentPage * usersPerPage;
-    const indexOfFirstUser = indexOfLastUser - usersPerPage;
-    const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
     const handleAdd = () => {
         setModalAction('add');
         setSelectedUser(null);
-    };
-
-    const handleEdit = (user) => {
-        setModalAction('edit');
-        setSelectedUser(user);
     };
 
     const handleDelete = (user) => {
@@ -95,21 +126,19 @@ function UserList() {
         setSelectedUser(user);
     };
 
-    const closeModal = () => {
-        setModalAction(null);
-        setSelectedUser(null);
+    const handleResetPassword = (user) => {
+        setSelectedUserEmail(user.email);
+        setShowResetPasswordModal(true);
     };
 
     const handleSubmit = async (userData) => {
         try {
             if (modalAction === 'add') {
-                // Existing code for adding a new user
                 const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
                 const user = userCredential.user;
-        
+
                 await set(ref(database, 'users/' + user.uid), {
                     email: userData.email,
-                    password: userData.password,
                     role: userData.role,
                     fullName: "",
                     birthDate: "",
@@ -123,40 +152,8 @@ function UserList() {
                     borrowedBooks: ["book1"],
                     favoriteBooks: ["book1"],
                 });
-        
+
                 setUsers([...users, { id: user.uid, ...userData }]);
-            } else if (modalAction === 'edit') {
-                // Update user information in Realtime Database
-                await update(ref(database, `users/${selectedUser.id}`), {
-                    email: userData.email,
-                    role: userData.role,
-                    lastUpdated: serverTimestamp()
-                });
-    
-                // Update password in Authentication if it has changed
-                if (userData.password !== selectedUser.password) {
-                    const user = auth.currentUser;
-                    if (user) {
-                        try {
-                            // Attempt to reauthenticate before updating password
-                            const credential = EmailAuthProvider.credential(user.email, selectedUser.password);
-                            await reauthenticateWithCredential(user, credential);
-                            await updatePassword(user, userData.password);
-                            
-                            // Update password in Realtime Database
-                            await update(ref(database, `users/${selectedUser.id}`), {
-                                password: userData.password
-                            });
-                        } catch (error) {
-                            console.error('Error updating password:', error);
-                            throw new Error('Không thể cập nhật mật khẩu. Vui lòng đăng nhập lại và thử lại.');
-                        }
-                    } else {
-                        console.warn("Password update skipped: user not authenticated");
-                    }
-                }
-    
-                setUsers(users.map(user => user.id === selectedUser.id ? { ...user, ...userData } : user));
             } else if (modalAction === 'delete') {
                 await remove(ref(database, `users/${selectedUser.id}`));
                 setUsers(users.filter(user => user.id !== selectedUser.id));
@@ -164,29 +161,45 @@ function UserList() {
             closeModal();
         } catch (error) {
             console.error('Error:', error);
-            alert(error.message || 'Đã xảy ra lỗi. Vui lòng thử lại.');
+            toast.error('Đã xảy ra lỗi. Vui lòng thử lại.');
         }
     };
 
+    const closeModal = () => {
+        setModalAction(null);
+        setSelectedUser(null);
+    };
+
+    const toggleAside = () => setIsAsideVisible(!isAsideVisible);
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    const filteredUsers = users.filter(user => 
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const currentUsers = filteredUsers.slice(
+        (currentPage - 1) * usersPerPage,
+        currentPage * usersPerPage
+    );
+
     return (
-        <div className="user-list-container">
+        <div className="ul-container">
             {isAsideVisible && <Aside currentUser={currentUser} />}
-            <div className={`user-list-main ${isAsideVisible ? '' : 'full-width'}`}>
-                <div className="user-list-header">
-                    <div className='user-list-toggle'>
-                        <button className="toggle-aside-btn" onClick={toggleAside}>
+            <div className={`ul-main ${isAsideVisible ? '' : 'ul-full'}`}>
+                <div className="ul-header">
+                    <div className="ul-toggle">
+                        <button className="ul-btn ul-btn-toggle" onClick={toggleAside}>
                             {isAsideVisible ? <FaTimes /> : <FaBars />}
                         </button>
                         <h2>Danh sách tài khoản người dùng</h2>
                     </div>
-                    <div className="user-list-actions">
-                        <button className="btn-add" onClick={handleAdd}>
+                    <div className="ul-actions">
+                        <button className="ul-btn ul-btn-add" onClick={handleAdd}>
                             Thêm tài khoản
                         </button>
                     </div>
                 </div>
 
-                <div className="user-list-search">
+                <div className="ul-search">
                     <input
                         type="text"
                         placeholder="Tìm kiếm tài khoản..."
@@ -194,62 +207,60 @@ function UserList() {
                         onChange={handleSearch}
                     />
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Email</th>
-                            <th>Mật khẩu</th>
-                            <th>Họ và tên</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {currentUsers && currentUsers.length > 0 ? (
-                            currentUsers.map((user) => (
+
+                <div className="ul-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Họ và tên</th>
+                                <th>Vai trò</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {currentUsers.map((user) => (
                                 <tr key={user.id}>
                                     <td>{user.email}</td>
-                                    <td>
-                                        <input
-                                            type={showPasswords[user.id] ? "text" : "password"}
-                                            value={user.password || ''}
-                                            readOnly
-                                        />
-                                        <button onClick={() => togglePassword(user.id)}>
-                                            {showPasswords[user.id] ? "Ẩn" : "Hiện"}
-                                        </button>
-                                    </td>
                                     <td>{user.fullName}</td>
                                     <td>
-                                        <button className="btn-edit" onClick={() => handleEdit(user)}>
-                                            Sửa
-                                        </button>
-                                        <button className="btn-delete" onClick={() => handleDelete(user)}>
+                                        <span className={`ul-role ${user.role}`}>
+                                            {user.role === 'Admin' ? 'Quản trị viên' : 'Người dùng'}
+                                        </span>
+                                    </td>
+                                    <td className="ul-actions">
+                                        <button className="ul-btn ul-btn-delete" onClick={() => handleDelete(user)}>
                                             Xóa
+                                        </button>
+                                        <button className="ul-btn ul-btn-reset" onClick={() => handleResetPassword(user)}>
+                                            Đặt lại mật khẩu
                                         </button>
                                     </td>
                                 </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="4">Không có dữ liệu người dùng.</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
 
-                <div className="pagination">
+                <div className="ul-pagination">
                     {Array.from({ length: Math.ceil(filteredUsers.length / usersPerPage) }).map((_, index) => (
                         <button
                             key={index}
                             onClick={() => paginate(index + 1)}
-                            className={currentPage === index + 1 ? 'active' : ''}
+                            className={`ul-btn ul-btn-page ${currentPage === index + 1 ? 'ul-active' : ''}`}
                         >
                             {index + 1}
                         </button>
                     ))}
                 </div>
-
             </div>
+
+            <ResetPasswordModal
+                isOpen={showResetPasswordModal}
+                onClose={() => setShowResetPasswordModal(false)}
+                userEmail={selectedUserEmail}
+            />
+
             <UserModal
                 isOpen={modalAction !== null}
                 onClose={closeModal}

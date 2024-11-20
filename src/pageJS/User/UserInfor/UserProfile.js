@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getDatabase, onValue, ref, get } from 'firebase/database';
+import { getDatabase, onValue, ref, get, remove, update } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
 import {
   FaEdit, FaEnvelope, FaBirthdayCake, FaVenusMars,
-  FaBullseye, FaHeart, FaCalendarAlt, FaClock
+  FaBullseye, FaHeart, FaCalendarAlt, FaClock,
+  FaBook, FaTrash
 } from 'react-icons/fa';
 import UserAside from '../UserAside/UserAside';
 import EditUserModal from './UserModal/EditUserModal';
@@ -16,6 +17,7 @@ const UserProfile = () => {
   const [user, setUser] = useState(null);
   const [categories, setCategories] = useState({});
   const [favoriteGenres, setFavoriteGenres] = useState({});
+  const [favoriteBooks, setFavoriteBooks] = useState({});
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [error, setError] = useState(null);
   const [shouldReload, setShouldReload] = useState(false);
@@ -37,6 +39,7 @@ const UserProfile = () => {
       const database = getDatabase();
       const userRef = ref(database, `users/${currentUser.uid}`);
       const categoriesRef = ref(database, 'categories');
+      const favoriteBooksRef = ref(database, `users/${currentUser.uid}/favoriteBooks`);
 
       try {
         // Get initial user data
@@ -69,9 +72,15 @@ const UserProfile = () => {
           }
         });
 
+        // Listen to favorite books changes
+        const unsubscribeFavorites = onValue(favoriteBooksRef, (snapshot) => {
+          setFavoriteBooks(snapshot.val() || {});
+        });
+
         return () => {
           unsubscribeCategories();
           unsubscribeUser();
+          unsubscribeFavorites();
         };
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -96,6 +105,32 @@ const UserProfile = () => {
     setUser(updatedUser);
     setFavoriteGenres(updatedUser.favoriteGenres || {});
     setShouldReload(prev => !prev);
+  }, []);
+
+  const handleRemoveFavorite = useCallback(async (bookId) => {
+    try {
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      
+      if (!currentUser) {
+        throw new Error("Vui lòng đăng nhập để thực hiện thao tác này");
+      }
+
+      const database = getDatabase();
+      const favoriteRef = ref(database, `users/${currentUser.uid}/favoriteBooks/${bookId}`);
+      
+      await remove(favoriteRef);
+      
+      // Update local state
+      setFavoriteBooks(prev => {
+        const updated = { ...prev };
+        delete updated[bookId];
+        return updated;
+      });
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      setError("Lỗi khi xóa sách khỏi danh sách yêu thích");
+    }
   }, []);
 
   const getGenderDisplay = (gender) => {

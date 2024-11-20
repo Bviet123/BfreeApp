@@ -203,7 +203,7 @@ function BookLibrary() {
 
       <div className="book-list-controls">
         <div className="book-list-search">
-          <FaSearch className="search-icon" />
+          <FaSearch className="bl-search-icon" />
           <input
             type="text"
             placeholder="Tìm kiếm sách..."

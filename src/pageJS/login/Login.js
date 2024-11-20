@@ -116,7 +116,7 @@ function Login() {
                 avatar: "",
                 email: user.email,
                 password: user.password,
-                role: "user", // Mặc định role là "user" cho người dùng mới
+                role: "user", 
                 fullName: "",
                 birthDate: "",
                 gender: "",

@@ -15,6 +15,7 @@ const HomeNav = ({ user: userProp }) => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const dropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
 
@@ -66,8 +67,12 @@ const HomeNav = ({ user: userProp }) => {
       const userRef = ref(db, `users/${user.uid}`);
       const unsubscribeUser = onValue(userRef, (snapshot) => {
         const userData = snapshot.val();
-        if (userData && userData.avatar) {
-          setUserAvatar(userData.avatar);
+        if (userData) {
+          if (userData.avatar) {
+            setUserAvatar(userData.avatar);
+          }
+          // Kiểm tra role admin
+          setIsAdmin(userData.role === 'Admin');
         }
       });
 
@@ -156,6 +161,11 @@ const HomeNav = ({ user: userProp }) => {
               <div onClick={() => handleNavigation(`/user/profile/${user.uid}`)}>
                 Thông tin
               </div>
+              {isAdmin && (
+                <div onClick={() => handleNavigation('/admin')}>
+                  Quản lý
+                </div>
+              )}
               <div onClick={handleLogout}>Đăng xuất</div>
             </div>
           )}
@@ -205,6 +215,13 @@ const HomeNav = ({ user: userProp }) => {
                     Thông tin
                   </div>
                 </li>
+                {isAdmin && (
+                  <li>
+                    <div onClick={() => handleNavigation('/admin/users')}>
+                      Quản lý
+                    </div>
+                  </li>
+                )}
                 <li>
                   <div onClick={handleLogout}>Đăng xuất</div>
                 </li>

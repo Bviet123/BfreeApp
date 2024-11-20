@@ -1,0 +1,348 @@
+.dt-book-comments {
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+}
+
+/* Thêm style cho header chứa tiêu đề và nút toggle */
+.dt-comments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Style cho nút toggle tất cả */
+.dt-toggle-all-comments {
+    background-color: #f0f0f0;
+    color: #333;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.dt-toggle-all-comments:hover {
+    background-color: #e0e0e0;
+}
+
+/* Style cho nút toggle từng comment */
+.dt-comment-toggle {
+    cursor: pointer;
+    margin-right: 10px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+
+.dt-comment-toggle:hover {
+    color: #1a73e8;
+}
+  
+.dt-comment-form {
+    margin-bottom: 20px;
+}
+  
+.dt-comment-input {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    resize: vertical;
+}
+  
+.dt-submit-comment {
+    background-color: #1a73e8;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+  
+.dt-submit-comment:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.dt-submit-comment:hover:not(:disabled) {
+    background-color: #1557b0;
+}
+  
+.dt-comments-list {
+    margin-top: 20px;
+}
+  
+.dt-comment-item {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+/* Animation cho collapse/expand */
+.dt-comment-item.collapsed {
+    padding: 8px 15px;
+    margin-bottom: 8px;
+}
+
+.dt-comment-item.collapsed .dt-comment-content,
+.dt-comment-item.collapsed .dt-comment-actions,
+.dt-comment-item.collapsed .dt-replies-section {
+    display: none;
+}
+
+/* CSS cho phần reply */
+.dt-reply-item {
+    margin-left: 40px;
+    padding: 15px;
+    border-left: 2px solid #e0e0e0;
+    background-color: #f8f9fa;
+    border-radius: 0 8px 8px 0;
+    margin-top: 10px;
+}
+
+.dt-replies-section {
+    margin-top: 15px;
+    margin-left: 20px;
+    transition: all 0.3s ease;
+}
+
+.dt-reply-form {
+    margin-top: 15px;
+    margin-left: 40px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.dt-reply-input {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    resize: vertical;
+    background-color: white;
+}
+
+.dt-reply-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.dt-reply-actions button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dt-reply-actions button:first-child {
+    background-color: #1a73e8;
+    color: white;
+}
+
+.dt-reply-actions button:first-child:hover {
+    background-color: #1557b0;
+}
+
+.dt-reply-actions button:last-child {
+    background-color: #f0f0f0;
+    color: #666;
+}
+
+.dt-reply-actions button:last-child:hover {
+    background-color: #e0e0e0;
+}
+  
+.dt-comment-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+  
+.dt-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+}
+  
+.dt-user-name {
+    font-weight: 500;
+    margin-right: 10px;
+}
+  
+.dt-comment-time {
+    color: #666;
+    font-size: 0.9em;
+}
+  
+.dt-comment-content {
+    margin: 10px 0;
+    line-height: 1.5;
+    transition: all 0.3s ease;
+}
+  
+.dt-edited-mark {
+    color: #666;
+    font-size: 0.8em;
+    margin-left: 10px;
+    font-style: italic;
+}
+  
+.dt-comment-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+  
+.dt-comment-actions button {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 5px 10px;
+    font-size: 0.9em;
+    transition: color 0.2s ease;
+}
+
+.dt-comment-actions button:hover {
+    color: #1a73e8;
+}
+
+.dt-comment-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+  
+.dt-like-button {
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+  
+.dt-like-button.liked {
+    color: #1a73e8;
+}
+  
+.dt-edit-comment {
+    margin: 10px 0;
+    transition: all 0.3s ease;
+}
+  
+.dt-edit-input {
+    width: 100%;
+    min-height: 80px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    resize: vertical;
+}
+  
+.dt-edit-actions {
+    display: flex;
+    gap: 10px;
+}
+  
+.dt-edit-actions button {
+    padding: 5px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+  
+.dt-edit-actions button:first-child {
+    background-color: #1a73e8;
+    color: white;
+}
+  
+.dt-edit-actions button:last-child {
+    background-color: #f0f0f0;
+    color: #666;
+}
+
+.dt-edit-actions button:first-child:hover {
+    background-color: #1557b0;
+}
+
+.dt-edit-actions button:last-child:hover {
+    background-color: #e0e0e0;
+}
+
+.dt-replies-section {
+    margin-top: 15px;
+    margin-left: 20px;
+    transition: all 0.3s ease;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.dt-replies-section.expanded {
+    max-height: 1000px; /* hoặc một giá trị phù hợp */
+    opacity: 1;
+    margin-top: 15px;
+}
+
+/* Thêm animation cho arrow toggle */
+.dt-comment-toggle {
+    transition: transform 0.3s ease;
+}
+
+.dt-comment-toggle.expanded {
+    transform: rotate(180deg);
+}
+
+/* Responsive styling */
+@media (max-width: 768px) {
+    .dt-reply-item {
+        margin-left: 20px;
+    }
+
+    .dt-reply-form {
+        margin-left: 20px;
+    }
+
+    .dt-comment-actions {
+        flex-wrap: wrap;
+    }
+
+    .dt-user-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .dt-comment-toggle {
+        width: 16px;
+        height: 16px;
+        font-size: 10px;
+    }
+
+    .dt-toggle-all-comments {
+        padding: 6px 12px;
+        font-size: 0.9em;
+    }
+}

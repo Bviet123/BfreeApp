@@ -4,7 +4,6 @@ import '../../pageCSS/BookLibraryCss/FilterModalCss.css';
 import { database } from '../../firebaseConfig';
 
 const FilterModal = ({ isOpen, onClose, genres, onApplyFilters, initialFilters }) => {
-  // Khởi tạo state với giá trị từ initialFilters
   const [selectedGenres, setSelectedGenres] = useState(initialFilters?.genres || []);
   const [authorFilter, setAuthorFilter] = useState(initialFilters?.author || '');
   const [yearStart, setYearStart] = useState(initialFilters?.yearRange?.start || '');
@@ -14,7 +13,6 @@ const FilterModal = ({ isOpen, onClose, genres, onApplyFilters, initialFilters }
   const [showAuthorDropdown, setShowAuthorDropdown] = useState(false);
   const authorInputRef = useRef(null);
 
-  // Cập nhật state khi initialFilters thay đổi
   useEffect(() => {
     setSelectedGenres(initialFilters?.genres || []);
     setAuthorFilter(initialFilters?.author || '');
@@ -22,7 +20,6 @@ const FilterModal = ({ isOpen, onClose, genres, onApplyFilters, initialFilters }
     setYearEnd(initialFilters?.yearRange?.end || '');
   }, [initialFilters]);
 
-  // Fetch authors from database
   useEffect(() => {
     const authorsRef = ref(database, 'authors');
     const unsubscribe = onValue(authorsRef, (snapshot) => {
@@ -41,7 +38,6 @@ const FilterModal = ({ isOpen, onClose, genres, onApplyFilters, initialFilters }
     return () => unsubscribe();
   }, []);
 
-  // Filter authors based on input
   useEffect(() => {
     if (authors.length === 0) {
       setFilteredAuthors([]);
@@ -58,7 +54,6 @@ const FilterModal = ({ isOpen, onClose, genres, onApplyFilters, initialFilters }
     }
   }, [authorFilter, authors]);
 
-  // Handle click outside author dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (authorInputRef.current && !authorInputRef.current.contains(event.target)) {

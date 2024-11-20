@@ -4,6 +4,9 @@
   --background-color: #ecf0f1;
   --text-color: #34495e;
   --link-color: #3498db;
+  --button-bg: #3498db;
+  --button-hover: #2980b9;
+  --hover-color: #e74c3c;
 }
 
 /* Header styles */
@@ -37,7 +40,7 @@ nav {
 }
 
 .nav-list li div {
-  color: black;
+  color: white;
   text-decoration: none;
   cursor: pointer;
   font-weight: 500;
@@ -95,10 +98,16 @@ nav {
 
 .dropdown-content div:hover {
   background-color: var(--hover-color);
-  color: var(--secondary-color);
+  color: white;
 }
 
 /* User section styles */
+.userSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .user-section {
   position: relative;
 }
@@ -160,17 +169,58 @@ nav {
 
 .user-dropdown div:hover {
   background-color: var(--hover-color);
-  color: var(--secondary-color);
+  color: white;
+}
+
+/* Notifications section styles */
+.notifications-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.notification-icon {
+  color: white;
+  font-size: 1.25rem;
+  transition: color 0.3s ease;
+}
+
+.notifications-container:hover .notification-icon {
+  color: var(--hover-color);
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: var(--secondary-color);
+  color: white;
+  font-size: 0.75rem;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.notifications-modal {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  min-width: 300px;
+  max-width: 400px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  z-index: 1000;
+  margin-top: 0.5rem;
 }
 
 /* Login button */
-.login-section {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-}
-
-/* Login button styles */
 .login-button {
   padding: 8px 20px;
   background-color: var(--button-bg);
@@ -238,12 +288,13 @@ nav {
   .nav-list {
     flex-direction: column;
     width: 100%;
-    gap: 0.5rem
+    gap: 0.5rem;
   }
 
-  .login-section {
-    margin: 1rem 0;
+  .userSection {
     width: 100%;
+    justify-content: flex-start;
+    margin-top: 1rem;
   }
 
   .login-button {
@@ -282,6 +333,33 @@ nav {
     background-color: rgba(255, 255, 255, 0.05);
     margin-top: 0.25rem;
     border-radius: 4px;
+  }
+
+  .notifications-container {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .notification-icon {
+    font-size: 1.5rem;
+  }
+
+  .notification-badge {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+
+  .notifications-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
   }
 
   .NavUser-info {

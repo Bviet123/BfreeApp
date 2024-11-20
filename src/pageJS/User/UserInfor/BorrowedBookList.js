@@ -1,10 +1,17 @@
+// BorrowedBooksList.js
 import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getDatabase, ref, push, get, onValue } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
 import {
-  FaHandHoldingHeart, FaInfoCircle, FaBook, FaCalendarAlt,
-  FaSearch, FaRedo, FaExclamationCircle, FaEdit
+  FaHandHoldingHeart,
+  FaInfoCircle,
+  FaBook,
+  FaCalendarAlt,
+  FaSearch,
+  FaRedo,
+  FaExclamationCircle,
+  FaEdit
 } from 'react-icons/fa';
 import UserAside from '../UserAside/UserAside';
 import '../../../pageCSS/User/UserProfileCss/BorrowedBookListCss.css';
@@ -114,18 +121,17 @@ const BorrowedBooksList = () => {
         coverUrl: selectedBook.coverUrl,
         requestType: 'extend',
         borrowCount: selectedBook.borrowCount?.toString() || "0",
-        // Thêm ID của bản ghi đang mượn
-        currentBorrowId: selectedBook.id // ID của bản ghi trong bảng borrowedBooks
+        currentBorrowId: selectedBook.id
       });
 
       alert('Yêu cầu gia hạn đã được gửi. Vui lòng đợi quản trị viên phê duyệt.');
       setShowRenewalConfirm(false);
       setSelectedBook(null);
-      
+
     } catch (error) {
       alert('Có lỗi xảy ra khi gửi yêu cầu gia hạn. Vui lòng thử lại sau.');
     }
-};
+  };
 
   if (loading) {
     return <div className="loading-spinner">Đang tải thông tin...</div>;
@@ -136,7 +142,10 @@ const BorrowedBooksList = () => {
       <UserAside activeItem="BorrowedBooks" user={user} />
       <main className="user-profile">
         <h1>Sách đang mượn</h1>
-        <button className="edit-button" onClick={() => navigate('/search-books')}>
+        <button
+          className="edit-button"
+          onClick={() => navigate('/library', { state: { user } })}
+        >
           <FaEdit /> Mượn thêm sách
         </button>
 
@@ -147,89 +156,87 @@ const BorrowedBooksList = () => {
               <span className="bb-count">Số sách: {filteredAndSortedBooks.length}</span>
             </h3>
 
+            <div className="bb-controls">
+              <div className="bb-search">
+                <FaSearch />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm sách..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              <div className="bb-filters">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="all">Tất cả trạng thái</option>
+                  <option value="normal">Đang mượn</option>
+                  <option value="nearDue">Sắp đến hạn</option>
+                  <option value="overdue">Quá hạn</option>
+                </select>
+
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="requestDate">Sắp xếp theo ngày mượn</option>
+                  <option value="title">Sắp xếp theo tên sách</option>
+                </select>
+              </div>
+            </div>
+
             {filteredAndSortedBooks.length > 0 ? (
-              <>
-                <div className="bb-controls">
-                  <div className="bb-search">
-                    <FaSearch />
-                    <input
-                      type="text"
-                      placeholder="Tìm kiếm sách..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
+              <div className="bb-grid">
+                {filteredAndSortedBooks.map((book) => {
+                  const { className, text } = getBookStatus(book.requestDate);
+                  const daysRemaining = calculateDaysRemaining(book.requestDate);
 
-                  <div className="bb-filters">
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                      <option value="all">Tất cả trạng thái</option>
-                      <option value="normal">Đang mượn</option>
-                      <option value="nearDue">Sắp đến hạn</option>
-                      <option value="overdue">Quá hạn</option>
-                    </select>
-
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                    >
-                      <option value="requestDate">Sắp xếp theo ngày mượn</option>
-                      <option value="title">Sắp xếp theo tên sách</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="bb-grid">
-                  {filteredAndSortedBooks.map((book) => {
-                    const { className, text } = getBookStatus(book.requestDate);
-                    const daysRemaining = calculateDaysRemaining(book.requestDate);
-
-                    return (
-                      <div key={book.id} className={`bb-card ${className}`}>
-                        <div className="bb-card-content">
-                          <h4>{book.title}</h4>
-                          <div className="bb-meta">
-                            <span className="bb-due-date">
-                              <FaCalendarAlt />
-                              {daysRemaining > 0 ?
-                                `Còn ${daysRemaining} ngày` :
-                                `Quá hạn ${Math.abs(daysRemaining)} ngày`}
-                            </span>
-                            <span className={`bb-status ${className}`}>{text}</span>
+                  return (
+                    <div key={book.id} className={`bb-card ${className}`}>
+                      <div className="bb-card-content">
+                        <h4>{book.title}</h4>
+                        <div className="bb-meta">
+                          <span className="bb-due-date">
+                            <FaCalendarAlt />
+                            {daysRemaining > 0 ?
+                              `Còn ${daysRemaining} ngày` :
+                              `Quá hạn ${Math.abs(daysRemaining)} ngày`}
+                          </span>
+                          <span className={`bb-status ${className}`}>{text}</span>
+                        </div>
+                        {book.borrowCount > 0 && (
+                          <div className="bb-renewal-count">
+                            Đã gia hạn: {book.borrowCount} lần
                           </div>
-                          {book.borrowCount > 0 && (
-                            <div className="bb-renewal-count">
-                              Đã gia hạn: {book.borrowCount} lần
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="bb-actions">
-                          <button
-                            className="bb-btn bb-btn-renew"
-                            onClick={() => {
-                              setSelectedBook(book);
-                              setShowRenewalConfirm(true);
-                            }}
-                            disabled={book.borrowCount >= 2 || daysRemaining < 0}
-                          >
-                            <FaRedo /> Gia hạn
-                          </button>
-
-                          <button
-                            className="bb-btn bb-btn-details"
-                            onClick={() => navigate(`/book/${book.bookId}`)}
-                          >
-                            <FaInfoCircle /> Chi tiết
-                          </button>
-                        </div>
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
-              </>
+
+                      <div className="bb-actions">
+                        <button
+                          className="bb-btn bb-btn-renew"
+                          onClick={() => {
+                            setSelectedBook(book);
+                            setShowRenewalConfirm(true);
+                          }}
+                          disabled={book.borrowCount >= 2 || daysRemaining < 0}
+                        >
+                          <FaRedo /> Gia hạn
+                        </button>
+
+                        <button
+                          className="bb-btn bb-btn-details"
+                          onClick={() => navigate(`/book/${book.bookId}`)}
+                        >
+                          <FaInfoCircle /> Chi tiết
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
               <div className="bb-empty">
                 <FaBook />
