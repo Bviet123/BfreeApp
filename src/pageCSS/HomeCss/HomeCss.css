@@ -94,7 +94,7 @@ h2 {
   bottom: 0;
   left: 0;
   right: 0;
-  transform: translateY(50%);
+  transform: translateY(60%);
   transition: transform 0.3s ease;
 }
 
@@ -106,6 +106,9 @@ h2 {
   margin: 10px 0 5px;
   font-size: 1.2em;
   color: var(--primary-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .book-card p {
@@ -117,10 +120,19 @@ h2 {
 .book-card .book-genre {
   color: var(--link-color);
   font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.book-card .book-description {
+.book-card .book-authors {
+  color: var(--text-color);
   font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  padding: 0 10px;
 }
 
 .book-card .book-rating,
@@ -137,13 +149,14 @@ h2 {
 
 .new-releases li {
   display: grid;
-  grid-template-columns: 3fr 2fr 1fr;
+  grid-template-columns: 2fr 2fr 1fr 1fr;
   align-items: center;
-  padding: 10px 0;
+  padding: 10px 15px;
   border-bottom: 1px solid #eee;
+  transition: background-color 0.2s ease;
 }
 
-.book-title, .book-author {
+.book-title, .book-authors {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -154,14 +167,52 @@ h2 {
   color: var(--link-color);
 }
 
-.book-author {
+.book-authors {
   font-style: italic;
+  color: var(--text-color);
+  padding-right: 10px;
 }
 
 .release-date {
   color: #7f8c8d;
   font-size: 0.9em;
   text-align: right;
+}
+
+.book-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: rgba(52, 152, 219, 0.1);
+  border-radius: 15px;
+  font-size: 0.9em;
+  color: var(--link-color);
+}
+
+.book-stats svg {
+  font-size: 1.1em;
+  color: var(--link-color);
+}
+
+.new-releases .book-stats {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  padding: 0;
+  color: var(--text-color);
+  justify-content: flex-start;
+}
+
+.new-releases .book-stats svg {
+  font-size: 1em;
+}
+
+.new-releases li:hover {
+  background-color: rgba(52, 152, 219, 0.05);
 }
 
 /* Footer */
@@ -207,10 +258,20 @@ footer {
   }
   
   .new-releases li {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    padding: 10px;
   }
   
   .release-date {
     text-align: left;
+  }
+
+  .book-stats {
+    font-size: 0.8em;
+  }
+  
+  .new-releases .book-stats {
+    justify-content: center;
   }
 }

@@ -82,7 +82,7 @@ const Bookshelf = () => {
                         ...value
                     }));
                 setBooks(bookList);
-                console.log('Fetched books:', bookList); // Debug log
+                console.log('Fetched books:', bookList);
             } else {
                 setBooks([]);
             }
@@ -129,7 +129,6 @@ const Bookshelf = () => {
 
             const result = matchesSearch && matchesAuthor && matchesGenres && matchesYear;
 
-            // Debug log for each book
             console.log('Book filtering:', {
                 id: book.id,
                 title: book.title,
@@ -143,13 +142,13 @@ const Bookshelf = () => {
             return result;
         });
 
-        console.log('Filtered result:', filtered.length, 'books'); // Debug log
+        console.log('Filtered result:', filtered.length, 'books'); 
         return filtered;
     }, [books, searchTerm, activeFilters]);
 
     // Handle filter application
     const handleApplyFilters = useCallback((filters) => {
-        console.log('Applying filters:', filters); // Debug log
+        console.log('Applying filters:', filters); 
         setActiveFilters({
             genres: filters.genres,
             author: {

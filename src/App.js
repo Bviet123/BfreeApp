@@ -28,6 +28,7 @@ import EditChapter from './pageJS/Admin/BookList/chapter/EditChapter';
 import EditBookDetails from './pageJS/Admin/BookList/EditBookDetails';
 import { AuthProvider } from './AuthProvider';
 import { ProtectedRoute } from './ProtectedRoute ';
+import NotFound from './ErrorPage';
 
 function App() {
   return (
@@ -73,7 +74,7 @@ function App() {
             </ProtectedRoute>
           } />
 
-          <Route path="*" element={<Navigate to="/home" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </AuthProvider>

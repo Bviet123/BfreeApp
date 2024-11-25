@@ -268,7 +268,13 @@ function BookDetail() {
 
 
 
-  if (isLoading) return <div>Đang tải...</div>;
+  if (isLoading) {
+    return (
+      <div className="bs-loading-container">
+        <div className="bs-loading-spinner"></div>
+      </div>
+    );
+  }
   if (error) return <div>Lỗi: {error}</div>;
   if (!book) return <div>Không tìm thấy sách</div>;
 

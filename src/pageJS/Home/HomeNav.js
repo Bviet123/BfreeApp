@@ -16,6 +16,7 @@ const HomeNav = ({ user: userProp }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const dropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
 
@@ -49,6 +50,7 @@ const HomeNav = ({ user: userProp }) => {
 
   // Fetch categories and user data
   useEffect(() => {
+    setIsLoading(true);
     const db = getDatabase();
     const categoriesRef = ref(db, 'categories');
     
@@ -61,6 +63,7 @@ const HomeNav = ({ user: userProp }) => {
         }));
         setCategories(categoriesList);
       }
+      setIsLoading(false);
     });
 
     if (user && user.uid) {
@@ -71,7 +74,6 @@ const HomeNav = ({ user: userProp }) => {
           if (userData.avatar) {
             setUserAvatar(userData.avatar);
           }
-          // Kiểm tra role admin
           setIsAdmin(userData.role === 'Admin');
         }
       });
@@ -162,7 +164,7 @@ const HomeNav = ({ user: userProp }) => {
                 Thông tin
               </div>
               {isAdmin && (
-                <div onClick={() => handleNavigation('/admin')}>
+                <div onClick={() => handleNavigation('/admin/users')}>
                   Quản lý
                 </div>
               )}
@@ -193,14 +195,20 @@ const HomeNav = ({ user: userProp }) => {
                 </button>
                 {(!isMobile || isDropdownOpen) && (
                   <div className="dropdown-content">
-                    {categories.map((category) => (
-                      <div
-                        key={category.id}
-                        onClick={() => handleNavigation('/library', { categoryId: category.id })}
-                      >
-                        {category.name}
+                    {isLoading ? (
+                      <div className="bs-loading-container">
+                        <div className="bs-loading-spinner"></div>
                       </div>
-                    ))}
+                    ) : (
+                      categories.map((category) => (
+                        <div
+                          key={category.id}
+                          onClick={() => handleNavigation('/library', { categoryId: category.id })}
+                        >
+                          {category.name}
+                        </div>
+                      ))
+                    )}
                   </div>
                 )}
               </div>

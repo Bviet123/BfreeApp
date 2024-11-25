@@ -18,11 +18,11 @@ const BookCard = ({ book, authors, genres, onEdit, onDelete }) => (
         book.authorIds?.map(id => authors[id]?.name || 'Unknown').join(', ') || 'Unknown'
       }</p>
       <p><strong>Thể loại:</strong> {
-        book.genreIds ? 
-        Object.entries(book.genreIds)
-          .map(([_, genreId]) => genres[genreId]?.name || 'Unknown')
-          .join(', ') 
-        : 'Chưa phân loại'
+        book.genreIds ?
+          Object.entries(book.genreIds)
+            .map(([_, genreId]) => genres[genreId]?.name || 'Unknown')
+            .join(', ')
+          : 'Chưa phân loại'
       }</p>
       <p><strong>Mô tả:</strong> {book.description || 'Chưa có mô tả'}</p>
     </div>
@@ -54,11 +54,11 @@ const Pagination = ({ currentPage, totalPages, paginate }) => (
   <nav className="bcl-pagination">
     <ul className="bcl-pagination-list">
       {[...Array(totalPages)].map((_, i) => (
-        <li 
-          key={i + 1} 
+        <li
+          key={i + 1}
           className={i + 1 === currentPage ? 'bcl-page-active' : 'bcl-page-item'}
         >
-          <button 
+          <button
             onClick={() => paginate(i + 1)}
             className="bcl-page-btn"
           >
@@ -73,14 +73,14 @@ const Pagination = ({ currentPage, totalPages, paginate }) => (
 function BookCardList() {
   const [books, setBooks] = useState([]);
   const [authors, setAuthors] = useState({});
-  const [genres, setGenres] = useState({}); 
+  const [genres, setGenres] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
   const [isAsideVisible, setIsAsideVisible] = useState(true);
   const [loading, setLoading] = useState(true);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [bookToDelete, setBookToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   const BOOKS_PER_PAGE = 8;
   const navigate = useNavigate();
 
@@ -88,9 +88,9 @@ function BookCardList() {
     const fetchData = () => {
       const unsubscribeBooks = onValue(ref(database, 'books'), (snapshot) => {
         const data = snapshot.val();
-        const booksArray = data ? 
+        const booksArray = data ?
           Object.entries(data).map(([id, book]) => ({ id, ...book })) : [];
-        const sortedBooks = booksArray.sort((a, b) => 
+        const sortedBooks = booksArray.sort((a, b) =>
           a.title.localeCompare(b.title)
         );
         setBooks(sortedBooks);
@@ -115,13 +115,13 @@ function BookCardList() {
     return fetchData();
   }, []);
 
-  const filteredBooks = books.filter(book => 
+  const filteredBooks = books.filter(book =>
     book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (book.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    book.authorIds?.some(id => 
+    book.authorIds?.some(id =>
       authors[id]?.name.toLowerCase().includes(searchTerm.toLowerCase())
     ) ||
-    book.genreIds && Object.entries(book.genreIds).some(([_, genreId]) => 
+    book.genreIds && Object.entries(book.genreIds).some(([_, genreId]) =>
       genres[genreId]?.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
@@ -133,10 +133,10 @@ function BookCardList() {
 
   const totalPages = Math.ceil(filteredBooks.length / BOOKS_PER_PAGE);
 
-  
+
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const handleToggleAside = () => {
@@ -175,9 +175,8 @@ function BookCardList() {
 
   if (loading) {
     return (
-      <div className="bcl-loading">
-        <div className="bcl-loading-spinner"></div>
-        <p>Đang tải dữ liệu...</p>
+      <div className="bs-loading-container">
+        <div className="bs-loading-spinner"></div>
       </div>
     );
   }
@@ -189,8 +188,8 @@ function BookCardList() {
         <div className={`bcl-main ${isAsideVisible ? '' : 'bcl-full-width'}`}>
           <div className="bcl-header">
             <div className="bcl-header-left">
-              <button 
-                className="bcl-toggle-btn" 
+              <button
+                className="bcl-toggle-btn"
                 onClick={handleToggleAside}
                 aria-label={isAsideVisible ? "Ẩn thanh bên" : "Hiện thanh bên"}
               >
@@ -220,8 +219,8 @@ function BookCardList() {
       <div className={`bcl-main ${isAsideVisible ? '' : 'bcl-full-width'}`}>
         <div className="bcl-header">
           <div className="bcl-header-left">
-            <button 
-              className="bcl-toggle-btn" 
+            <button
+              className="bcl-toggle-btn"
               onClick={handleToggleAside}
               aria-label={isAsideVisible ? "Ẩn thanh bên" : "Hiện thanh bên"}
             >
@@ -242,7 +241,7 @@ function BookCardList() {
               key={book.id}
               book={book}
               authors={authors}
-              genres={genres} 
+              genres={genres}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
@@ -250,7 +249,7 @@ function BookCardList() {
         </div>
 
         {totalPages > 1 && (
-          <Pagination 
+          <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             paginate={setCurrentPage}

@@ -12,7 +12,7 @@ function BookLibrary() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = location.state?.user;
-  const categoryId = location.state?.categoryId; // Get categoryId from location state
+  const categoryId = location.state?.categoryId; 
 
   const [books, setBooks] = useState([]);
   const [authors, setAuthors] = useState({});
@@ -27,7 +27,6 @@ function BookLibrary() {
     yearRange: { start: '', end: '' }
   });
 
-  // Set initial filters when component mounts or categoryId changes
   useEffect(() => {
     if (categoryId) {
       setActiveFilters(prev => ({
@@ -100,7 +99,6 @@ function BookLibrary() {
     setCurrentPage(1);
   };
 
-  // Filter books based on search term and active filters
   const filteredBooks = books.filter((book) => {
     // Search term filter
     const matchesSearch = book.title && 
