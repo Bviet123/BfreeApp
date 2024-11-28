@@ -4,11 +4,12 @@ import { FaSearch, FaBookReader } from 'react-icons/fa';
 import { database } from '../../firebaseConfig';
 import { ref, onValue, update, get } from 'firebase/database';
 import '../../pageCSS/HomeCss/HomeCss.css';
+import AdminMessaging from '../MessagesPage/AdminMessaging';
 
 function HomeMain() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user'));
-  
+
   const [books, setBooks] = useState([]);
   const [genres, setGenres] = useState({});
   const [authors, setAuthors] = useState({});
@@ -24,9 +25,9 @@ function HomeMain() {
     console.log('User data:', userData);
 
     if (!userData) {
-        console.log('No user found, redirecting to login');
-        navigate('/login');
-        return;
+      console.log('No user found, redirecting to login');
+      navigate('/login');
+      return;
     }
 
     const user = JSON.parse(userData);
@@ -54,10 +55,10 @@ function HomeMain() {
 
         booksArray.sort((a, b) => (b.readCount || 0) - (a.readCount || 0));
         setBooks(booksArray);
-        
+
         // Lọc sách theo thể loại yêu thích
         if (favoriteGenres.length > 0) {
-          const recommended = booksArray.filter(book => 
+          const recommended = booksArray.filter(book =>
             book.genreIds?.some(genreId => favoriteGenres.includes(genreId))
           );
           setRecommendedBooks(recommended);
@@ -92,16 +93,16 @@ function HomeMain() {
       const bookRef = ref(database, `books/${bookId}`);
       const snapshot = await get(bookRef);
       const currentBook = snapshot.val();
-      
+
       const currentReadCount = currentBook.readCount || 0;
       const newReadCount = currentReadCount + 1;
-      
+
       await update(bookRef, {
         readCount: newReadCount
       });
-      
+
       console.log(`Updated read count for book ${bookId} to ${newReadCount}`);
-      
+
       navigate(`/book/${bookId}`);
     } catch (error) {
       console.error('Error updating read count:', error);
@@ -138,6 +139,8 @@ function HomeMain() {
 
   return (
     <div className='HomeMain'>
+      <AdminMessaging user={user} />
+
       <div className="book-list-search">
         <FaSearch />
         <input
