@@ -17,36 +17,90 @@ const HomeNav = ({ user: userProp }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // New state for navigation visibility
+  const [isNavVisible, setIsNavVisible] = useState(true);
+  const [lastScrollPosition, setLastScrollPosition] = useState(0);
+
   const dropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
 
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-      if (window.innerWidth > 768) {
+      const newIsMobile = window.innerWidth <= 768;
+      setIsMobile(newIsMobile);
+      
+      if (newIsMobile) {
         setIsDropdownOpen(false);
         setIsNavOpen(false);
+        setIsNavVisible(true); // Reset nav visibility for mobile
       }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Add scroll handling effect - only when not mobile
+  useEffect(() => {
+    // Only add scroll listener when not in mobile mode
+    if (!isMobile) {
+      const handleScroll = () => {
+        const currentScrollPosition = window.pageYOffset;
+
+        // Only change visibility if scrolled past a threshold to prevent minor scrolls from triggering
+        if (currentScrollPosition > 100) {
+          // If scrolling down and current position is more than last position
+          if (currentScrollPosition > lastScrollPosition) {
+            setIsNavVisible(false);
+          } 
+          // If scrolling up
+          else if (currentScrollPosition < lastScrollPosition) {
+            setIsNavVisible(true);
+          }
+          
+          // Update last scroll position
+          setLastScrollPosition(currentScrollPosition);
+        } else {
+          // Always show nav when near the top of the page
+          setIsNavVisible(true);
+        }
+      };
+
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
+  }, [isMobile, lastScrollPosition]);
+
   // Handle click outside to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Xử lý dropdown
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
       }
       if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
         setIsUserDropdownOpen(false);
       }
+  
+      // Xử lý đóng navbar khi click ngoài
+      const header = document.querySelector('header');
+      const navToggle = document.querySelector('.nav-toggle');
+      
+      if (
+        isNavOpen && 
+        header && 
+        !header.contains(event.target) && 
+        navToggle && 
+        !navToggle.contains(event.target)
+      ) {
+        setIsNavOpen(false);
+      }
     };
-
+  
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isNavOpen]);
 
   // Fetch categories and user data
   useEffect(() => {
@@ -178,11 +232,29 @@ const HomeNav = ({ user: userProp }) => {
 
   return (
     <>
-      <button className="nav-toggle" onClick={toggleNav}>
+      <button 
+        className="nav-toggle" 
+        onClick={toggleNav}
+        style={{ 
+          display: isMobile ? 'block' : (isNavVisible ? 'block' : 'none'),
+          position: 'fixed',
+          top: !isMobile && !isNavVisible ? '-50px' : '10px',
+          transition: 'top 0.3s ease-in-out'
+        }}
+      >
         {isNavOpen ? '✕' : '☰'}
       </button>
 
-      <header className={isNavOpen ? 'open' : ''}>
+      <header 
+        className={`${isNavOpen ? 'open' : ''} ${!isMobile && !isNavVisible ? 'nav-hidden' : ''}`}
+        style={{
+          transform: !isMobile && !isNavVisible ? 'translateY(-100%)' : 'translateY(0)',
+          transition: 'transform 0.3s ease-in-out',
+          position: 'fixed',
+          width: '100%',
+          zIndex: 1000
+        }}
+      >
         <nav>
           <ul className="nav-list">
             <li>

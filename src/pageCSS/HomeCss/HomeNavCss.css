@@ -9,15 +9,29 @@
   --hover-color: #e74c3c;
 }
 
-/* Header styles */
+/* Global Reset and Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Header Styles - Base and Mobile */
 header {
   background-color: var(--primary-color);
   padding: 1rem 2rem;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  /* Smooth transition for mobile menu */
+  transition: transform 0.3s ease-in-out;
 }
 
-/* Navigation container */
+/* Navigation Container */
 nav {
   display: flex;
   justify-content: space-between;
@@ -26,7 +40,7 @@ nav {
   margin: 0 auto;
 }
 
-/* Navigation list - left side */
+/* Navigation List Styles */
 .nav-list {
   display: flex;
   list-style: none;
@@ -44,13 +58,17 @@ nav {
   text-decoration: none;
   cursor: pointer;
   font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease;
 }
 
 .nav-list li div:hover {
   color: var(--hover-color);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
 }
 
-/* Dropdown styles */
+/* Dropdown Styles */
 .dropdown {
   position: relative;
 }
@@ -66,6 +84,7 @@ nav {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  transition: background-color 0.2s ease;
 }
 
 .dropdown-content {
@@ -94,6 +113,7 @@ nav {
   color: var(--text-color);
   padding: 0.75rem 1rem;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .dropdown-content div:hover {
@@ -101,7 +121,7 @@ nav {
   color: white;
 }
 
-/* User section styles */
+/* User Section Styles */
 .userSection {
   display: flex;
   align-items: center;
@@ -125,6 +145,11 @@ nav {
   gap: 0.5rem;
   padding: 0.5rem;
   border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.NavUser-info:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .NavUser-info span {
@@ -149,6 +174,7 @@ nav {
   font-weight: bold;
 }
 
+/* User Dropdown */
 .user-dropdown {
   position: absolute;
   top: 100%;
@@ -159,12 +185,24 @@ nav {
   border-radius: 4px;
   z-index: 1000;
   margin-top: 0.5rem;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.user-section:hover .user-dropdown,
+.user-section .user-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 .user-dropdown div {
   color: var(--text-color);
   padding: 0.75rem 1rem;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .user-dropdown div:hover {
@@ -172,55 +210,7 @@ nav {
   color: white;
 }
 
-/* Notifications section styles */
-.notifications-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 0.5rem;
-}
-
-.notification-icon {
-  color: white;
-  font-size: 1.25rem;
-  transition: color 0.3s ease;
-}
-
-.notifications-container:hover .notification-icon {
-  color: var(--hover-color);
-}
-
-.notification-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background-color: var(--secondary-color);
-  color: white;
-  font-size: 0.75rem;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 4px;
-}
-
-.notifications-modal {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: white;
-  min-width: 300px;
-  max-width: 400px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  z-index: 1000;
-  margin-top: 0.5rem;
-}
-
-/* Login button */
+/* Login Button */
 .login-button {
   padding: 8px 20px;
   background-color: var(--button-bg);
@@ -242,73 +232,75 @@ nav {
   transform: translateY(-1px);
 }
 
-/* Mobile nav toggle */
+/* Mobile Navigation Toggle */
 .nav-toggle {
   display: none;
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 900;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.3s ease;
 }
 
-/* Responsive styles */
+.nav-toggle:hover {
+  background-color: var(--hover-color);
+  transform: rotate(90deg);
+}
+
+/* Responsive Styles for Mobile */
 @media (max-width: 768px) {
+  /* Mobile Navigation Toggle */
   .nav-toggle {
     display: block;
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 1001;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0.5rem;
-    font-size: 1.5rem;
-    cursor: pointer;
-    border-radius: 4px;
   }
 
+  /* Fixed Header for Mobile */
   header {
     position: fixed;
     top: 0;
-    left: -100%;
+    left: -100%; /* Start off-screen */
     width: 80%;
     max-width: 300px;
     height: 100vh;
     padding: 1rem;
-    transition: left 0.3s ease;
+    background-color: var(--primary-color);
+    transition: all 0.3s ease-in-out;
     z-index: 1000;
     overflow-y: auto;
   }
 
+  /* Open State for Mobile Navigation */
   header.open {
-    left: 0;
+    left: 0; /* Slide in from left */
   }
 
+  /* Vertical Navigation Layout */
   nav {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .nav-list {
     flex-direction: column;
-    width: 100%;
     gap: 0.5rem;
   }
 
-  .userSection {
-    width: 100%;
-    justify-content: flex-start;
-    margin-top: 1rem;
-  }
-
-  .login-button {
-    width: 100%;
-    text-align: center;
-  }
-
   .nav-list li div {
-    padding: 0.75rem 1rem;
     display: block;
+    width: 100%;
+    padding: 1rem;
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
   }
 
+  /* Dropdown Styles for Mobile */
   .dropdown {
     width: 100%;
   }
@@ -316,60 +308,56 @@ nav {
   .dropbtn {
     width: 100%;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
+    padding: 1rem;
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
   }
 
   .dropdown-content {
     position: static;
-    box-shadow: none;
     background-color: transparent;
-    margin-top: 0.5rem;
+    box-shadow: none;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .dropdown.open .dropdown-content {
+    opacity: 1;
+    max-height: 500px; /* Adjust based on your content */
   }
 
   .dropdown-content div {
-    color: white;
     background-color: rgba(255, 255, 255, 0.05);
+    color: white;
     margin-top: 0.25rem;
-    border-radius: 4px;
   }
 
-  .notifications-container {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    padding: 0.75rem 1rem;
+  /* User Section Mobile Styles */
+  .userSection {
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 1rem;
+  }
+
+  .user-section {
     width: 100%;
-    justify-content: space-between;
-  }
-
-  .notification-icon {
-    font-size: 1.5rem;
-  }
-
-  .notification-badge {
-    top: 0.5rem;
-    right: 0.5rem;
-  }
-
-  .notifications-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
   }
 
   .NavUser-info {
-    width: 100%;
     justify-content: space-between;
     background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    padding: 0.75rem 1rem;
+    padding: 1rem;
   }
 
+  .login-button {
+    width: 100%;
+    text-align: center;
+    margin-top: 1rem;
+  }
+
+  /* Full-screen Overlay for Mobile Nav */
   body.nav-open {
     overflow: hidden;
   }
@@ -381,7 +369,21 @@ nav {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 900;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  body.nav-open::after {
+    opacity: 1;
+  }
+}
+
+/* Accessibility and Performance Enhancements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
   }
 }

@@ -334,6 +334,14 @@
     cursor: not-allowed;
 }
 
+.status-badge.awaiting-pickup {
+    background-color: #f97316; 
+}
+
+.action-btn.pickup-btn {
+    background-color: #10b981; 
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .book-card-grid {

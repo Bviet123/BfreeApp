@@ -12,6 +12,7 @@ import { ref, onValue, push, remove, update, serverTimestamp, set, get } from 'f
 import { database } from '../../../firebaseConfig.js';
 import '../../../pageCSS/Admin/BorowListCss/BorrowListCss.css';
 import DetailModal from './BorrowModal/DetailModal.js';
+import PickupModal from './BorrowModal/PickUpModal.js';
 
 // Header Component
 const Header = ({ isAsideVisible, toggleAside }) => (
@@ -90,6 +91,13 @@ const BookCard = ({ item, activeTab, openModal, openDeleteModal, onShowDetail, g
 
     const renderStatus = () => {
         if (activeTab === 'requests') {
+            if (item.status === 'awaiting_pickup') {
+                return (
+                    <div className="status-badge awaiting-pickup">
+                        Chờ lấy sách
+                    </div>
+                );
+            }
             return (
                 <div className={`status-badge ${item.requestType === 'extend' ? 'extend' : 'borrow'}`}>
                     {item.requestType === 'extend' ? 'Gia hạn' : 'Mượn mới'}
@@ -217,20 +225,32 @@ const BookCard = ({ item, activeTab, openModal, openDeleteModal, onShowDetail, g
 
                 {activeTab === 'requests' && (
                     <>
-                        <button
-                            onClick={() => openModal('approve', item)}
-                            className="action-btn approve-btn"
-                            title="Chấp nhận yêu cầu"
-                        >
-                            <FaCheck /> Chấp nhận
-                        </button>
-                        <button
-                            onClick={() => openModal('reject', item)}
-                            className="action-btn reject-btn"
-                            title="Từ chối yêu cầu"
-                        >
-                            <FaTimes /> Từ chối
-                        </button>
+                        {item.status === 'awaiting_pickup' ? (
+                            <button
+                                onClick={() => openModal('pickup', item)} 
+                                className="action-btn pickup-btn"
+                                title="Xác nhận lấy sách"
+                            >
+                                <FaCheck /> Lấy sách
+                            </button>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={() => openModal('approve', item)}
+                                    className="action-btn approve-btn"
+                                    title="Chấp nhận yêu cầu"
+                                >
+                                    <FaCheck /> Chấp nhận
+                                </button>
+                                <button
+                                    onClick={() => openModal('reject', item)}
+                                    className="action-btn reject-btn"
+                                    title="Từ chối yêu cầu"
+                                >
+                                    <FaTimes /> Từ chối
+                                </button>
+                            </>
+                        )}
                     </>
                 )}
 
@@ -347,6 +367,7 @@ function BorrowList() {
     const [returnModalOpen, setReturnModalOpen] = useState(false);
     const [selectedBook, setSelectedBook] = useState(null);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [pickupModalOpen, setPickupModalOpen] = useState(false);
     const [bookToDelete, setBookToDelete] = useState(null);
     const itemsPerPage = 6;
 
@@ -389,30 +410,27 @@ function BorrowList() {
 
     const handleApproveRequest = async (id) => {
         const request = borrowRequests.find(req => req.id === id);
-        
+
         try {
             if (request.requestType === 'extend') {
-                // Handle extension request
+                // Xử lý yêu cầu gia hạn (giữ nguyên logic cũ)
                 const borrowedBookRef = ref(database, `borrowedBooks/${request.currentBorrowId}`);
-                
-                // Get current borrowed book data
+
                 const snapshot = await get(borrowedBookRef);
                 if (!snapshot.exists()) {
                     throw new Error('Không tìm thấy thông tin sách đang mượn');
                 }
-                
+
                 const currentBorrowData = snapshot.val();
                 const currentDueDate = new Date(currentBorrowData.dueDate);
                 const newDueDate = new Date(currentDueDate.getTime() + 7 * 24 * 60 * 60 * 1000);
                 const newBorrowCount = (parseInt(currentBorrowData.borrowCount || "0") + 1).toString();
-    
-                // Update the existing borrowed book record
+
                 await update(borrowedBookRef, {
                     dueDate: newDueDate.toISOString().split('T')[0],
                     borrowCount: newBorrowCount
                 });
-    
-                // Create extension approval notification
+
                 await push(ref(database, 'notifications'), {
                     type: 'extend_approve',
                     bookTitle: request.title,
@@ -422,39 +440,62 @@ function BorrowList() {
                     isRead: false
                 });
             } else {
-                // Handle new borrow request
-                const borrowData = {
-                    bookId: request.bookId,
-                    title: request.title,
-                    author: request.author,
-                    requesterId: request.requesterId,
-                    borrowDate: new Date().toISOString().split('T')[0],
-                    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                    status: 'active',
-                    borrowCount: "0",
-                    coverUrl: request.coverUrl
-                };
-    
-                // Create new borrowed book record
-                await push(ref(database, 'borrowedBooks'), borrowData);
-    
-                // Create borrow approval notification
+                // Chuyển trạng thái sang chờ lấy sách
+                await update(ref(database, `borrowRequests/${id}`), {
+                    status: 'awaiting_pickup'
+                });
+
+                // Tạo thông báo
                 await push(ref(database, 'notifications'), {
                     type: 'borrow_approve',
                     bookTitle: request.title,
                     requesterId: request.requesterId,
-                    message: `Yêu cầu mượn sách "${request.title}" đã được chấp nhận`,
+                    message: `Yêu cầu mượn sách "${request.title}" đã được chấp nhận. Sách đang chờ bạn đến lấy.`,
                     timestamp: serverTimestamp(),
                     isRead: false
                 });
             }
-    
-            // Remove the request after processing
-            await remove(ref(database, `borrowRequests/${id}`));
-    
         } catch (error) {
             console.error('Error processing request:', error);
             throw new Error('Có lỗi xảy ra khi xử lý yêu cầu. Vui lòng thử lại.');
+        }
+    };
+
+    // Thêm hàm mới để xác nhận lấy sách
+    const handlePickupBook = async (id) => {
+        const request = borrowRequests.find(req => req.id === id);
+
+        try {
+            const borrowData = {
+                bookId: request.bookId,
+                title: request.title,
+                author: request.author,
+                requesterId: request.requesterId,
+                borrowDate: new Date().toISOString().split('T')[0],
+                dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                status: 'active',
+                borrowCount: "0",
+                coverUrl: request.coverUrl
+            };
+
+            // Thêm vào bảng sách đang mượn
+            const newBorrowRef = await push(ref(database, 'borrowedBooks'), borrowData);
+
+            // Xóa khỏi yêu cầu mượn
+            await remove(ref(database, `borrowRequests/${id}`));
+
+            // Thông báo
+            await push(ref(database, 'notifications'), {
+                type: 'book_pickup',
+                bookTitle: request.title,
+                requesterId: request.requesterId,
+                message: `Bạn đã lấy sách "${request.title}" thành công.`,
+                timestamp: serverTimestamp(),
+                isRead: false
+            });
+        } catch (error) {
+            console.error('Error picking up book:', error);
+            throw new Error('Có lỗi xảy ra khi xác nhận lấy sách. Vui lòng thử lại.');
         }
     };
 
@@ -512,6 +553,8 @@ function BorrowList() {
         setSelectedBook(book);
         if (action === 'return') {
             setReturnModalOpen(true);
+        } else if (action === 'pickup') {
+            setPickupModalOpen(true);
         } else {
             setModalAction(action);
             setModalOpen(true);
@@ -537,6 +580,16 @@ function BorrowList() {
     const closeDeleteModal = () => {
         setDeleteModalOpen(false);
         setBookToDelete(null);
+    };
+
+    const openPickupModal = (book) => {
+        setSelectedBook(book);
+        setPickupModalOpen(true);
+    };
+
+    const closePickupModal = () => {
+        setSelectedBook(null);
+        setPickupModalOpen(false);
     };
 
     const handleConfirmAction = (rejectReason) => {
@@ -609,6 +662,12 @@ function BorrowList() {
                     onClose={closeDeleteModal}
                     book={bookToDelete}
                     onConfirm={handleDeleteBook}
+                />
+                <PickupModal
+                    isOpen={pickupModalOpen}
+                    onClose={closePickupModal}
+                    bookTitle={selectedBook?.title}
+                    onConfirm={() => selectedBook && handlePickupBook(selectedBook.id)}
                 />
             </div>
         </div>
