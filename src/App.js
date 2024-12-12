@@ -73,7 +73,7 @@ function App() {
               </Routes>
             </ProtectedRoute>
           } />
-
+          <Route path="/" element={<Home />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../../../pageCSS/Admin/AuthorListCss/AuthorListCss.css';
-import { FaBars, FaTimes } from 'react-icons/fa';
+import { FaBars, FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import Aside from '../Aside/Aside';
 import { AuthorDetailModal, AuthorFormModal, AuthorDeleteModal } from './AuthorModal/AuthorModal.js';
 import { ref, onValue } from 'firebase/database';
@@ -10,7 +10,7 @@ function AuthorList() {
     const [authors, setAuthors] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [authorsPerPage] = useState(5);
+    const [authorsPerPage] = useState(4);
     const [isAsideVisible, setIsAsideVisible] = useState(true);
     const [detailModalOpen, setDetailModalOpen] = useState(false);
     const [formModalOpen, setFormModalOpen] = useState(false);
@@ -21,12 +21,10 @@ function AuthorList() {
         const authorsRef = ref(database, 'authors');
         onValue(authorsRef, (snapshot) => {
             const data = snapshot.val();
-            console.log("Raw data from Firebase:", data);
             const authorList = data ? Object.keys(data).map(key => ({
                 id: key,
                 ...data[key]
             })) : [];
-            console.log("Processed author list:", authorList);
             setAuthors(authorList);
         });
     }, []);
@@ -44,11 +42,14 @@ function AuthorList() {
         author.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const totalPages = Math.ceil(filteredAuthors.length / authorsPerPage);
     const indexOfLastAuthor = currentPage * authorsPerPage;
     const indexOfFirstAuthor = indexOfLastAuthor - authorsPerPage;
     const currentAuthors = filteredAuthors.slice(indexOfFirstAuthor, indexOfLastAuthor);
 
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
 
     const handleAdd = () => {
         setSelectedAuthor(null);
@@ -115,7 +116,7 @@ function AuthorList() {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredAuthors.map((author) => (
+                        {currentAuthors.map((author) => (
                             <tr key={author.id}>
                                 <td>{author.name}</td>
                                 <td>{author.birthDate}</td>
@@ -137,15 +138,19 @@ function AuthorList() {
                 </table>
 
                 <div className="pagination">
-                    {Array.from({ length: Math.ceil(filteredAuthors.length / authorsPerPage) }).map((_, index) => (
-                        <button
-                            key={index}
-                            onClick={() => paginate(index + 1)}
-                            className={currentPage === index + 1 ? 'active' : ''}
-                        >
-                            {index + 1}
-                        </button>
-                    ))}
+                    <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    >
+                        <FaChevronLeft />
+                    </button>
+                    <span>{currentPage} / {totalPages}</span>
+                    <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                    >
+                        <FaChevronRight />
+                    </button>
                 </div>
             </div>
 

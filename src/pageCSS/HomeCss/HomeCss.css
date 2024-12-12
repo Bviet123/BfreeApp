@@ -53,6 +53,7 @@ h2 {
   color: var(--primary-color);
   border-bottom: 2px solid var(--secondary-color);
   padding-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 /* Featured books */

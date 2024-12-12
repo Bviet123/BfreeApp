@@ -8,7 +8,7 @@ import '../../pageCSS/HomeCss/HomeNavCss.css';
 const HomeNav = ({ user: userProp }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const user = userProp || location.state?.user;
+  const user = userProp || location.state?.user || JSON.parse(localStorage.getItem('user'));
   const [categories, setCategories] = useState([]);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [userAvatar, setUserAvatar] = useState('');
@@ -17,10 +17,6 @@ const HomeNav = ({ user: userProp }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // New state for navigation visibility
-  const [isNavVisible, setIsNavVisible] = useState(true);
-  const [lastScrollPosition, setLastScrollPosition] = useState(0);
 
   const dropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
@@ -34,43 +30,11 @@ const HomeNav = ({ user: userProp }) => {
       if (newIsMobile) {
         setIsDropdownOpen(false);
         setIsNavOpen(false);
-        setIsNavVisible(true); // Reset nav visibility for mobile
       }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  // Add scroll handling effect - only when not mobile
-  useEffect(() => {
-    // Only add scroll listener when not in mobile mode
-    if (!isMobile) {
-      const handleScroll = () => {
-        const currentScrollPosition = window.pageYOffset;
-
-        // Only change visibility if scrolled past a threshold to prevent minor scrolls from triggering
-        if (currentScrollPosition > 100) {
-          // If scrolling down and current position is more than last position
-          if (currentScrollPosition > lastScrollPosition) {
-            setIsNavVisible(false);
-          } 
-          // If scrolling up
-          else if (currentScrollPosition < lastScrollPosition) {
-            setIsNavVisible(true);
-          }
-          
-          // Update last scroll position
-          setLastScrollPosition(currentScrollPosition);
-        } else {
-          // Always show nav when near the top of the page
-          setIsNavVisible(true);
-        }
-      };
-
-      window.addEventListener('scroll', handleScroll);
-      return () => window.removeEventListener('scroll', handleScroll);
-    }
-  }, [isMobile, lastScrollPosition]);
 
   // Handle click outside to close dropdowns
   useEffect(() => {
@@ -188,7 +152,8 @@ const HomeNav = ({ user: userProp }) => {
     const auth = getAuth();
     try {
       await signOut(auth);
-      navigate('/login');
+      localStorage.removeItem('user');
+      navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -236,20 +201,17 @@ const HomeNav = ({ user: userProp }) => {
         className="nav-toggle" 
         onClick={toggleNav}
         style={{ 
-          display: isMobile ? 'block' : (isNavVisible ? 'block' : 'none'),
+          display: isMobile ? 'block' : 'block',
           position: 'fixed',
-          top: !isMobile && !isNavVisible ? '-50px' : '10px',
-          transition: 'top 0.3s ease-in-out'
+          top: '10px'
         }}
       >
         {isNavOpen ? '✕' : '☰'}
       </button>
 
       <header 
-        className={`${isNavOpen ? 'open' : ''} ${!isMobile && !isNavVisible ? 'nav-hidden' : ''}`}
+        className={`${isNavOpen ? 'open' : ''}`}
         style={{
-          transform: !isMobile && !isNavVisible ? 'translateY(-100%)' : 'translateY(0)',
-          transition: 'transform 0.3s ease-in-out',
           position: 'fixed',
           width: '100%',
           zIndex: 1000

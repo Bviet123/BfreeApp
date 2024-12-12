@@ -45,6 +45,10 @@ function Aside() {
             <i className="fas fa-tag"></i>
             <span>Thể loại và NSX</span>
           </li>
+          <li onClick={() => navigate('/admin/authors')}>  
+            <i className="fas fa-tag"></i>
+            <span>Tác giả</span>
+          </li>
           <li onClick={() => navigate('/admin/borrows')}>  
             <i className="fas fa-book"></i>
             <span>Quản lý sách mượn</span>

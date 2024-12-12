@@ -1,143 +1,176 @@
+:root {
+  --primary-color: #2c3e50;
+  --secondary-color: #e74c3c;
+  --background-color: #f4f6f7;
+  --text-color: #333;
+  --border-color: #dfe4ea;
+  --hover-color: #34495e;
+}
+
 .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-  }
-  
-  .modal.open {
-    opacity: 1;
-    visibility: visible;
-  }
-  
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+.modal.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background-color: var(--background-color);
+  padding: 35px;
+  border-radius: 12px;
+  width: 500px;
+  max-width: 90%;
+  max-height: 90%;
+  overflow-y: auto;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  position: relative;
+  transform: translateY(-50px);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal.open .modal-content {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 25px;
+  color: var(--primary-color);
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 15px;
+}
+
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background-color: white;
+}
+
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+}
+
+.modal-content textarea {
+  height: 150px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.modal-content button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  display: inline-block;
+  margin-top: 15px;
+}
+
+.modal-content button[type="submit"],
+.modal-content button:not([type="button"]) {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.modal-content button[type="submit"]:hover,
+.modal-content button:not([type="button"]):hover {
+  background-color: var(--hover-color);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content button[type="button"] {
+  background-color: var(--secondary-color);
+  color: white;
+  margin-left: 10px;
+}
+
+.modal-content button[type="button"]:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content p {
+  margin-bottom: 15px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+.modal-content p strong {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.modal-content .delete-confirmation {
+  text-align: center;
+}
+
+.modal-content .delete-confirmation p {
+  margin-bottom: 25px;
+  color: var(--secondary-color);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal-content .delete-confirmation button {
+  display: inline-block;
+  margin: 0 10px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 600px) {
   .modal-content {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    width: 500px;
-    max-width: 90%;
-    max-height: 90%;
-    overflow-y: auto;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    transform: scale(0.9);
-    transition: transform 0.3s ease;
+      width: 95%;
+      padding: 25px;
   }
-  
-  .modal.open .modal-content {
-    transform: scale(1);
-  }
-  
+
   .modal-content h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: var(--primary-color);
-    font-size: 24px;
-    font-weight: 600;
+      font-size: 22px;
   }
-  
-  .modal-content form {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .modal-content input,
-  .modal-content textarea {
-    margin-bottom: 15px;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .modal-content input:focus,
-  .modal-content textarea:focus {
-    outline: none;
-    border-color: var(--link-color);
-    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
-  }
-  
-  .modal-content textarea {
-    height: 120px;
-    resize: vertical;
-  }
-  
+
   .modal-content button {
-    margin-top: 15px;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    color: #fff;
-    font-size: 16px;
-    font-weight: 600;
-    transition: background-color 0.3s ease;
+      width: 100%;
+      margin: 10px 0;
   }
-  
-  .modal-content button[type="submit"],
-  .modal-content button:not([type="button"]) {
-    background-color: var(--primary-color);
-  }
-  
-  .modal-content button[type="submit"]:hover,
-  .modal-content button:not([type="button"]):hover {
-    background-color: #34495e;
-  }
-  
-  .modal-content button[type="button"] {
-    background-color: var(--secondary-color);
-    margin-left: 10px;
-  }
-  
-  .modal-content button[type="button"]:hover {
-    background-color: #c0392b;
-  }
-  
-  /* Styles for the detail modal */
-  .modal-content p {
-    margin-bottom: 15px;
-    font-size: 16px;
-    line-height: 1.5;
-  }
-  
-  .modal-content p strong {
-    color: var(--primary-color);
-    font-weight: 600;
-  }
-  
-  /* Styles for the delete confirmation modal */
-  .modal-content .delete-confirmation {
-    text-align: center;
-  }
-  
-  .modal-content .delete-confirmation p {
-    margin-bottom: 25px;
-    color: var(--secondary-color);
-    font-size: 18px;
-    font-weight: 600;
-  }
-  
-  .modal-content .delete-confirmation button:first-child {
-    background-color: var(--secondary-color);
-  }
-  
-  .modal-content .delete-confirmation button:first-child:hover {
-    background-color: #c0392b;
-  }
-  
-  .modal-content .delete-confirmation button:last-child {
-    background-color: var(--primary-color);
-  }
-  
-  .modal-content .delete-confirmation button:last-child:hover {
-    background-color: #34495e;
-  }
+}

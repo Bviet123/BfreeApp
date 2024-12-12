@@ -22,7 +22,7 @@ function HomeMain() {
   const isLoggedIn = !!user;
 
   useEffect(() => {
-    localStorage.removeItem('user');
+    //localStorage.removeItem('user');
 
     const fetchData = async () => {
       try {

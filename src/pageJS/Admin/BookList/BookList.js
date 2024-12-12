@@ -24,7 +24,7 @@ const BookCard = ({ book, authors, genres, onEdit, onDelete }) => (
             .join(', ')
           : 'Chưa phân loại'
       }</p>
-      <p><strong>Mô tả:</strong> {book.description || 'Chưa có mô tả'}</p>
+      <p><strong>Lượt đọc:</strong> {book.readCount || 0}</p>
     </div>
     <div className="bcl-actions">
       <button onClick={() => onEdit(book.id)} className="bcl-btn-edit">
