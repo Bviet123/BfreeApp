@@ -69,7 +69,14 @@ function AdminBookDetails() {
     setIsAsideVisible(!isAsideVisible);
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="bs-loading-container">
+        <div className="bs-loading-spinner"></div>
+      </div>
+    );
+  }
+  
   if (!book) return <div>Book not found</div>;
 
   return (

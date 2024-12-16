@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaSearch, FaBookReader, FaStar } from 'react-icons/fa';
+import { FaBookReader} from 'react-icons/fa';
 import { database } from '../../firebaseConfig';
-import { ref, onValue, update, get } from 'firebase/database';
+import { ref, update, get } from 'firebase/database';
 import '../../pageCSS/HomeCss/HomeCss.css';
 import AdminMessaging from '../MessagesPage/AdminMessaging';
 
@@ -13,24 +13,18 @@ function HomeMain() {
   const [books, setBooks] = useState([]);
   const [genres, setGenres] = useState({});
   const [authors, setAuthors] = useState({});
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [booksPerPage] = useState(6);
   const [favoriteGenres, setFavoriteGenres] = useState([]);
   const [recommendedBooks, setRecommendedBooks] = useState([]);
   const isAdmin = user && user.role === 'Admin';
   const isLoggedIn = !!user;
 
   useEffect(() => {
-    //localStorage.removeItem('user');
-
     const fetchData = async () => {
       try {
         const booksSnapshot = await get(ref(database, 'books'));
         const genresSnapshot = await get(ref(database, 'categories'));
         const authorsSnapshot = await get(ref(database, 'authors'));
 
-        // Xử lý dữ liệu sách khi chưa đăng nhập
         const booksData = booksSnapshot.val();
         if (booksData) {
           const booksArray = Object.entries(booksData).map(([id, book]) => ({
@@ -42,7 +36,6 @@ function HomeMain() {
           booksArray.sort((a, b) => (b.readCount || 0) - (a.readCount || 0));
           setBooks(booksArray);
 
-          // Nếu đăng nhập thì mới lấy thêm thông tin gợi ý
           if (isLoggedIn && user.uid) {
             const userSnapshot = await get(ref(database, `users/${user.uid}`));
             const userFavoriteGenres = userSnapshot.val()?.favoriteGenres
@@ -50,7 +43,6 @@ function HomeMain() {
               : [];
             setFavoriteGenres(userFavoriteGenres);
 
-            // Tính toán sách gợi ý
             if (userFavoriteGenres.length > 0) {
               const recommended = booksArray.filter(book => {
                 const genreScore = book.genreIds?.filter(genreId =>
@@ -107,19 +99,9 @@ function HomeMain() {
     }
   };
 
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
-    setCurrentPage(1);
-  };
-
-  const filteredBooks = books
-    .filter((book) => book.title.toLowerCase().includes(searchTerm.toLowerCase()));
-
-  const indexOfLastBook = currentPage * booksPerPage;
-  const indexOfFirstBook = indexOfLastBook - booksPerPage;
-  const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const topReadBooks = [...books]
+    .sort((a, b) => (b.readCount || 0) - (a.readCount || 0))
+    .slice(0, 8);
 
   const getGenreNames = (genreIds) => {
     if (!genreIds) return 'Không xác định';
@@ -150,27 +132,17 @@ function HomeMain() {
         <AdminMessaging user={user} isAdmin={isAdmin} />
       )}
 
-      <div className="book-list-search">
-        <FaSearch />
-        <input
-          type="text"
-          placeholder="Tìm kiếm sách..."
-          value={searchTerm}
-          onChange={handleSearch}
-        />
-      </div>
-
       {/* Section sách nổi bật */}
       <section className="featured-books">
         <h2>Sách nổi bật</h2>
         <div className="book-grid">
-          {currentBooks.map(book => (
+          {topReadBooks.map(book => (
             <div key={book.id} onClick={() => handleBookClick(book.id)} className="book-card">
               <img src={book.coverUrl} alt={book.title} className="book-cover" />
               <div className="book-info">
                 <h3>{book.title}</h3>
-                <p className="book-genre">{getGenreNames(book.genreIds)}</p>
                 <p className="book-authors">{getAuthorNames(book.authorIds)}</p>
+                <p className="book-genre">{getGenreNames(book.genreIds)}</p>
                 <div className="book-stats">
                   <FaBookReader />
                   <span>{book.readCount || 0} lượt đọc</span>
@@ -179,22 +151,15 @@ function HomeMain() {
             </div>
           ))}
         </div>
-        <div className="pagination">
-          {Array.from({ length: Math.ceil(filteredBooks.length / booksPerPage) }, (_, i) => (
-            <button key={i} onClick={() => paginate(i + 1)} className={currentPage === i + 1 ? 'active' : ''}>
-              {i + 1}
-            </button>
-          ))}
-        </div>
       </section>
 
-      {/* Section gợi ý sách thông minh */}
+      {/* Section gợi ý sách */}
       {isLoggedIn && favoriteGenres.length > 0 && (
         <section className="book-recommendation">
           <h2>Gợi ý sách dành riêng cho bạn</h2>
           {recommendedBooks.length > 0 ? (
             <div className="book-recommendation-grid">
-              {recommendedBooks.slice(0, 6).map(book => {
+              {recommendedBooks.slice(0, 4).map(book => {
                 const totalScore = calculateRecommendationScore(book);
 
                 return (

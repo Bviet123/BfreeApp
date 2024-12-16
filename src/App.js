@@ -22,7 +22,6 @@ import OtherList from './pageJS/Admin/OtherList/OtherList';
 import BorrowList from './pageJS/Admin/BorrowList/BorrowList';
 import AddBook from './pageJS/Admin/BookList/AddBook';
 import AdminBookDetails from './pageJS/Admin/BookList/AdminBookDetails';
-import UpdateBookInfo from './pageJS/Admin/BookList/UpdateBookInfo';
 import AddChapter from './pageJS/Admin/BookList/chapter/AddChapter';
 import EditChapter from './pageJS/Admin/BookList/chapter/EditChapter';
 import EditBookDetails from './pageJS/Admin/BookList/EditBookDetails';
@@ -62,7 +61,6 @@ function App() {
                 <Route path="users" element={<UserList />} />
                 <Route path="books" element={<BookList />} />
                 <Route path="books/add" element={<AddBook />} />
-                <Route path="books/edit/:id" element={<UpdateBookInfo />} />
                 <Route path="books/:id" element={<AdminBookDetails />} />
                 <Route path="books/:id/edit" element={<EditBookDetails />} />
                 <Route path="books/:bookId/addchapter" element={<AddChapter />} />

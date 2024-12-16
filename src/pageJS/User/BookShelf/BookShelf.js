@@ -324,9 +324,6 @@ const Bookshelf = () => {
                                         <p className="bs-book-genre">
                                             {book.genreIds?.map(genreId => genres[genreId]?.name).join(', ')}
                                         </p>
-                                        <p className="bs-book-description">
-                                            {book.description?.substring(0, 100)}...
-                                        </p>
                                         <button
                                             className="bs-remove-favorite-btn"
                                             onClick={(e) => removeFromFavorites(book.id, e)}

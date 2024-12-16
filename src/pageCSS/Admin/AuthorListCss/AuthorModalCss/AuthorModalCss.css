@@ -1,13 +1,13 @@
 :root {
-  --primary-color: #2c3e50;
-  --secondary-color: #e74c3c;
-  --background-color: #f4f6f7;
-  --text-color: #333;
-  --border-color: #dfe4ea;
-  --hover-color: #34495e;
+  --am-primary: #2c3e50;
+  --am-secondary: #e74c3c;
+  --am-bg: #f4f6f7;
+  --am-text: #333;
+  --am-border: #dfe4ea;
+  --am-hover: #34495e;
 }
 
-.modal {
+.am-modal {
   position: fixed;
   top: 0;
   left: 0;
@@ -23,13 +23,13 @@
   transition: all 0.3s ease-in-out;
 }
 
-.modal.open {
+.am-modal.am-open {
   opacity: 1;
   visibility: visible;
 }
 
-.modal-content {
-  background-color: var(--background-color);
+.am-content {
+  background-color: var(--am-bg);
   padding: 35px;
   border-radius: 12px;
   width: 500px;
@@ -43,55 +43,55 @@
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.modal.open .modal-content {
+.am-modal.am-open .am-content {
   transform: translateY(0);
   opacity: 1;
 }
 
-.modal-content h2 {
+.am-content h2 {
   margin-top: 0;
   margin-bottom: 25px;
-  color: var(--primary-color);
+  color: var(--am-primary);
   font-size: 26px;
   font-weight: 700;
   text-align: center;
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 2px solid var(--am-border);
   padding-bottom: 15px;
 }
 
-.modal-content form {
+.am-content form {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.modal-content input,
-.modal-content select,
-.modal-content textarea {
+.am-content input,
+.am-content select,
+.am-content textarea {
   width: 100%;
   padding: 12px 15px;
-  border: 2px solid var(--border-color);
+  border: 2px solid var(--am-border);
   border-radius: 8px;
   font-size: 16px;
   transition: all 0.3s ease;
   background-color: white;
 }
 
-.modal-content input:focus,
-.modal-content select:focus,
-.modal-content textarea:focus {
+.am-content input:focus,
+.am-content select:focus,
+.am-content textarea:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--am-primary);
   box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
 }
 
-.modal-content textarea {
+.am-content textarea {
   height: 150px;
   resize: vertical;
   line-height: 1.6;
 }
 
-.modal-content button {
+.am-content button {
   padding: 12px 20px;
   border: none;
   border-radius: 8px;
@@ -105,72 +105,72 @@
   margin-top: 15px;
 }
 
-.modal-content button[type="submit"],
-.modal-content button:not([type="button"]) {
-  background-color: var(--primary-color);
+.am-content button[type="submit"],
+.am-content button:not([type="button"]) {
+  background-color: var(--am-primary);
   color: white;
 }
 
-.modal-content button[type="submit"]:hover,
-.modal-content button:not([type="button"]):hover {
-  background-color: var(--hover-color);
+.am-content button[type="submit"]:hover,
+.am-content button:not([type="button"]):hover {
+  background-color: var(--am-hover);
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-.modal-content button[type="button"] {
-  background-color: var(--secondary-color);
+.am-content button[type="button"] {
+  background-color: var(--am-secondary);
   color: white;
   margin-left: 10px;
 }
 
-.modal-content button[type="button"]:hover {
+.am-content button[type="button"]:hover {
   background-color: #c0392b;
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-.modal-content p {
+.am-content p {
   margin-bottom: 15px;
   font-size: 16px;
   line-height: 1.6;
-  color: var(--text-color);
+  color: var(--am-text);
 }
 
-.modal-content p strong {
-  color: var(--primary-color);
+.am-content p strong {
+  color: var(--am-primary);
   font-weight: 700;
 }
 
-.modal-content .delete-confirmation {
+.am-delete-confirm {
   text-align: center;
 }
 
-.modal-content .delete-confirmation p {
+.am-delete-confirm p {
   margin-bottom: 25px;
-  color: var(--secondary-color);
+  color: var(--am-secondary);
   font-size: 18px;
   font-weight: 600;
 }
 
-.modal-content .delete-confirmation button {
+.am-delete-confirm button {
   display: inline-block;
   margin: 0 10px;
 }
 
 /* Responsive adjustments */
 @media screen and (max-width: 600px) {
-  .modal-content {
-      width: 95%;
-      padding: 25px;
+  .am-content {
+    width: 95%;
+    padding: 25px;
   }
 
-  .modal-content h2 {
-      font-size: 22px;
+  .am-content h2 {
+    font-size: 22px;
   }
 
-  .modal-content button {
-      width: 100%;
-      margin: 10px 0;
+  .am-content button {
+    width: 100%;
+    margin: 10px 0;
   }
 }

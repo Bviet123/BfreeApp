@@ -32,13 +32,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
 }
 
 .book-list-search {
   display: flex;
   align-items: center;
-  padding: 5px 15px;
   max-width: 500px;
 }
 
@@ -125,6 +123,7 @@
 .book-cover-library {
   width: 100%;
   height: 350px;
+  object-fit: cover; /* Ensures image covers the entire space */
 }
 
 .book-info-library {
@@ -134,24 +133,30 @@
   bottom: 0;
   left: 0;
   right: 0;
-  transform: translateY(50%);
+  transform: translateY(60%);
   transition: transform 0.3s ease;
+  text-align: center; 
 }
 
 .book-item:hover .book-info-library {
   transform: translateY(0);
 }
 
-.book-title {
+.blb-book-title {
   font-size: 1.2em;
   color: var(--primary-color);
   margin-bottom: 10px;
+  text-align: center;
 }
 
 .book-author {
   font-style: italic;
   color: var(--text-color);
   margin-bottom: 5px;
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%; 
 }
 
 .book-genre {
@@ -163,13 +168,10 @@
   text-overflow: ellipsis;
 }
 
-.book-description {
+.book-read-count {
+  color: var(--link-color);
   font-size: 0.9em;
-  color: var(--text-color);
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  margin-top: 5px;
 }
 
 /* Pagination */

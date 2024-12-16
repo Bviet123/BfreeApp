@@ -1,25 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import '../../../../pageCSS/Admin/AuthorListCss/AuthorModalCss/AuthorModalCss.css';
 import { ref, push, update, remove } from 'firebase/database';
 import { database } from '../../../../firebaseConfig';
 import { countries } from '../../OtherList/Contries';
+import '../../../../pageCSS/Admin/AuthorListCss/AuthorModalCss/AuthorModalCss.css';
 
 export function AuthorDetailModal({ isOpen, onClose, author, onEdit }) {
-    const [modalClass, setModalClass] = useState('modal');
+    const [modalClass, setModalClass] = useState('am-modal');
 
     useEffect(() => {
-        if (isOpen) {
-            setModalClass('modal open');
-        } else {
-            setModalClass('modal');
-        }
+        setModalClass(isOpen ? 'am-modal am-open' : 'am-modal');
     }, [isOpen]);
 
     if (!author) return null;
 
     return (
         <div className={modalClass}>
-            <div className="modal-content">
+            <div className="am-content">
                 <h2>Chi tiết tác giả</h2>
                 <p><strong>Tên:</strong> {author.name}</p>
                 <p><strong>Ngày sinh:</strong> {author.birthDate}</p>
@@ -33,16 +29,22 @@ export function AuthorDetailModal({ isOpen, onClose, author, onEdit }) {
 }
 
 export function AuthorFormModal({ isOpen, onClose, author, onSubmit }) {
-    const [formData, setFormData] = useState(author || { name: '', birthDate: '', nationality: '', introduction: '' });
-    const [modalClass, setModalClass] = useState('modal');
+    const [formData, setFormData] = useState(author || { 
+        name: '', 
+        birthDate: '', 
+        nationality: '', 
+        introduction: '' 
+    });
+    const [modalClass, setModalClass] = useState('am-modal');
 
     useEffect(() => {
-        if (isOpen) {
-            setModalClass('modal open');
-            setFormData(author || { name: '', birthDate: '', nationality: '', introduction: '' });
-        } else {
-            setModalClass('modal');
-        }
+        setModalClass(isOpen ? 'am-modal am-open' : 'am-modal');
+        setFormData(author || { 
+            name: '', 
+            birthDate: '', 
+            nationality: '', 
+            introduction: '' 
+        });
     }, [isOpen, author]);
 
     const handleChange = (e) => {
@@ -52,13 +54,10 @@ export function AuthorFormModal({ isOpen, onClose, author, onSubmit }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const authorsRef = ref(database, 'authors');
             if (author) {
-                // Updating existing author
-                const authorRef = ref(database, `authors/${author.id}`);
-                await update(authorRef, formData);
+                await update(ref(database, `authors/${author.id}`), formData);
             } else {
-                // Adding new author
-                const authorsRef = ref(database, 'authors');
                 await push(authorsRef, formData);
             }
             onSubmit(formData);
@@ -70,7 +69,7 @@ export function AuthorFormModal({ isOpen, onClose, author, onSubmit }) {
 
     return (
         <div className={modalClass}>
-            <div className="modal-content">
+            <div className="am-content">
                 <h2>{author ? 'Sửa tác giả' : 'Thêm tác giả'}</h2>
                 <form onSubmit={handleSubmit}>
                     <input
@@ -118,22 +117,17 @@ export function AuthorFormModal({ isOpen, onClose, author, onSubmit }) {
 }
 
 export function AuthorDeleteModal({ isOpen, onClose, author, onConfirm }) {
-    const [modalClass, setModalClass] = useState('modal');
+    const [modalClass, setModalClass] = useState('am-modal');
 
     useEffect(() => {
-        if (isOpen) {
-            setModalClass('modal open');
-        } else {
-            setModalClass('modal');
-        }
+        setModalClass(isOpen ? 'am-modal am-open' : 'am-modal');
     }, [isOpen]);
 
     if (!author) return null;
 
     const handleDelete = async () => {
         try {
-            const authorRef = ref(database, `authors/${author.id}`);
-            await remove(authorRef);
+            await remove(ref(database, `authors/${author.id}`));
             onConfirm();
             onClose();
         } catch (error) {
@@ -143,8 +137,8 @@ export function AuthorDeleteModal({ isOpen, onClose, author, onConfirm }) {
 
     return (
         <div className={modalClass}>
-            <div className="modal-content">
-                <div className="delete-confirmation">
+            <div className="am-content">
+                <div className="am-delete-confirm">
                     <h2>Xác nhận xóa</h2>
                     <p>Bạn có chắc chắn muốn xóa tác giả "{author.name}" không?</p>
                     <button onClick={handleDelete}>Xác nhận</button>

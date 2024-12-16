@@ -23,7 +23,7 @@ function ChapterDetail() {
         const bookRef = ref(database, `books/${bookId}`);
         const bookSnapshot = await get(bookRef);
         const bookData = bookSnapshot.val();
-        
+
         if (bookData && bookData.content && Array.isArray(bookData.content.chapters)) {
           setBook(bookData);
           setChapters(bookData.content.chapters);
@@ -98,25 +98,29 @@ function ChapterDetail() {
 
   const progress = ((currentChapterIndex + 1) / chapters.length) * 100;
 
+  const goBack = () => {
+    navigate(-1);
+  };
   return (
     <div className="cd-chapter-detail-page">
       <HomeNav />
+      <button
+        onClick={goBack}
+        className="cd-back-button"
+      >
+        ← Quay lại
+      </button>
       <div className="cd-chapter-detail">
-        <header className="cd-book-info">
-          <h1>{book.title}</h1>
-          <p className="cd-author">{book.author}</p>
-        </header>
-
         <nav className="cd-chapter-navigation">
-          <button 
-            onClick={() => prevChapter && handleChapterChange(prevChapter.id)} 
+          <button
+            onClick={() => prevChapter && handleChapterChange(prevChapter.id)}
             className="cd-nav-button cd-prev"
             disabled={!prevChapter}
           >
             &larr; Chương trước
           </button>
-          <select 
-            value={chapterId} 
+          <select
+            value={chapterId}
             onChange={(e) => handleChapterChange(e.target.value)}
             className="cd-chapter-select"
           >
@@ -126,8 +130,8 @@ function ChapterDetail() {
               </option>
             ))}
           </select>
-          <button 
-            onClick={() => nextChapter && handleChapterChange(nextChapter.id)} 
+          <button
+            onClick={() => nextChapter && handleChapterChange(nextChapter.id)}
             className="cd-nav-button cd-next"
             disabled={!nextChapter}
           >
@@ -141,13 +145,16 @@ function ChapterDetail() {
 
         <article className="cd-chapter-content">
           <h2 className="cd-chapter-title">{chapter.title || `Chương ${currentChapterIndex + 1}`}</h2>
-          <div dangerouslySetInnerHTML={{ __html: chapter.content }} />
+          <div
+            className="cd-chapter-text"
+            dangerouslySetInnerHTML={{ __html: chapter.content }}
+          />
         </article>
 
         <footer className="cd-chapter-footer">
           <div className="cd-nav-buttons">
-            <button 
-              onClick={() => prevChapter && handleChapterChange(prevChapter.id)} 
+            <button
+              onClick={() => prevChapter && handleChapterChange(prevChapter.id)}
               className="cd-nav-button cd-prev"
               disabled={!prevChapter}
             >
@@ -156,8 +163,8 @@ function ChapterDetail() {
             <div className="cd-page-number">
               <p>Trang {currentChapterIndex + 1} / {chapters.length}</p>
             </div>
-            <button 
-              onClick={() => nextChapter && handleChapterChange(nextChapter.id)} 
+            <button
+              onClick={() => nextChapter && handleChapterChange(nextChapter.id)}
               className="cd-nav-button cd-next"
               disabled={!nextChapter}
             >

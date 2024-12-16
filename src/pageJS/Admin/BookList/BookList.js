@@ -8,11 +8,11 @@ import DeleteBookModal from './BookModal/DeleteModal.js';
 import '../../../pageCSS/Admin/BookListCss/BookListCss.css';
 
 const BookCard = ({ book, authors, genres, onEdit, onDelete }) => (
-  <div className="bcl-card">
-    <div className="bcl-cover-wrap">
-      <img src={book.coverUrl} alt={book.title} className="bcl-cover" />
+  <div className="bl-card">
+    <div className="bl-cover-wrap">
+      <img src={book.coverUrl} alt={book.title} className="bl-cover" />
     </div>
-    <div className="bcl-info">
+    <div className="bl-info">
       <h3>{book.title}</h3>
       <p><strong>Tác giả:</strong> {
         book.authorIds?.map(id => authors[id]?.name || 'Unknown').join(', ') || 'Unknown'
@@ -26,11 +26,11 @@ const BookCard = ({ book, authors, genres, onEdit, onDelete }) => (
       }</p>
       <p><strong>Lượt đọc:</strong> {book.readCount || 0}</p>
     </div>
-    <div className="bcl-actions">
-      <button onClick={() => onEdit(book.id)} className="bcl-btn-edit">
+    <div className="bl-actions">
+      <button onClick={() => onEdit(book.id)} className="bl-btn-edit">
         <FaEdit />
       </button>
-      <button onClick={() => onDelete(book)} className="bcl-btn-delete">
+      <button onClick={() => onDelete(book)} className="bl-btn-delete">
         <FaTrash />
       </button>
     </div>
@@ -38,29 +38,29 @@ const BookCard = ({ book, authors, genres, onEdit, onDelete }) => (
 );
 
 const SearchBar = ({ searchTerm, onSearch }) => (
-  <div className="bcl-search">
-    <FaSearch className="bcl-search-icon" />
+  <div className="bl-search">
+    <FaSearch className="bl-search-icon" />
     <input
       type="text"
       placeholder="Tìm kiếm sách..."
       value={searchTerm}
       onChange={onSearch}
-      className="bcl-search-input"
+      className="bl-search-input"
     />
   </div>
 );
 
 const Pagination = ({ currentPage, totalPages, paginate }) => (
-  <nav className="bcl-pagination">
-    <ul className="bcl-pagination-list">
+  <nav className="bl-pagination">
+    <ul className="bl-pagination-list">
       {[...Array(totalPages)].map((_, i) => (
         <li
           key={i + 1}
-          className={i + 1 === currentPage ? 'bcl-page-active' : 'bcl-page-item'}
+          className={i + 1 === currentPage ? 'bl-page-active' : 'bl-page-item'}
         >
           <button
             onClick={() => paginate(i + 1)}
-            className="bcl-page-btn"
+            className="bl-page-btn"
           >
             {i + 1}
           </button>
@@ -183,28 +183,28 @@ function BookCardList() {
 
   if (!loading && filteredBooks.length === 0) {
     return (
-      <div className="bcl-container">
-        <Aside className={`bcl-aside ${isAsideVisible ? 'bcl-aside-visible' : 'bcl-aside-hidden'}`} />
-        <div className={`bcl-main ${isAsideVisible ? '' : 'bcl-full-width'}`}>
-          <div className="bcl-header">
-            <div className="bcl-header-left">
+      <div className="bl-container">
+        <Aside className={`bl-aside ${isAsideVisible ? 'bl-aside-visible' : 'bl-aside-hidden'}`} />
+        <div className={`bl-main ${isAsideVisible ? '' : 'bl-full-width'}`}>
+          <div className="bl-header">
+            <div className="bl-header-left">
               <button
-                className="bcl-toggle-btn"
+                className="bl-toggle-btn"
                 onClick={handleToggleAside}
                 aria-label={isAsideVisible ? "Ẩn thanh bên" : "Hiện thanh bên"}
               >
                 {isAsideVisible ? <FaTimes /> : <FaBars />}
               </button>
-              <h2 className="bcl-title">Danh sách sách</h2>
+              <h2 className="bl-title">Danh sách sách</h2>
             </div>
-            <button className="bcl-add-btn" onClick={handleAddBook}>
+            <button className="bl-add-btn" onClick={handleAddBook}>
               <FaPlus /> Thêm sách
             </button>
           </div>
           <SearchBar searchTerm={searchTerm} onSearch={handleSearchChange} />
-          <div className="bcl-empty-state">
+          <div className="bl-empty-state">
             <p>Không tìm thấy sách nào{searchTerm ? ' phù hợp với tìm kiếm' : ''}.</p>
-            <button className="bcl-add-btn" onClick={handleAddBook}>
+            <button className="bl-add-btn" onClick={handleAddBook}>
               <FaPlus /> Thêm sách mới
             </button>
           </div>
@@ -214,28 +214,28 @@ function BookCardList() {
   }
 
   return (
-    <div className="bcl-container">
-      <Aside className={`bcl-aside ${isAsideVisible ? 'bcl-aside-visible' : 'bcl-aside-hidden'}`} />
-      <div className={`bcl-main ${isAsideVisible ? '' : 'bcl-full-width'}`}>
-        <div className="bcl-header">
-          <div className="bcl-header-left">
+    <div className="bl-container">
+      <Aside className={`bl-aside ${isAsideVisible ? 'bl-aside-visible' : 'bl-aside-hidden'}`} />
+      <div className={`bl-main ${isAsideVisible ? '' : 'bl-full-width'}`}>
+        <div className="bl-header">
+          <div className="bl-header-left">
             <button
-              className="bcl-toggle-btn"
+              className="bl-toggle-btn"
               onClick={handleToggleAside}
               aria-label={isAsideVisible ? "Ẩn thanh bên" : "Hiện thanh bên"}
             >
               {isAsideVisible ? <FaTimes /> : <FaBars />}
             </button>
-            <h2 className="bcl-title">Danh sách sách</h2>
+            <h2 className="bl-title">Danh sách sách</h2>
           </div>
-          <button className="bcl-add-btn" onClick={handleAddBook}>
+          <button className="bl-add-btn" onClick={handleAddBook}>
             <FaPlus /> Thêm sách
           </button>
         </div>
 
         <SearchBar searchTerm={searchTerm} onSearch={handleSearchChange} />
 
-        <div className="bcl-grid">
+        <div className="bl-grid">
           {currentBooks.map(book => (
             <BookCard
               key={book.id}

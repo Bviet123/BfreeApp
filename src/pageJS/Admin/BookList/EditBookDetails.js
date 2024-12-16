@@ -4,6 +4,7 @@ import { ref, onValue, update, get } from 'firebase/database';
 import { database } from '../../../firebaseConfig';
 import { FaSave, FaArrowLeft, FaUpload } from 'react-icons/fa';
 import '../../../pageCSS/Admin/BookListCss/EditBookDetailsCss.css';
+import { countries } from '../OtherList/Contries';
 
 const MultiSelect = ({ options, value, onChange, name, placeholder }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -151,20 +152,26 @@ function EditBookDetails() {
         }
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) {
+        return (
+          <div className="bs-loading-container">
+            <div className="bs-loading-spinner"></div>
+          </div>
+        );
+      }
     if (!book) return <div>Book not found</div>;
 
     return (
         <div className="edit-book-details">
             <div className="page-header">
-                <h1 className="page-title">Edit: {book.title}</h1>
+                <h1 className="page-title">{book.title}</h1>
                 <button onClick={() => navigate(-1)} className="back-button">
-                    <FaArrowLeft /> Back
+                    <FaArrowLeft /> Quay lại
                 </button>
             </div>
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                    <label htmlFor="coverImage">Cover Image:</label>
+                    <label htmlFor="coverImage">Ảnh sách:</label>
                     <div className="image-upload-container">
                         {imagePreview && (
                             <img src={imagePreview} alt="Book cover preview" className="image-preview" />
@@ -177,12 +184,12 @@ function EditBookDetails() {
                             className="file-input"
                         />
                         <label htmlFor="coverImage" className="file-input-label">
-                            <FaUpload /> Choose Image
+                            <FaUpload /> Chọn ảnh
                         </label>
                     </div>
                 </div>
                 <div className="form-group">
-                    <label htmlFor="title">Title:</label>
+                    <label htmlFor="title">Tên sách:</label>
                     <input
                         type="text"
                         id="title"
@@ -193,7 +200,7 @@ function EditBookDetails() {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="authors">Authors:</label>
+                    <label htmlFor="authors">Tác giả:</label>
                     <MultiSelect
                         options={authors}
                         value={book.authorIds}
@@ -203,7 +210,7 @@ function EditBookDetails() {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="genres">Genres:</label>
+                    <label htmlFor="genres">Thể loại:</label>
                     <MultiSelect
                         options={genres}
                         value={book.genreIds}
@@ -213,7 +220,7 @@ function EditBookDetails() {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="publisher">Publisher:</label>
+                    <label htmlFor="publisher">Nhà sản xuất:</label>
                     <select
                         id="publisher"
                         name="publisherId"
@@ -221,14 +228,14 @@ function EditBookDetails() {
                         onChange={handleInputChange}
                         required
                     >
-                        <option value="">Select publisher</option>
+                        <option value="">chọn nhà sản xuất</option>
                         {publishers.map(publisher => (
                             <option key={publisher.id} value={publisher.id}>{publisher.name}</option>
                         ))}
                     </select>
                 </div>
                 <div className="form-group">
-                    <label htmlFor="description">Description:</label>
+                    <label htmlFor="description">Mô tả:</label>
                     <textarea
                         id="description"
                         name="description"
@@ -237,7 +244,7 @@ function EditBookDetails() {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="pages">Number of Pages:</label>
+                    <label htmlFor="pages">Số trang:</label>
                     <input
                         type="number"
                         id="pages"
@@ -247,14 +254,19 @@ function EditBookDetails() {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="language">Language:</label>
-                    <input
-                        type="text"
+                    <label htmlFor="language">Quốc gia gốc:</label>
+                    <select
                         id="language"
                         name="language"
                         value={book.language}
                         onChange={handleInputChange}
-                    />
+                        required
+                    >
+                        <option value="">Chọn quốc gia</option>
+                        {countries.map((country, index) => (
+                            <option key={index} value={country}>{country}</option>
+                        ))}
+                    </select>
                 </div>
                 <div className="form-group">
                     <label htmlFor="isbn">ISBN:</label>
@@ -267,7 +279,7 @@ function EditBookDetails() {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="publicationDate">Publication Date:</label>
+                    <label htmlFor="publicationDate">Ngày xuất bản:</label>
                     <input
                         type="date"
                         id="publicationDate"
@@ -276,41 +288,9 @@ function EditBookDetails() {
                         onChange={handleInputChange}
                     />
                 </div>
-                <div className="form-group">
-                    <label htmlFor="availability-status">Availability Status:</label>
-                    <select
-                        id="availability-status"
-                        name="availability.status"
-                        value={book.availability.status}
-                        onChange={handleInputChange}
-                    >
-                        <option value="available">Available</option>
-                        <option value="unavailable">Unavailable</option>
-                    </select>
-                </div>
-                <div className="form-group">
-                    <label htmlFor="copies-available">Copies Available:</label>
-                    <input
-                        type="number"
-                        id="copies-available"
-                        name="availability.copiesAvailable"
-                        value={book.availability.copiesAvailable}
-                        onChange={handleInputChange}
-                    />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="totalChapters">Total Chapters:</label>
-                    <input
-                        type="number"
-                        id="totalChapters"
-                        name="content.totalChapters"
-                        value={book.content.totalChapters}
-                        onChange={handleInputChange}
-                    />
-                </div>
                 <div className="button-group">
                     <button type="submit" className="save-button">
-                        <FaSave /> Save Changes
+                        <FaSave /> Lưu thay đổi
                     </button>
                 </div>
             </form>

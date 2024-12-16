@@ -1,17 +1,39 @@
 .cd-chapter-detail-page {
   max-width: 1200px;
   margin: 0 auto;
+  margin-top: 60px;
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
   background-color: #f0f2f5;
 }
 
+.cd-back-button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 15px 0;
+  transition: background-color 0.3s ease;
+}
+
+.cd-back-button:hover {
+  background-color: #2980b9;
+}
 .cd-chapter-detail {
   background-color: #ffffff;
   padding: 40px;
   border-radius: 15px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.cd-chapter-text {
+  text-align: justify;
+  hyphens: auto;
+  line-height: 1.6;
+  word-break: break-word;
 }
 
 .cd-book-info {

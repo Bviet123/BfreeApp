@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FaSearch, FaFilter } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaBookReader, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { database } from '../../firebaseConfig';
 import { ref, onValue } from 'firebase/database';
 import '../../pageCSS/BookLibraryCss/BookLibraryCss.css';
@@ -12,7 +12,7 @@ function BookLibrary() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = location.state?.user;
-  const categoryId = location.state?.categoryId; 
+  const categoryId = location.state?.categoryId;
 
   const [books, setBooks] = useState([]);
   const [authors, setAuthors] = useState({});
@@ -101,29 +101,29 @@ function BookLibrary() {
 
   const filteredBooks = books.filter((book) => {
     // Search term filter
-    const matchesSearch = book.title && 
+    const matchesSearch = book.title &&
       book.title.toLowerCase().includes(searchTerm.toLowerCase());
 
     // Author filter
-    const matchesAuthor = !activeFilters.author || 
-      (book.authorIds && book.authorIds.some(authorId => 
-        authors[authorId] && 
+    const matchesAuthor = !activeFilters.author ||
+      (book.authorIds && book.authorIds.some(authorId =>
+        authors[authorId] &&
         authors[authorId].toLowerCase() === activeFilters.author.toLowerCase()
       ));
 
     // Genre filter
     const matchesGenres = activeFilters.genres.length === 0 ||
-      (book.genreIds && book.genreIds.some(id => 
+      (book.genreIds && book.genreIds.some(id =>
         activeFilters.genres.includes(id)
       ));
 
     // Year range filter
-    const publishYear = book.publicationDate ? 
+    const publishYear = book.publicationDate ?
       parseInt(book.publicationDate.split('-')[0]) : null;
-    const matchesYear = (!activeFilters.yearRange.start || 
+    const matchesYear = (!activeFilters.yearRange.start ||
       (publishYear && publishYear >= parseInt(activeFilters.yearRange.start))) &&
-      (!activeFilters.yearRange.end || 
-      (publishYear && publishYear <= parseInt(activeFilters.yearRange.end)));
+      (!activeFilters.yearRange.end ||
+        (publishYear && publishYear <= parseInt(activeFilters.yearRange.end)));
 
     return matchesSearch && matchesAuthor && matchesGenres && matchesYear;
   });
@@ -159,14 +159,14 @@ function BookLibrary() {
       }
     } else {
       buttons.push(1);
-      
+
       if (currentPage > 3) {
         buttons.push('...');
       }
 
-      for (let i = Math.max(2, currentPage - 1); 
-           i <= Math.min(totalPages - 1, currentPage + 1); 
-           i++) {
+      for (let i = Math.max(2, currentPage - 1);
+        i <= Math.min(totalPages - 1, currentPage + 1);
+        i++) {
         buttons.push(i);
       }
 
@@ -179,7 +179,7 @@ function BookLibrary() {
       }
     }
 
-    return buttons.map((button, index) => 
+    return buttons.map((button, index) =>
       button === '...' ? (
         <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
       ) : (
@@ -237,32 +237,38 @@ function BookLibrary() {
 
       <div className="book-list">
         {currentBooks.map(book => (
-          <div 
-            key={book.id} 
-            onClick={() => handleBookClick(book.id)} 
+          <div
+            key={book.id}
+            onClick={() => handleBookClick(book.id)}
             className="book-item"
           >
-            <img 
-              src={book.coverUrl || '/placeholder-image.jpg'} 
-              alt={book.title || 'Không có tiêu đề'} 
+            <img
+              src={book.coverUrl || '/placeholder-image.jpg'}
+              alt={book.title || 'Không có tiêu đề'}
               className="book-cover-library"
               onError={(e) => {
-                e.target.onerror = null; 
+                e.target.onerror = null;
                 e.target.src = '/placeholder-image.jpg';
               }}
             />
             <div className="book-info-library">
-              <h3 className="book-title">
+              <h3 className="blb-book-title">
                 {book.title || 'Không có tiêu đề'}
               </h3>
               <p className="book-author">
-                {book.authorIds 
-                  ? book.authorIds.map(id => authors[id] || 'Không xác định').join(', ')
+                {book.authorIds
+                  ? book.authorIds
+                    .map(id => authors[id] || 'Không xác định')
+                    .join(', ')
                   : 'Không xác định'}
               </p>
               <p className="book-genre">
                 {getGenreNames(book.genreIds)}
               </p>
+              <div className="book-stats">
+                <FaBookReader />
+                <span>{book.readCount || 0} lượt đọc</span>
+              </div>
             </div>
           </div>
         ))}
@@ -276,20 +282,18 @@ function BookLibrary() {
 
       {filteredBooks.length > 0 && (
         <div className="pagination">
-          <button 
+          <button
             onClick={() => paginate(currentPage - 1)}
             disabled={currentPage === 1}
-            className="pagination-arrow"
           >
-            &lt;
+            <FaChevronLeft />
           </button>
-          {renderPaginationButtons()}
-          <button 
+          <span>{currentPage} / {totalPages}</span>
+          <button
             onClick={() => paginate(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="pagination-arrow"
           >
-            &gt;
+            <FaChevronRight />
           </button>
         </div>
       )}

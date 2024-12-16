@@ -179,8 +179,6 @@ function OtherList() {
                             )}
                             {type === 'producer' && (
                                 <>
-                                    <span>Năm thành lập: {item.founded}</span>
-                                    <span>Quốc gia: {item.country}</span>
                                     <span className="truncate" title={item.description}>
                                         Mô tả: {truncateDescription(item.description)}
                                     </span>
