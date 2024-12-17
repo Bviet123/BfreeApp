@@ -3,18 +3,21 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { getDatabase, ref, onValue } from "firebase/database";
 import { getAuth, signOut } from 'firebase/auth';
 import NotificationsModal from './NotificationsModal';
+import CategoriesModal from './CategoriesModal'; 
 import '../../pageCSS/HomeCss/HomeNavCss.css';
 
 const HomeNav = ({ user: userProp }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const user = userProp || location.state?.user || JSON.parse(localStorage.getItem('user'));
+  
   const [categories, setCategories] = useState([]);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [userAvatar, setUserAvatar] = useState('');
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -105,6 +108,7 @@ const HomeNav = ({ user: userProp }) => {
     return () => unsubscribeCategories();
   }, [user]);
 
+  // Body class for nav open state
   useEffect(() => {
     if (isNavOpen) {
       document.body.classList.add('nav-open');
@@ -116,6 +120,7 @@ const HomeNav = ({ user: userProp }) => {
     };
   }, [isNavOpen]);
 
+  // Navigation handler
   const handleNavigation = (path, navigationState = {}) => {
     navigate(path, { 
       state: { 
@@ -128,18 +133,21 @@ const HomeNav = ({ user: userProp }) => {
     setIsDropdownOpen(false);
   };
 
+  // Toggle navigation
   const toggleNav = () => {
     setIsNavOpen(!isNavOpen);
     setIsUserDropdownOpen(false);
     setIsDropdownOpen(false);
   };
 
+  // Toggle user dropdown
   const toggleUserDropdown = (e) => {
     e.stopPropagation();
     setIsUserDropdownOpen(!isUserDropdownOpen);
     setIsDropdownOpen(false);
   };
 
+  // Toggle dropdown
   const toggleDropdown = (e) => {
     e.stopPropagation();
     if (isMobile) {
@@ -148,6 +156,7 @@ const HomeNav = ({ user: userProp }) => {
     }
   };
 
+  // Logout handler
   const handleLogout = async () => {
     const auth = getAuth();
     try {
@@ -159,6 +168,7 @@ const HomeNav = ({ user: userProp }) => {
     }
   };
 
+  // Render user info
   const renderUserInfo = () => {
     if (isMobile || !user) {
       return null; 
@@ -197,6 +207,17 @@ const HomeNav = ({ user: userProp }) => {
 
   return (
     <>
+      {isMobile && (
+        <CategoriesModal 
+          isOpen={isCategoriesModalOpen}
+          onClose={() => setIsCategoriesModalOpen(false)}
+          onSelectCategory={(category) => {
+            handleNavigation('/library', { categoryId: category.id });
+            setIsCategoriesModalOpen(false);
+          }}
+        />
+      )}
+
       <button 
         className="nav-toggle" 
         onClick={toggleNav}
@@ -222,31 +243,39 @@ const HomeNav = ({ user: userProp }) => {
             <li>
               <div onClick={() => handleNavigation('/Home')}>Trang chủ</div>
             </li>
-            <li ref={dropdownRef}>
-              <div className={`dropdown ${isDropdownOpen ? 'open' : ''}`}>
-                <button className="dropbtn" onClick={toggleDropdown}>
-                  Thể loại {isMobile && <span className="dropdown-arrow">▼</span>}
-                </button>
-                {(!isMobile || isDropdownOpen) && (
-                  <div className="dropdown-content">
-                    {isLoading ? (
-                      <div className="bs-loading-container">
-                        <div className="bs-loading-spinner"></div>
-                      </div>
-                    ) : (
-                      categories.map((category) => (
-                        <div
-                          key={category.id}
-                          onClick={() => handleNavigation('/library', { categoryId: category.id })}
-                        >
-                          {category.name}
+            {isMobile ? (
+              <li>
+                <div onClick={() => setIsCategoriesModalOpen(true)}>
+                  Thể loại
+                </div>
+              </li>
+            ) : (
+              <li ref={dropdownRef}>
+                <div className={`dropdown ${isDropdownOpen ? 'open' : ''}`}>
+                  <button className="dropbtn" onClick={toggleDropdown}>
+                    Thể loại {isMobile && <span className="dropdown-arrow">▼</span>}
+                  </button>
+                  {(!isMobile || isDropdownOpen) && (
+                    <div className="dropdown-content">
+                      {isLoading ? (
+                        <div className="bs-loading-container">
+                          <div className="bs-loading-spinner"></div>
                         </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-            </li>
+                      ) : (
+                        categories.map((category) => (
+                          <div
+                            key={category.id}
+                            onClick={() => handleNavigation('/library', { categoryId: category.id })}
+                          >
+                            {category.name}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              </li>
+            )}
             <li>
               <div onClick={() => handleNavigation('/library')}>Kho sách</div>
             </li>

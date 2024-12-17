@@ -92,7 +92,8 @@ nav {
   top: 100%;
   left: 0;
   background-color: white;
-  min-width: 200px;
+  min-width: 600px; 
+  max-height: 400px; 
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   z-index: 1000;
@@ -100,6 +101,13 @@ nav {
   visibility: hidden;
   transform: translateY(-10px);
   transition: all 0.3s ease;
+  
+  /* Grid layout for categories */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); 
+  grid-gap: 10px; 
+  padding: 15px;
+  overflow-y: auto; 
 }
 
 .dropdown:hover .dropdown-content,
@@ -114,12 +122,16 @@ nav {
   padding: 0.75rem 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Show ellipsis if text is too long */
 }
 
 .dropdown-content div:hover {
   background-color: var(--hover-color);
   color: white;
 }
+
 
 /* User Section Styles */
 .userSection {
