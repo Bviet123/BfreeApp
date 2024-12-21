@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaBookReader} from 'react-icons/fa';
+import { FaBookReader } from 'react-icons/fa';
 import { database } from '../../firebaseConfig';
 import { ref, update, get } from 'firebase/database';
 import '../../pageCSS/HomeCss/HomeCss.css';
 import AdminMessaging from '../MessagesPage/AdminMessaging';
+import DateFormatter from '../../Format/DateFormatter';
 
 function HomeMain() {
   const navigate = useNavigate();
@@ -211,7 +212,13 @@ function HomeMain() {
                 <FaBookReader />
                 <span>{book.readCount || 0}</span>
               </span>
-              <span className="release-date">{book.publicationDate}</span>
+              <span className="release-date">
+                <DateFormatter
+                  dateString={book.publicationDate}
+                  format="DD/MM/YYYY"
+                  showError={true}
+                />
+              </span>
             </li>
           ))}
         </ul>

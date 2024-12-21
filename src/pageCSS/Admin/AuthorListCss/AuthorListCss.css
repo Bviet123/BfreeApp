@@ -101,6 +101,7 @@
 
   .btn-edit {
     background-color: rgb(61, 129, 61);
+    margin-right: 10px;
   }
   
   .btn-delete {

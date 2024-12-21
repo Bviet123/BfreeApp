@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../../pageCSS/BookDetailCss/AuthorInforCss.css';
+import DateFormatter from '../../Format/DateFormatter';
 
 function AuthorInfo({ authors }) {
     const [activeTab, setActiveTab] = useState(0);
@@ -37,7 +38,13 @@ function AuthorInfo({ authors }) {
                                 </div>
                                 <div className="dt-info-row">
                                     <span className="dt-info-label">Ngày sinh:</span>
-                                    <span className="dt-info-value">{author.birthDate || 'Chưa cập nhật'}</span>
+                                    <span className="dt-info-value">{
+                                        <DateFormatter
+                                            dateString={author.birthDate}
+                                            format="DD/MM/YYYY"
+                                            showError={true}
+                                        /> || 'Chưa cập nhật'}
+                                    </span>
                                 </div>
 
                                 <div className="dt-info-row">

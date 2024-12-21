@@ -5,6 +5,7 @@ import Aside from '../Aside/Aside';
 import { AuthorDetailModal, AuthorFormModal, AuthorDeleteModal } from './AuthorModal/AuthorModal.js';
 import { ref, onValue } from 'firebase/database';
 import { database } from '../../../firebaseConfig';
+import DateFormatter from '../../../Format/DateFormatter';
 
 function AuthorList() {
     const [authors, setAuthors] = useState([]);
@@ -119,7 +120,13 @@ function AuthorList() {
                         {currentAuthors.map((author) => (
                             <tr key={author.id}>
                                 <td>{author.name}</td>
-                                <td>{author.birthDate}</td>
+                                <td>
+                                    <DateFormatter
+                                        dateString={author.birthDate}
+                                        format="DD/MM/YYYY"
+                                        showError={true}
+                                    />
+                                </td>
                                 <td>{author.nationality}</td>
                                 <td>
                                     <button className="btn-details" onClick={() => handleDetails(author)}>

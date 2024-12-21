@@ -441,6 +441,26 @@ function BorrowList() {
 
             } else {
                 // Xử lý yêu cầu mượn mới
+                // Kiểm tra và cập nhật số lượng sách
+                const bookRef = ref(database, `books/${request.bookId}/availability`);
+                const bookSnapshot = await get(bookRef);
+
+                if (!bookSnapshot.exists()) {
+                    throw new Error('Không tìm thấy thông tin sách');
+                }
+
+                const currentQuantity = bookSnapshot.val().copiesAvailable;
+
+                if (currentQuantity <= 0) {
+                    throw new Error('Sách đã hết');
+                }
+
+                // Cập nhật số lượng sách
+                await update(bookRef, {
+                    copiesAvailable: currentQuantity - 1,
+                    status: currentQuantity - 1 === 0 ? 'unavailable' : 'available'
+                });
+
                 // Cập nhật trạng thái sang chờ lấy sách
                 await update(ref(database, `borrowRequests/${id}`), {
                     status: 'awaiting_pickup'
@@ -507,12 +527,33 @@ function BorrowList() {
             borrowDate: bookData.borrowDate,
             returnDate: new Date().toISOString().split('T')[0],
             borrowCount: bookData.borrowCount || 0,
-            bookStatus: bookData.bookStatus, 
+            bookStatus: bookData.bookStatus,
             notes: bookData.notes
         };
+
         try {
+            // Cập nhật số lượng sách
+            const bookRef = ref(database, `books/${bookData.bookId}/availability`);
+            const bookSnapshot = await get(bookRef);
+
+            if (!bookSnapshot.exists()) {
+                throw new Error('Không tìm thấy thông tin sách');
+            }
+
+            const currentQuantity = bookSnapshot.val().copiesAvailable;
+
+            // Cập nhật số lượng và trạng thái sách
+            await update(bookRef, {
+                copiesAvailable: currentQuantity + 1,
+                status: 'available'
+            });
+
+            // Thực hiện các thao tác trả sách
             await Promise.all([
+                // Thêm vào lịch sử sách đã trả
                 push(ref(database, 'returnedBooks'), returnData),
+
+                // Tạo thông báo
                 push(ref(database, 'notifications'), {
                     type: 'return',
                     bookTitle: bookData.title,
@@ -521,6 +562,8 @@ function BorrowList() {
                     timestamp: serverTimestamp(),
                     isRead: false
                 }),
+
+                // Xóa khỏi danh sách sách đang mượn
                 remove(ref(database, `borrowedBooks/${bookData.id}`))
             ]);
         } catch (error) {
@@ -692,7 +735,16 @@ function BorrowList() {
                     isOpen={pickupModalOpen}
                     onClose={closePickupModal}
                     bookTitle={selectedBook?.title}
-                    onConfirm={() => selectedBook && handlePickupBook(selectedBook.id)}
+                    onConfirm={async () => {
+                        try {
+                            if (selectedBook) {
+                                await handlePickupBook(selectedBook.id);
+                                closePickupModal();
+                            }
+                        } catch (error) {
+                            console.error("Error:", error);
+                        }
+                    }}
                 />
             </div>
         </div>
