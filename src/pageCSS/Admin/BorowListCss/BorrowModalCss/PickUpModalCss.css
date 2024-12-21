@@ -1,0 +1,138 @@
+.pm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.pm-wrap {
+    background-color: white;
+    border-radius: 8px;
+    padding: 24px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: pmFadeIn 0.3s ease-out;
+}
+
+@keyframes pmFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.pm-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.pm-title {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.pm-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #666;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s;
+}
+
+.pm-close:hover {
+    color: #333;
+}
+
+.pm-body {
+    margin-bottom: 24px;
+}
+
+.pm-text {
+    margin: 0 0 12px 0;
+    color: #333;
+    line-height: 1.5;
+}
+
+.pm-info {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 16px;
+}
+
+.pm-info-text {
+    margin: 0;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.pm-btns {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.pm-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pm-cancel {
+    background-color: #f1f3f5;
+    color: #495057;
+}
+
+.pm-cancel:hover {
+    background-color: #e9ecef;
+}
+
+.pm-confirm {
+    background-color: #228be6;
+    color: white;
+}
+
+.pm-confirm:hover {
+    background-color: #1c7ed6;
+}
+
+@media (max-width: 480px) {
+    .pm-wrap {
+        width: 95%;
+        padding: 16px;
+    }
+    
+    .pm-btns {
+        flex-direction: column-reverse;
+    }
+    
+    .pm-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

@@ -1,0 +1,94 @@
+.book-lending-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.book-lending-search {
+    flex: 1;
+    position: relative;
+}
+
+.filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-filter label {
+    font-weight: 500;
+    color: #374151;
+}
+
+.status-filter select {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background-color: #fff;
+    font-size: 14px;
+    color: #374151;
+    outline: none;
+    min-width: 120px;
+}
+
+.status-filter select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.reload-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+    height: 36px;
+}
+
+.reload-btn:hover {
+    background-color: #2563eb;
+}
+
+.reload-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.reload-btn:active svg {
+    animation: spin 0.5s linear;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .book-lending-controls {
+        flex-direction: column;
+    }
+
+    .filter-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

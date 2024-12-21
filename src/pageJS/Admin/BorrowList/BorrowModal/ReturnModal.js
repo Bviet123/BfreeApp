@@ -20,6 +20,7 @@ const ReturnModal = ({ isOpen, onClose, book, onConfirm }) => {
 
     const handleConfirm = () => {
         onConfirm({
+            id: book.id,
             title,
             borrowDate,
             dueDate,

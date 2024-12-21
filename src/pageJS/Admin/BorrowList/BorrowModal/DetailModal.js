@@ -133,6 +133,49 @@ const DetailModal = ({ isOpen, onClose, data, type }) => {
         </div>
     );
 
+    const renderRequestContent = () => {
+        // Tạo ngày mượn (ngày hiện tại)
+        const sampleBorrowDate = new Date();
+        
+        // Tạo ngày trả (7 ngày sau)
+        const sampleDueDate = new Date();
+        sampleDueDate.setDate(sampleDueDate.getDate() + 7);
+
+        return (
+            <div className="ad-detail-content">
+                {renderBookInfo()}
+                {renderBorrowerInfo()}
+                <div className="ad-detail-section">
+                    <h3 className="ad-section-title">
+                        <FaCalendar className="ad-section-icon" /> 
+                        Lịch sử mượn trả (Dự kiến)
+                    </h3>
+                    <div className="ad-info-grid">
+                        <div className="ad-info-item">
+                            <label>Ngày mượn (dự kiến):</label>
+                            <span>{sampleBorrowDate.toLocaleDateString('vi-VN')}</span>
+                        </div>
+                        <div className="ad-info-item">
+                            <label>Ngày trả (dự kiến):</label>
+                            <span>{sampleDueDate.toLocaleDateString('vi-VN')}</span>
+                        </div>
+                        <div className="ad-info-item">
+                            <label>Thời gian mượn:</label>
+                            <span>7 ngày</span>
+                        </div>
+                        <div className="ad-info-item">
+                            <label>Tình trạng:</label>
+                            <div className="ad-status-display ad-status-pending">
+                                <FaClock className="ad-status-icon" />
+                                <span>Chưa mượn</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     const renderBorrowedContent = () => {
         const status = getDueStatus(data.dueDate);
         const borrowDuration = Math.ceil(
@@ -179,7 +222,17 @@ const DetailModal = ({ isOpen, onClose, data, type }) => {
         const actualDuration = Math.ceil(
             (new Date(data.returnDate) - new Date(data.borrowDate)) / (1000 * 60 * 60 * 24)
         );
-
+    
+        const getBookStatusText = (status) => {
+            switch(status) {
+                case 'good': return 'Tốt';
+                case 'damaged': return 'Hư hỏng nhẹ';
+                case 'heavily_damaged': return 'Hư hỏng nặng';
+                case 'lost': return 'Mất sách';
+                default: return 'Không xác định';
+            }
+        };
+    
         return (
             <div className="ad-detail-content">
                 {renderBookInfo()}
@@ -209,6 +262,22 @@ const DetailModal = ({ isOpen, onClose, data, type }) => {
                                 <span>{status.text}</span>
                             </div>
                         </div>
+                        <div className="ad-info-item">
+                            <label>Tình trạng sách:</label>
+                            <div className={`ad-status-display ${
+                                data.bookStatus === 'good' ? 'ad-status-ontime' : 
+                                data.bookStatus === 'damaged' ? 'ad-status-warning' : 
+                                'ad-status-overdue'
+                            }`}>
+                                <span>{getBookStatusText(data.bookStatus)}</span>
+                            </div>
+                        </div>
+                        {data.notes && (
+                            <div className="ad-info-item ad-info-item-full">
+                                <label>Ghi chú:</label>
+                                <span className="ad-notes-text">{data.notes}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -227,7 +296,9 @@ const DetailModal = ({ isOpen, onClose, data, type }) => {
                         <FaTimes />
                     </button>
                 </div>
-                {type === 'borrowed' ? renderBorrowedContent() : renderReturnedContent()}
+                {type === 'requests' ? renderRequestContent() :
+                 type === 'borrowed' ? renderBorrowedContent() : 
+                 renderReturnedContent()}
                 <div className="ad-detail-modal-footer">
                     <button onClick={onClose} className="ad-close-button">
                         Đóng

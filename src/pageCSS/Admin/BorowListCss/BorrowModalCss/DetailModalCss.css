@@ -132,6 +132,23 @@
     font-weight: 500;
 }
 
+.ad-status-pending {
+    background-color: #E9F3FF;
+    color: #2B6CB0;
+}
+
+.ad-info-item-full {
+    grid-column: 1 / -1;
+}
+
+.ad-notes-text {
+    white-space: pre-wrap;
+    padding: 8px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    margin-top: 4px;
+}
+
 /* Điều chỉnh style cho status */
 .ad-status-display {
     display: inline-flex;
