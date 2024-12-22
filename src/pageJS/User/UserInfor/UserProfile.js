@@ -146,12 +146,11 @@ const UserProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Đang tải thông tin...</p>
-      </div>
+        <div className="bs-loading-container">
+            <div className="bs-loading-spinner"></div>
+        </div>
     );
-  }
+}
 
   if (error) {
     return (

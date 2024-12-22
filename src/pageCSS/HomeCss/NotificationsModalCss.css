@@ -54,6 +54,7 @@
   z-index: 1000;
   max-height: 480px;
   overflow-y: auto;
+  animation: slideDown 0.2s ease-out;
 }
 
 /* Modal header */
@@ -187,6 +188,120 @@
   font-size: 14px;
 }
 
+/* Delete Modal Overlay */
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Delete Modal */
+.delete-modal {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* Delete Modal Header */
+.delete-modal-header {
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.delete-modal-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Delete Modal Content */
+.delete-modal-content {
+  padding: 16px;
+}
+
+.delete-modal-content p {
+  margin: 0;
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.delete-modal-content p:first-child {
+  margin-bottom: 8px;
+}
+
+/* Delete Modal Footer */
+.delete-modal-footer {
+  padding: 16px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Modal Buttons */
+.delete-modal-footer button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.cancel-button {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+
+.cancel-button:hover {
+  background-color: #e5e7eb;
+}
+
+.confirm-button {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+}
+
+.confirm-button:hover {
+  background-color: #dc2626;
+}
+
+/* Close button */
+.close-button {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.close-button:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
 /* Scrollbar styles */
 .notifications-modal::-webkit-scrollbar {
   width: 6px;
@@ -205,36 +320,57 @@
   background: #555;
 }
 
+/* Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
   .notifications-modal {
-      position: fixed;
-      top: 60px;
-      left: 0;
-      right: 0;
-      width: 100%;
-      margin: 0;
-      border-radius: 0;
-      max-height: calc(100vh - 60px);
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    max-height: calc(100vh - 60px);
   }
 
   .notifications-container {
-      margin-right: 12px;
+    margin-right: 12px;
   }
-}
 
-/* Animation */
-@keyframes slideDown {
-  from {
-      opacity: 0;
-      transform: translateY(-10px);
+  .delete-modal {
+    width: 95%;
+    margin: 0 10px;
   }
-  to {
-      opacity: 1;
-      transform: translateY(0);
-  }
-}
-
-.notifications-modal {
-  animation: slideDown 0.2s ease-out;
 }

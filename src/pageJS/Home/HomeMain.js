@@ -202,7 +202,7 @@ function HomeMain() {
 
       {/* Section sách mới phát hành */}
       <section className="new-releases">
-        <h2>Sách mới phát hành</h2>
+        <h2>Sách mới</h2>
         <ul className="new-releases-list">
           {sortedNewBooks.map(book => (
             <li key={book.id} onClick={() => handleBookClick(book.id)}>

@@ -11,7 +11,9 @@ import {
   FaSearch,
   FaRedo,
   FaExclamationCircle,
-  FaEdit
+  FaEdit,
+  FaChevronLeft,
+  FaChevronRight
 } from 'react-icons/fa';
 import UserAside from '../UserAside/UserAside';
 import '../../../pageCSS/User/UserProfileCss/BorrowedBookListCss.css';
@@ -29,6 +31,8 @@ const BorrowedBooksList = () => {
   const [selectedBook, setSelectedBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [borrowedBooks, setBorrowedBooks] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const booksPerPage = 6;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,16 +76,14 @@ const BorrowedBooksList = () => {
     fetchData();
   }, [userFromState, navigate]);
 
-  const calculateDaysRemaining = (requestDate) => {
+  const calculateDaysRemaining = (dueDate) => {
     const today = new Date();
-    const borrowDate = new Date(requestDate);
-    const dueDate = new Date(borrowDate);
-    dueDate.setDate(dueDate.getDate() + 7);
-    return Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+    const dueDateObj = new Date(dueDate);
+    return Math.ceil((dueDateObj - today) / (1000 * 60 * 60 * 24));
   };
 
-  const getBookStatus = (requestDate) => {
-    const daysRemaining = calculateDaysRemaining(requestDate);
+  const getBookStatus = (dueDate) => {
+    const daysRemaining = calculateDaysRemaining(dueDate);
     if (daysRemaining < 0) {
       return { status: 'overdue', className: 'bb-status-overdue', text: 'Quá hạn' };
     }
@@ -104,6 +106,17 @@ const BorrowedBooksList = () => {
           : a.title.localeCompare(b.title);
       });
   }, [borrowedBooks, searchTerm, statusFilter, sortBy]);
+
+  const totalPages = Math.ceil(filteredAndSortedBooks.length / booksPerPage);
+  const indexOfLastBook = currentPage * booksPerPage;
+  const indexOfFirstBook = indexOfLastBook - booksPerPage;
+  const currentBooks = filteredAndSortedBooks.slice(indexOfFirstBook, indexOfLastBook);
+
+  const paginate = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
 
   const handleRenewBook = async () => {
     try {
@@ -134,7 +147,11 @@ const BorrowedBooksList = () => {
   };
 
   if (loading) {
-    return <div className="loading-spinner">Đang tải thông tin...</div>;
+    return (
+      <div className="bs-loading-container">
+        <div className="bs-loading-spinner"></div>
+      </div>
+    );
   }
 
   return (
@@ -189,54 +206,76 @@ const BorrowedBooksList = () => {
             </div>
 
             {filteredAndSortedBooks.length > 0 ? (
-              <div className="bb-grid">
-                {filteredAndSortedBooks.map((book) => {
-                  const { className, text } = getBookStatus(book.requestDate);
-                  const daysRemaining = calculateDaysRemaining(book.requestDate);
+              <>
+                <div className="bb-grid">
+                  {currentBooks.map((book) => {
+                    const { className, text } = getBookStatus(book.requestDate);
+                    const daysRemaining = calculateDaysRemaining(book.requestDate);
 
-                  return (
-                    <div key={book.id} className={`bb-card ${className}`}>
-                      <div className="bb-card-content">
-                        <h4>{book.title}</h4>
-                        <div className="bb-meta">
-                          <span className="bb-due-date">
-                            <FaCalendarAlt />
-                            {daysRemaining > 0 ?
-                              `Còn ${daysRemaining} ngày` :
-                              `Quá hạn ${Math.abs(daysRemaining)} ngày`}
-                          </span>
-                          <span className={`bb-status ${className}`}>{text}</span>
-                        </div>
-                        {book.borrowCount > 0 && (
+                    return (
+                      <div key={book.id} className={`bb-card ${className}`}>
+                        <div className="bb-card-content">
+                          <h4>{book.title}</h4>
+                          <div className="bb-meta">
+                            <span className="bb-due-date">
+                              <FaCalendarAlt />
+                              {calculateDaysRemaining(book.dueDate) > 0
+                                ? `Còn ${calculateDaysRemaining(book.dueDate)} ngày`
+                                : `Quá hạn ${Math.abs(calculateDaysRemaining(book.dueDate))} ngày`}
+                            </span>
+                            <span className={`bb-status ${getBookStatus(book.dueDate).className}`}>
+                              {getBookStatus(book.dueDate).text}
+                            </span>
+                          </div>
                           <div className="bb-renewal-count">
                             Đã gia hạn: {book.borrowCount} lần
                           </div>
-                        )}
-                      </div>
+                        </div>
 
-                      <div className="bb-actions">
-                        <button
-                          className="bb-btn bb-btn-renew"
-                          onClick={() => {
-                            setSelectedBook(book);
-                            setShowRenewalConfirm(true);
-                          }}
-                          disabled={book.borrowCount >= 2 || daysRemaining < 0}
-                        >
-                          <FaRedo /> Gia hạn
-                        </button>
+                        <div className="bb-actions">
+                          <button
+                            className="bb-btn bb-btn-renew"
+                            onClick={() => {
+                              setSelectedBook(book);
+                              setShowRenewalConfirm(true);
+                            }}
+                            disabled={book.borrowCount >= 2 || daysRemaining < 0}
+                          >
+                            <FaRedo /> Gia hạn
+                          </button>
 
-                        <button
-                          className="bb-btn bb-btn-details"
-                          onClick={() => navigate(`/book/${book.bookId}`)}
-                        >
-                          <FaInfoCircle /> Chi tiết
-                        </button>
+                          <button
+                            className="bb-btn bb-btn-details"
+                            onClick={() => navigate(`/book/${book.bookId}`)}
+                          >
+                            <FaInfoCircle /> Chi tiết
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="pagination">
+                    <button
+                      onClick={() => paginate(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="pagination-btn"
+                    >
+                      <FaChevronLeft />
+                    </button>
+                    <span>{currentPage} / {totalPages}</span>
+                    <button
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="pagination-btn"
+                    >
+                      <FaChevronRight />
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="bb-empty">
                 <FaBook />

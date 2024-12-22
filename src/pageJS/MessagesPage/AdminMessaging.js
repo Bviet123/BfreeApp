@@ -5,7 +5,7 @@ import {
   FaCommentDots, 
   FaPaperPlane, 
   FaTimes, 
-  FaUser 
+  FaUser
 } from 'react-icons/fa';
 import '../../pageCSS/AdminMessaging/AdminMessagingCss.css';
 
@@ -16,11 +16,40 @@ function AdminMessaging({ user, isAdmin }) {
   const [userList, setUserList] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Load tin nhắn cho người dùng thường
+  useEffect(() => {
+    if (!isAdmin && user && chatOpen) {
+      setIsLoadingMessages(true);
+      const messagesRef = ref(database, `userMessages/${user.uid}/messages`);
+      
+      const unsubscribe = onValue(messagesRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const messageList = Object.keys(data).map((key) => ({
+            id: key,
+            ...data[key],
+          }));
+          setMessages(messageList);
+        } else {
+          setMessages([]);
+        }
+        setIsLoadingMessages(false);
+      });
+
+      return () => unsubscribe();
+    }
+  }, [user, chatOpen, isAdmin]);
 
   useEffect(() => {
     if (isAdmin && chatOpen) {
@@ -36,24 +65,38 @@ function AdminMessaging({ user, isAdmin }) {
               const userDetailRef = ref(database, `users/${userId}`);
               const userSnapshot = await get(userDetailRef);
               const userData = userSnapshot.val();
+              
+              // Đếm tin nhắn chưa đọc
+              const messagesRef = ref(database, `userMessages/${userId}/messages`);
+              const messagesSnapshot = await get(messagesRef);
+              let unreadCount = 0;
+              
+              if (messagesSnapshot.exists()) {
+                messagesSnapshot.forEach((msgSnapshot) => {
+                  const msg = msgSnapshot.val();
+                  if (msg.sender === 'user') {
+                    unreadCount++;
+                  }
+                });
+              }
+              
               return {
                 uid: userId,
                 email: userData?.email || 'Người dùng ẩn',
+                unreadCount,
+                lastActive: userData?.lastActive || null
               };
             })
           ).then((users) => {
-            const filteredUsers = users.filter((user) => user !== null);
+            const filteredUsers = users.filter((user) => user !== null)
+              .sort((a, b) => b.unreadCount - a.unreadCount || (b.lastActive || 0) - (a.lastActive || 0));
             setUserList(filteredUsers);
             setIsLoadingUsers(false);
           });
         } else {
-          console.warn('Không có dữ liệu userMessages');
           setUserList([]);
           setIsLoadingUsers(false);
         }
-      }, (error) => {
-        console.error('Lỗi kết nối userMessages:', error);
-        setIsLoadingUsers(false);
       });
   
       return () => loadUserList();
@@ -63,6 +106,7 @@ function AdminMessaging({ user, isAdmin }) {
   useEffect(() => {
     if (selectedUser) {
       const messagesRef = ref(database, `userMessages/${selectedUser.uid}/messages`);
+      
       const unsubscribe = onValue(messagesRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
@@ -76,11 +120,11 @@ function AdminMessaging({ user, isAdmin }) {
         }
       });
 
-      return unsubscribe;
-    } else {
+      return () => unsubscribe();
+    } else if (isAdmin) {
       setMessages([]);
     }
-  }, [selectedUser, database]);
+  }, [selectedUser, database, isAdmin]);
 
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
@@ -89,23 +133,27 @@ function AdminMessaging({ user, isAdmin }) {
       const messageData = {
         text: newMessage,
         sender: isAdmin ? 'Admin' : 'user',
-        timestamp: serverTimestamp(),
-        read: false
+        timestamp: serverTimestamp()
       };
 
       const targetUserId = isAdmin ? selectedUser?.uid : user?.uid;
       const messagesRef = ref(database, `userMessages/${targetUserId}/messages`);
       
-      const newMessageRef = await push(messagesRef, messageData);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { id: newMessageRef.key, ...messageData },
-      ]);
-      
+      await push(messagesRef, messageData);
       setNewMessage('');
+      scrollToBottom();
     } catch (error) {
       console.error('Lỗi gửi tin nhắn:', error);
     }
+  };
+
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('vi-VN', { 
+      hour: '2-digit', 
+      minute: '2-digit'
+    });
   };
 
   const handleCloseModal = () => {
@@ -121,9 +169,9 @@ function AdminMessaging({ user, isAdmin }) {
           onClick={() => setChatOpen(true)}
         >
           <FaCommentDots />
-          {!isAdmin && messages.filter(msg => msg.sender === 'Admin' && !msg.read).length > 0 && (
+          {!isAdmin && messages.filter(msg => msg.sender === 'Admin').length > 0 && (
             <span className="unread-badge">
-              {messages.filter(msg => msg.sender === 'Admin' && !msg.read).length}
+              {messages.filter(msg => msg.sender === 'Admin').length}
             </span>
           )}
         </button>
@@ -135,7 +183,7 @@ function AdminMessaging({ user, isAdmin }) {
             <div className="chat-header">
               <h3>
                 {isAdmin 
-                  ? 'Tin nhắn quản trị' 
+                  ? `Tin nhắn quản trị ${selectedUser ? `- ${selectedUser.email}` : ''}` 
                   : 'Tin nhắn Admin'}
               </h3>
               <button onClick={handleCloseModal}>
@@ -161,8 +209,13 @@ function AdminMessaging({ user, isAdmin }) {
                             className={`user-item ${selectedUser?.uid === userData.uid ? 'selected' : ''}`}
                             onClick={() => setSelectedUser(userData)}
                           >
-                            <FaUser />
-                            <span>{userData.email}</span>
+                            <div className="user-item-left">
+                              <FaUser />
+                              <span>{userData.email}</span>
+                            </div>
+                            {userData.unreadCount > 0 && (
+                              <span className="unread-count">{userData.unreadCount}</span>
+                            )}
                           </div>
                         ))
                       )}
@@ -172,24 +225,51 @@ function AdminMessaging({ user, isAdmin }) {
               )}
 
               <div className="chat-column">
-                {(isAdmin ? selectedUser : true) && (
+                {((isAdmin && selectedUser) || !isAdmin) && (
                   <>
                     <div className="chat-body">
-                      <div className="message-list">
-                        {messages.map((msg) => (
-                          <div 
-                            key={msg.id} 
-                            className={`message ${
-                              msg.sender === (isAdmin ? 'Admin' : 'user') 
-                                ? 'sent-message' 
-                                : 'received-message'
-                            }`}
-                          >
-                            {msg.text}
-                          </div>
-                        ))}
-                        <div ref={messagesEndRef} />
-                      </div>
+                      {isLoadingMessages ? (
+                        <div className="bs-loading-container">
+                          <div className="bs-loading-spinner"></div>
+                        </div>
+                      ) : (
+                        <div className="message-list">
+                          {messages.length === 0 ? (
+                            <div className="no-messages">
+                              Chưa có tin nhắn nào. Hãy bắt đầu cuộc trò chuyện!
+                            </div>
+                          ) : (
+                            messages.map((msg, index) => {
+                              const showTimestamp = index === 0 || 
+                                (messages[index - 1]?.timestamp && 
+                                 msg.timestamp && 
+                                 (msg.timestamp - messages[index - 1].timestamp > 300000));
+                              
+                              return (
+                                <React.Fragment key={msg.id}>
+                                  {showTimestamp && (
+                                    <div className="timestamp-divider">
+                                      {formatTimestamp(msg.timestamp)}
+                                    </div>
+                                  )}
+                                  <div 
+                                    className={`message ${
+                                      msg.sender === (isAdmin ? 'Admin' : 'user') 
+                                        ? 'sent-message' 
+                                        : 'received-message'
+                                    }`}
+                                  >
+                                    <div className="message-content">
+                                      {msg.text}
+                                    </div>
+                                  </div>
+                                </React.Fragment>
+                              );
+                            })
+                          )}
+                          <div ref={messagesEndRef} />
+                        </div>
+                      )}
                     </div>
 
                     <div className="chat-input">
@@ -203,7 +283,8 @@ function AdminMessaging({ user, isAdmin }) {
                       />
                       <button 
                         onClick={sendMessage}
-                        disabled={isAdmin && !selectedUser}
+                        disabled={isAdmin && !selectedUser || !newMessage.trim()}
+                        className={!newMessage.trim() ? 'disabled' : ''}
                       >
                         <FaPaperPlane />
                       </button>

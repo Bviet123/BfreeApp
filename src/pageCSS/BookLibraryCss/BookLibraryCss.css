@@ -147,6 +147,9 @@
   color: var(--primary-color);
   margin-bottom: 10px;
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .book-author {
