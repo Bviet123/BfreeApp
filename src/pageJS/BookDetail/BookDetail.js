@@ -242,6 +242,19 @@ function BookDetail() {
         return;
       }
 
+      // Cập nhật số lần mượn sách trong bảng books
+      const bookRef = ref(database, `books/${bookId}`);
+      const bookSnapshot = await get(bookRef);
+      const currentBook = bookSnapshot.val();
+      
+      // Nếu chưa có trường borrowCount thì khởi tạo là 0
+      const currentBorrowCount = currentBook.borrowCount || 0;
+      
+      // Tăng số lần mượn lên 1
+      await update(bookRef, {
+        borrowCount: currentBorrowCount + 1
+      });
+
       const borrowRequest = {
         bookId: bookId,
         title: book.title,
@@ -251,7 +264,6 @@ function BookDetail() {
         status: 'pending',
         coverUrl: book.coverUrl,
         requestType: 'borrow',
-        borrowCount: '0',
       };
 
       const borrowRequestsRef = ref(database, 'borrowRequests');
@@ -264,7 +276,7 @@ function BookDetail() {
       console.error("Error sending borrow request:", error);
       alert("Có lỗi xảy ra khi gửi yêu cầu mượn sách.");
     }
-  };
+};
 
 
 

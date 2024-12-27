@@ -62,7 +62,7 @@ function AddChapter() {
       const bookRef = ref(database, `books/${bookId}`);
       await update(bookRef, updatedBook);
       alert('Chương đã được thêm thành công!');
-      navigate(`/admin/books/BookDetail/${bookId}`);
+      navigate(`/admin/books/${bookId}`);
     } catch (error) {
       console.error('Lỗi khi thêm chương:', error);
       alert('Có lỗi xảy ra khi thêm chương. Vui lòng thử lại.');

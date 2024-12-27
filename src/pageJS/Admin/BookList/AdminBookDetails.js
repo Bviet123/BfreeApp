@@ -179,18 +179,23 @@ const ChapterList = ({ book, id }) => {
   const handleDeleteChapter = async (chapterId) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa chương này?')) {
       try {
+        // Filter out the chapter to be deleted
         const updatedChapters = chapters.filter(chapter => chapter.id !== chapterId);
         
+        // Create the update object with the correct structure
+        const updates = {
+          'content': {
+            chapters: updatedChapters,
+            totalChapters: totalChapters - 1,
+            lastUpdated: new Date().toISOString()
+          }
+        };
+
+        // Update the book document
         const bookRef = ref(database, `books/${id}`);
-        await update(bookRef, {
-          'content.chapters': updatedChapters,
-          'content.totalChapters': totalChapters - 1,
-          'content.lastUpdated': new Date().toISOString()
-        });
+        await update(bookRef, updates);
 
-        const chapterRef = ref(database, `books/${id}/content/chapters/${chapterId}`);
-        await remove(chapterRef);
-
+        // Update local state
         setChapters(updatedChapters);
         setTotalChapters(prev => prev - 1);
         alert('Chương đã được xóa thành công!');

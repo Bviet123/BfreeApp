@@ -67,9 +67,9 @@ const DetailModal = ({ isOpen, onClose, data, type }) => {
             };
         } else {
             const diffTime = returnTime - dueTime;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            //const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             return {
-                text: `Trả trễ ${diffDays} ngày`,
+                text: `Trả trễ`,
                 className: 'ad-status-overdue',
                 icon: <FaExclamationCircle className="ad-status-icon" />
             };

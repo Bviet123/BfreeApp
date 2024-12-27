@@ -24,7 +24,10 @@ const BookCard = ({ book, authors, genres, onEdit, onDelete }) => (
             .join(', ')
           : 'Chưa phân loại'
       }</p>
-      <p><strong>Lượt đọc:</strong> {book.readCount || 0}</p>
+      <div className="bl-stats">
+        <p><strong>Lượt đọc:</strong> {book.readCount || 0}</p>
+        <p><strong>Lượt mượn:</strong> {book.borrowCount || 0}</p>
+      </div>
     </div>
     <div className="bl-actions">
       <button onClick={() => onEdit(book.id)} className="bl-btn-edit">
@@ -37,16 +40,27 @@ const BookCard = ({ book, authors, genres, onEdit, onDelete }) => (
   </div>
 );
 
-const SearchBar = ({ searchTerm, onSearch }) => (
-  <div className="bl-search">
-    <FaSearch className="bl-search-icon" />
-    <input
-      type="text"
-      placeholder="Tìm kiếm sách..."
-      value={searchTerm}
-      onChange={onSearch}
-      className="bl-search-input"
-    />
+const SearchAndSortBar = ({ searchTerm, onSearch, sortBy, onSortChange }) => (
+  <div className="bl-search-sort">
+    <div className="bl-search">
+      <FaSearch className="bl-search-icon" />
+      <input
+        type="text"
+        placeholder="Tìm kiếm sách..."
+        value={searchTerm}
+        onChange={onSearch}
+        className="bl-search-input"
+      />
+    </div>
+    <select 
+      value={sortBy} 
+      onChange={(e) => onSortChange(e.target.value)}
+      className="bl-sort-select"
+    >
+      <option value="title">Sắp xếp theo tên</option>
+      <option value="readCount">Sắp xếp theo lượt đọc</option>
+      <option value="borrowCount">Sắp xếp theo lượt mượn</option>
+    </select>
   </div>
 );
 
@@ -75,6 +89,7 @@ function BookCardList() {
   const [authors, setAuthors] = useState({});
   const [genres, setGenres] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('title');
   const [isAsideVisible, setIsAsideVisible] = useState(true);
   const [loading, setLoading] = useState(true);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -90,10 +105,7 @@ function BookCardList() {
         const data = snapshot.val();
         const booksArray = data ?
           Object.entries(data).map(([id, book]) => ({ id, ...book })) : [];
-        const sortedBooks = booksArray.sort((a, b) =>
-          a.title.localeCompare(b.title)
-        );
-        setBooks(sortedBooks);
+        setBooks(booksArray);
         setLoading(false);
       });
 
@@ -115,27 +127,50 @@ function BookCardList() {
     return fetchData();
   }, []);
 
-  const filteredBooks = books.filter(book =>
-    book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (book.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    book.authorIds?.some(id =>
-      authors[id]?.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ) ||
-    book.genreIds && Object.entries(book.genreIds).some(([_, genreId]) =>
-      genres[genreId]?.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  const sortBooks = (booksToSort) => {
+    return [...booksToSort].sort((a, b) => {
+      switch (sortBy) {
+        case 'readCount':
+          return (b.readCount || 0) - (a.readCount || 0);
+        case 'borrowCount':
+          return (b.borrowCount || 0) - (a.borrowCount || 0);
+        case 'title':
+        default:
+          return a.title.localeCompare(b.title);
+      }
+    });
+  };
 
-  const currentBooks = filteredBooks.slice(
+  const getFilteredAndSortedBooks = () => {
+    const filtered = books.filter(book =>
+      book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (book.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      book.authorIds?.some(id =>
+        authors[id]?.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ) ||
+      book.genreIds && Object.entries(book.genreIds).some(([_, genreId]) =>
+        genres[genreId]?.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+    
+    return sortBooks(filtered);
+  };
+
+  const filteredAndSortedBooks = getFilteredAndSortedBooks();
+  const currentBooks = filteredAndSortedBooks.slice(
     (currentPage - 1) * BOOKS_PER_PAGE,
     currentPage * BOOKS_PER_PAGE
   );
 
-  const totalPages = Math.ceil(filteredBooks.length / BOOKS_PER_PAGE);
-
+  const totalPages = Math.ceil(filteredAndSortedBooks.length / BOOKS_PER_PAGE);
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleSortChange = (newSortBy) => {
+    setSortBy(newSortBy);
     setCurrentPage(1);
   };
 
@@ -181,7 +216,7 @@ function BookCardList() {
     );
   }
 
-  if (!loading && filteredBooks.length === 0) {
+  if (!loading && filteredAndSortedBooks.length === 0) {
     return (
       <div className="bl-container">
         <Aside className={`bl-aside ${isAsideVisible ? 'bl-aside-visible' : 'bl-aside-hidden'}`} />
@@ -201,7 +236,12 @@ function BookCardList() {
               <FaPlus /> Thêm sách
             </button>
           </div>
-          <SearchBar searchTerm={searchTerm} onSearch={handleSearchChange} />
+          <SearchAndSortBar 
+            searchTerm={searchTerm} 
+            onSearch={handleSearchChange}
+            sortBy={sortBy}
+            onSortChange={handleSortChange}
+          />
           <div className="bl-empty-state">
             <p>Không tìm thấy sách nào{searchTerm ? ' phù hợp với tìm kiếm' : ''}.</p>
             <button className="bl-add-btn" onClick={handleAddBook}>
@@ -233,7 +273,12 @@ function BookCardList() {
           </button>
         </div>
 
-        <SearchBar searchTerm={searchTerm} onSearch={handleSearchChange} />
+        <SearchAndSortBar 
+          searchTerm={searchTerm} 
+          onSearch={handleSearchChange}
+          sortBy={sortBy}
+          onSortChange={handleSortChange}
+        />
 
         <div className="bl-grid">
           {currentBooks.map(book => (

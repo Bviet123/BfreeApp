@@ -37,10 +37,9 @@ function SignUp() {
                 lastUpdated: serverTimestamp()
             };
             await set(ref(database, 'users/' + user.uid), userData);
-            console.log("Thông tin người dùng đã được thêm vào Database");
             return userData;
         } catch (error) {
-            console.error("Lỗi khi thêm thông tin người dùng vào Database:", error);
+            console.error("Lỗi khi thêm thông tin người dùng:", error);
             throw error;
         }
     };
@@ -48,37 +47,28 @@ function SignUp() {
     const handleSignUp = async (e) => {
         e.preventDefault();
         setError(null);
-
+    
         if (password !== confirmPassword) {
             setError("Mật khẩu không khớp");
             return;
         }
-
+    
         try {
-            // Kiểm tra xem email đã tồn tại chưa
             const methods = await fetchSignInMethodsForEmail(auth, email);
             if (methods.length > 0) {
-                setError("Email này đã được sử dụng. Vui lòng chọn email khác.");
+                setError("Email này đã được sử dụng");
                 return;
             }
-
-            // Tạo tài khoản tạm thời để gửi email xác thực
-            const tempUserCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const tempUser = tempUserCredential.user;
+    
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
             
-            // Gửi email xác thực
-            await sendEmailVerification(tempUser);
+            // Thêm user vào database ngay khi tạo tài khoản
+            await addUserToDatabase(user);
             
-            // Lưu thông tin đăng nhập vào localStorage để sử dụng sau khi xác thực
-            localStorage.setItem('pendingSignUp', JSON.stringify({
-                email,
-                password
-            }));
-
-            // Xóa tài khoản tạm thời
-            await tempUser.delete();
+            await sendEmailVerification(user);
             
-            toast.success("Một email xác nhận đã được gửi đến địa chỉ email của bạn.");
+            toast.success("Email xác nhận đã được gửi. Vui lòng kiểm tra hộp thư của bạn.");
             setIsVerifying(true);
             
         } catch (error) {
@@ -108,29 +98,15 @@ function SignUp() {
 
     const handleVerifiedSignUp = async () => {
         try {
-            const pendingSignUp = JSON.parse(localStorage.getItem('pendingSignUp'));
-            if (!pendingSignUp) {
-                toast.error("Không tìm thấy thông tin đăng ký. Vui lòng thử lại.");
-                return;
-            }
-
-            // Tạo tài khoản chính thức sau khi đã xác thực email
-            const userCredential = await createUserWithEmailAndPassword(
-                auth, 
-                pendingSignUp.email, 
-                pendingSignUp.password
-            );
-            const user = userCredential.user;
+            const user = auth.currentUser;
+            await user.reload();
 
             if (user.emailVerified) {
-                // Thêm user vào database
                 await addUserToDatabase(user);
-                localStorage.removeItem('pendingSignUp');
                 toast.success("Tài khoản đã được tạo thành công!");
                 navigate('/login');
             } else {
-                toast.error("Email chưa được xác thực. Vui lòng xác thực email trước.");
-                await user.delete();
+                toast.error("Email chưa được xác thực");
             }
         } catch (error) {
             handleAuthError(error);

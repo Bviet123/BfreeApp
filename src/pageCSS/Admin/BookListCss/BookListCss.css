@@ -62,9 +62,17 @@
   background-color: #34495e;
 }
 
+/* Cập nhật phần search và sort */
+.bl-search-sort {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 .bl-search {
   position: relative;
-  margin-bottom: 20px;
+  flex: 1;
 }
 
 .bl-search-icon {
@@ -77,15 +85,34 @@
 
 .bl-search-input {
   width: 100%;
-  max-width: 320px;
   padding: 12px 12px 12px 40px;
   border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 0.9rem;
   transition: all 0.3s ease;
+  height: 42px;
 }
 
 .bl-search-input:focus {
+  outline: none;
+  border-color: var(--bl-primary);
+  box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
+}
+
+.bl-sort-select {
+  min-width: 180px;
+  padding: 0 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: var(--bl-text);
+  background-color: white;
+  cursor: pointer;
+  height: 42px;
+  transition: all 0.3s ease;
+}
+
+.bl-sort-select:focus {
   outline: none;
   border-color: var(--bl-primary);
   box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
@@ -168,9 +195,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 1; 
-  -moz-lines-clamp: 1;    
-  line-clamp: 1;         
+  -webkit-line-clamp: 1;
+  -moz-lines-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
 }
 
@@ -181,6 +208,23 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Thêm style cho phần thống kê */
+.bl-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.bl-stats p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--bl-text);
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .bl-info p strong {
@@ -271,6 +315,20 @@
   color: var(--bl-text);
 }
 
+/* Empty state styles */
+.bl-empty-state {
+  text-align: center;
+  padding: 40px;
+  background-color: var(--bl-card-bg);
+  border-radius: 8px;
+  box-shadow: var(--bl-card-shadow);
+}
+
+.bl-empty-state p {
+  margin-bottom: 20px;
+  color: var(--bl-text);
+}
+
 @media (max-width: 1200px) {
   .bl-grid {
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -285,9 +343,14 @@
   .bl-main {
     padding: 15px;
   }
-  
-  .bl-search-input {
-    max-width: 100%;
+
+  .bl-search-sort {
+    flex-direction: column;
+  }
+
+  .bl-sort-select {
+    width: 100%;
+    min-width: unset;
   }
 }
 

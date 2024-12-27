@@ -68,7 +68,7 @@ function EditChapter() {
             const bookRef = ref(database, `books/${bookId}`);
             await update(bookRef, updatedBook);
             alert('Chương đã được cập nhật thành công!');
-            navigate(`/admin/books/BookDetail/${bookId}`);
+            navigate(`/admin/books/${bookId}`);
         } catch (error) {
             console.error('Lỗi khi cập nhật chương:', error);
             alert('Có lỗi xảy ra khi cập nhật chương. Vui lòng thử lại.');
@@ -80,7 +80,7 @@ function EditChapter() {
     }
 
     const handleGoBack = () => {
-        navigate(`/admin/books/BookDetail/${bookId}`);
+        navigate(`/admin/books/${bookId}`);
     };
 
     return (

@@ -28,6 +28,7 @@ import EditBookDetails from './pageJS/Admin/BookList/EditBookDetails';
 import { AuthProvider } from './AuthProvider';
 import { ProtectedRoute } from './ProtectedRoute ';
 import NotFound from './ErrorPage';
+import Statistics from './pageJS/Admin/Statistics/Statistics';
 
 function App() {
   return (
@@ -68,6 +69,7 @@ function App() {
                 <Route path="authors" element={<AuthorList />} />
                 <Route path="other" element={<OtherList />} />
                 <Route path="borrows" element={<BorrowList />} />
+                <Route path="statistics" element={<Statistics />} />
               </Routes>
             </ProtectedRoute>
           } />

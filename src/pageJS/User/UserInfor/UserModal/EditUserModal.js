@@ -11,6 +11,45 @@ const EditUserModal = ({ user, onClose, onUpdate }) => {
   const [error, setError] = useState(null);
   const genreDropdownRef = useRef(null);
 
+  // Format date for display in input type="date"
+  const formatDateForDisplay = (dateString) => {
+    if (!dateString) return '';
+    
+    try {
+      if (dateString.includes('/')) {
+        // Convert from DD/MM/YYYY to YYYY-MM-DD
+        const [day, month, year] = dateString.split('/');
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      } else if (dateString.includes('-')) {
+        // If already in YYYY-MM-DD format, return as is
+        return dateString;
+      }
+    } catch (error) {
+      console.error('Date parsing error:', error);
+      return '';
+    }
+    return '';
+  };
+
+  // Format date for saving to database
+  const formatDateForSave = (dateString) => {
+    if (!dateString) return '';
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '';
+      
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      
+      return `${day}/${month}/${year}`;
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return dateString;
+    }
+  };
+
   useEffect(() => {
     const db = getDatabase();
 
@@ -53,10 +92,29 @@ const EditUserModal = ({ user, onClose, onUpdate }) => {
 
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
-    setEditedUser(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+    
+    if (name === 'birthDate') {
+      // Only update state if value is valid
+      if (value) {
+        const formattedDate = formatDateForSave(value);
+        if (formattedDate) {
+          setEditedUser(prevState => ({
+            ...prevState,
+            [name]: formattedDate
+          }));
+        }
+      } else {
+        setEditedUser(prevState => ({
+          ...prevState,
+          [name]: ''
+        }));
+      }
+    } else {
+      setEditedUser(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+    }
   }, []);
 
   const handleGenreToggle = useCallback((genre) => {
@@ -91,7 +149,6 @@ const EditUserModal = ({ user, onClose, onUpdate }) => {
       uid: user.uid,
       avatar: editedUser.avatar || "",
       email: editedUser.email,
-      password: editedUser.password,
       role: editedUser.role || "Người dùng",
       fullName: editedUser.fullName || "",
       birthDate: editedUser.birthDate || "",
@@ -123,12 +180,6 @@ const EditUserModal = ({ user, onClose, onUpdate }) => {
       });
   }, [editedUser, selectedGenres, user.uid, onClose, onUpdate]);
 
-  const formatDate = useCallback((dateString) => {
-    if (!dateString) return '';
-    const [day, month, year] = dateString.split('/');
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-  }, []);
-
   if (error) {
     return (
       <div className="modal-overlay">
@@ -151,28 +202,64 @@ const EditUserModal = ({ user, onClose, onUpdate }) => {
         <div className="modal-body">
           <div className="form-group">
             <label htmlFor="avatar">Ảnh đại diện</label>
-            <input type="file" id="avatar" name="avatar" accept="image/*" onChange={handleImageChange} />
-            {imagePreview && <img src={imagePreview} alt="Avatar preview" className="avatar-preview" />}
+            <input 
+              type="file" 
+              id="avatar" 
+              name="avatar" 
+              accept="image/*" 
+              onChange={handleImageChange} 
+            />
+            {imagePreview && (
+              <img 
+                src={imagePreview} 
+                alt="Avatar preview" 
+                className="avatar-preview" 
+              />
+            )}
           </div>
           
           <div className="form-group">
             <label htmlFor="email">Email</label>
-            <input type="email" id="email" name="email" value={editedUser.email || ''} readOnly />
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              value={editedUser.email || ''} 
+              readOnly 
+            />
           </div>
           
           <div className="form-group">
             <label htmlFor="fullName">Họ và tên</label>
-            <input type="text" id="fullName" name="fullName" value={editedUser.fullName || ''} onChange={handleInputChange} />
+            <input 
+              type="text" 
+              id="fullName" 
+              name="fullName" 
+              value={editedUser.fullName || ''} 
+              onChange={handleInputChange} 
+            />
           </div>
           
           <div className="form-group">
             <label htmlFor="birthDate">Ngày sinh</label>
-            <input type="date" id="birthDate" name="birthDate" value={formatDate(editedUser.birthDate)} onChange={handleInputChange} />
+            <input 
+              type="date" 
+              id="birthDate" 
+              name="birthDate" 
+              value={formatDateForDisplay(editedUser.birthDate) || ''} 
+              onChange={handleInputChange}
+              max={new Date().toISOString().split('T')[0]}
+            />
           </div>
           
           <div className="form-group">
             <label htmlFor="gender">Giới tính</label>
-            <select id="gender" name="gender" value={editedUser.gender || ''} onChange={handleInputChange}>
+            <select 
+              id="gender" 
+              name="gender" 
+              value={editedUser.gender || ''} 
+              onChange={handleInputChange}
+            >
               <option value="">Chọn giới tính</option>
               <option value="male">Nam</option>
               <option value="female">Nữ</option>
@@ -183,15 +270,22 @@ const EditUserModal = ({ user, onClose, onUpdate }) => {
           <div className="form-group" ref={genreDropdownRef}>
             <label htmlFor="genres">Thể loại yêu thích</label>
             <div className="custom-dropdown">
-              <div className="dropdown-toggle" onClick={() => setIsGenreDropdownOpen(!isGenreDropdownOpen)}>
-                {selectedGenres.length > 0 ? selectedGenres.map(g => g.name).join(', ') : 'Chọn thể loại...'}
+              <div 
+                className="dropdown-toggle" 
+                onClick={() => setIsGenreDropdownOpen(!isGenreDropdownOpen)}
+              >
+                {selectedGenres.length > 0 
+                  ? selectedGenres.map(g => g.name).join(', ') 
+                  : 'Chọn thể loại...'}
               </div>
               {isGenreDropdownOpen && (
                 <div className="dropdown-menu">
                   {genres.map(genre => (
                     <div
                       key={genre.id}
-                      className={`dropdown-item ${selectedGenres.some(g => g.id === genre.id) ? 'selected' : ''}`}
+                      className={`dropdown-item ${
+                        selectedGenres.some(g => g.id === genre.id) ? 'selected' : ''
+                      }`}
                       onClick={() => handleGenreToggle(genre)}
                     >
                       {genre.name}
@@ -201,6 +295,7 @@ const EditUserModal = ({ user, onClose, onUpdate }) => {
               )}
             </div>
           </div>
+          
           <div className="form-group">
             <label htmlFor="readingGoal">Mục tiêu đọc sách</label>
             <textarea

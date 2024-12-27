@@ -41,18 +41,27 @@ function Aside() {
             <i className="fas fa-users"></i>
             <span>Quản lý tài khoản</span>
           </li>
+
           <li onClick={() => navigate('/admin/other')}>  
             <i className="fas fa-tag"></i>
             <span>Thể loại và NSX</span>
           </li>
+
           <li onClick={() => navigate('/admin/authors')}>  
             <i className="fas fa-tag"></i>
             <span>Tác giả</span>
           </li>
+
+          <li onClick={() => navigate('/admin/statistics')}>  
+            <i className="fas fa-chart-bar"></i>
+            <span>Thống kê</span>
+          </li>
+
           <li onClick={() => navigate('/admin/borrows')}>  
             <i className="fas fa-book"></i>
             <span>Quản lý sách mượn</span>
           </li>
+
           <li onClick={() => {
             localStorage.removeItem('user'); 
             navigate('/login');
