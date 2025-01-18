@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import '../../../pageCSS/Admin/AuthorListCss/AuthorListCss.css';
-import { FaBars, FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import Aside from '../Aside/Aside';
-import { AuthorDetailModal, AuthorFormModal, AuthorDeleteModal } from './AuthorModal/AuthorModal.js';
+import { Menu, X, ChevronLeft, ChevronRight, Search, Plus, Info, Edit, Trash2 } from 'lucide-react';
 import { ref, onValue } from 'firebase/database';
 import { database } from '../../../firebaseConfig';
 import DateFormatter from '../../../Format/DateFormatter';
+import Aside from '../Aside/Aside';
+import { AuthorDetailModal, AuthorFormModal, AuthorDeleteModal } from './AuthorModal/AuthorModal.js';
+import '../../../pageCSS/Admin/AuthorListCss/AuthorListCss.css';
 
-function AuthorList() {
+const AuthorList = () => {
     const [authors, setAuthors] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -30,70 +30,41 @@ function AuthorList() {
         });
     }, []);
 
-    const toggleAside = () => {
-        setIsAsideVisible(!isAsideVisible);
-    };
-
-    const handleSearch = (event) => {
-        setSearchTerm(event.target.value);
-        setCurrentPage(1);
-    };
-
     const filteredAuthors = authors.filter((author) =>
         author.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const totalPages = Math.ceil(filteredAuthors.length / authorsPerPage);
-    const indexOfLastAuthor = currentPage * authorsPerPage;
-    const indexOfFirstAuthor = indexOfLastAuthor - authorsPerPage;
-    const currentAuthors = filteredAuthors.slice(indexOfFirstAuthor, indexOfLastAuthor);
-
-    const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber);
-    };
-
-    const handleAdd = () => {
-        setSelectedAuthor(null);
-        setFormModalOpen(true);
-    };
-
-    const handleDetails = (author) => {
-        setSelectedAuthor(author);
-        setDetailModalOpen(true);
-    };
-
-    const handleEdit = (author) => {
-        setSelectedAuthor(author);
-        setDetailModalOpen(false);
-        setFormModalOpen(true);
-    };
-
-    const handleDeleteClick = (author) => {
-        setSelectedAuthor(author);
-        setDeleteModalOpen(true);
-    };
-
-    const handleSubmit = () => {
-        setFormModalOpen(false);
-    };
-
-    const handleDelete = () => {
-        setDeleteModalOpen(false);
-    };
+    const currentAuthors = filteredAuthors.slice(
+        (currentPage - 1) * authorsPerPage,
+        currentPage * authorsPerPage
+    );
 
     return (
         <div className="author-list-container">
             {isAsideVisible && <Aside />}
+
             <div className={`author-list-main ${isAsideVisible ? '' : 'full-width'}`}>
                 <div className="author-list-header">
-                    <div className='author-list-toggle'>
-                        <button className="toggle-aside-btn" onClick={toggleAside}>
-                            {isAsideVisible ? <FaTimes /> : <FaBars />}
+                    <div className="author-list-toggle">
+                        <button
+                            className="toggle-aside-btn"
+                            onClick={() => setIsAsideVisible(!isAsideVisible)}
+                        >
+                            {isAsideVisible ? <X size={20} /> : <Menu size={20} />}
                         </button>
                         <h2>Danh sách tác giả</h2>
                     </div>
+
                     <div className="author-list-actions">
-                        <button className="btn-add" onClick={handleAdd}>
+                        <button
+                            className="btn-add"
+                            onClick={() => {
+                                setSelectedAuthor(null);
+                                setFormModalOpen(true);
+                            }}
+                        >
+                            <Plus size={18} className="icon-margin" />
                             Thêm tác giả
                         </button>
                     </div>
@@ -104,9 +75,10 @@ function AuthorList() {
                         type="text"
                         placeholder="Tìm kiếm tác giả..."
                         value={searchTerm}
-                        onChange={handleSearch}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+
                 <table>
                     <thead>
                         <tr>
@@ -129,15 +101,20 @@ function AuthorList() {
                                 </td>
                                 <td>{author.nationality}</td>
                                 <td>
-                                    <button className="btn-details" onClick={() => handleDetails(author)}>
-                                        Chi tiết
-                                    </button>
-                                    <button className="btn-edit" onClick={() => handleEdit(author)}>
-                                        Sửa
-                                    </button>
-                                    <button className="btn-delete" onClick={() => handleDeleteClick(author)}>
-                                        Xóa
-                                    </button>
+                                    <div className="action-buttons">
+                                        <button className="btn-details">
+                                            <Info size={18} />
+                                            Chi tiết
+                                        </button>
+                                        <button className="btn-edit">
+                                            <Edit size={18} />
+                                            Sửa
+                                        </button>
+                                        <button className="btn-delete">
+                                            <Trash2 size={18} />
+                                            Xóa
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -146,17 +123,19 @@ function AuthorList() {
 
                 <div className="pagination">
                     <button
-                        onClick={() => handlePageChange(currentPage - 1)}
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                         disabled={currentPage === 1}
+                        className={currentPage === 1 ? 'disabled' : ''}
                     >
-                        <FaChevronLeft />
+                        <ChevronLeft size={18} />
                     </button>
                     <span>{currentPage} / {totalPages}</span>
                     <button
-                        onClick={() => handlePageChange(currentPage + 1)}
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                         disabled={currentPage === totalPages}
+                        className={currentPage === totalPages ? 'disabled' : ''}
                     >
-                        <FaChevronRight />
+                        <ChevronRight size={18} />
                     </button>
                 </div>
             </div>
@@ -165,24 +144,27 @@ function AuthorList() {
                 isOpen={detailModalOpen}
                 onClose={() => setDetailModalOpen(false)}
                 author={selectedAuthor}
-                onEdit={() => handleEdit(selectedAuthor)}
+                onEdit={() => {
+                    setDetailModalOpen(false);
+                    setFormModalOpen(true);
+                }}
             />
 
             <AuthorFormModal
                 isOpen={formModalOpen}
                 onClose={() => setFormModalOpen(false)}
                 author={selectedAuthor}
-                onSubmit={handleSubmit}
+                onSubmit={() => setFormModalOpen(false)}
             />
 
             <AuthorDeleteModal
                 isOpen={deleteModalOpen}
                 onClose={() => setDeleteModalOpen(false)}
                 author={selectedAuthor}
-                onConfirm={handleDelete}
+                onConfirm={() => setDeleteModalOpen(false)}
             />
         </div>
     );
-}
+};
 
 export default AuthorList;

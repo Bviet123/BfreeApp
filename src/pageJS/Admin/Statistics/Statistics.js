@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Calendar, Book, Clock, AlertTriangle,
   Users, BookOpen, RotateCcw, TrendingUp,
-  Menu, X, Bell, TrendingDown
+  Menu, X, Bell, TrendingDown, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { ref, onValue, push, set, get } from 'firebase/database';
 import { database } from '../../../firebaseConfig.js';
@@ -19,6 +19,14 @@ const Statistics = () => {
   const [loading, setLoading] = useState(true);
   const [books, setBooks] = useState([]);
   const [popularBooks, setPopularBooks] = useState([]);
+  
+  // Pagination states for popular books
+  const [currentPopularPage, setCurrentPopularPage] = useState(1);
+  const popularItemsPerPage = 9;
+  
+  // Pagination states for overdue books
+  const [currentOverduePage, setCurrentOverduePage] = useState(1);
+  const overdueItemsPerPage = 5;
 
   useEffect(() => {
     const loadData = async () => {
@@ -29,7 +37,6 @@ const Statistics = () => {
         const usersRef = ref(database, 'users');
         const booksRef = ref(database, 'books');
 
-        // Lắng nghe thay đổi dữ liệu realtime
         onValue(borrowedBooksRef, (snapshot) => {
           const data = snapshot.val();
           setBorrowedBooks(data ? Object.entries(data).map(([key, value]) => ({ id: key, ...value })) : []);
@@ -50,7 +57,6 @@ const Statistics = () => {
           setUsers(data || {});
         });
 
-        // Lấy thông tin sách và tính toán độ phổ biến
         onValue(booksRef, (snapshot) => {
           const data = snapshot.val();
           if (data) {
@@ -62,12 +68,8 @@ const Statistics = () => {
 
             setBooks(booksArray);
 
-            // Sắp xếp và lấy top 9 sách phổ biến nhất
-            const topBooks = [...booksArray]
-              .sort((a, b) => b.popularity - a.popularity)
-              .slice(0, 9);
-
-            setPopularBooks(topBooks);
+            const sortedBooks = [...booksArray].sort((a, b) => b.popularity - a.popularity);
+            setPopularBooks(sortedBooks);
           }
         });
 
@@ -90,6 +92,18 @@ const Statistics = () => {
   const totalRequests = borrowRequests.filter(req => !req.status || req.status !== 'awaiting_pickup').length;
   const awaitingPickup = borrowRequests.filter(req => req.status === 'awaiting_pickup').length;
   const totalReturned = returnedBooks.length;
+
+  // Pagination calculations for popular books
+  const totalPopularPages = Math.ceil(popularBooks.length / popularItemsPerPage);
+  const indexOfLastPopularBook = currentPopularPage * popularItemsPerPage;
+  const indexOfFirstPopularBook = indexOfLastPopularBook - popularItemsPerPage;
+  const currentPopularBooks = popularBooks.slice(indexOfFirstPopularBook, indexOfLastPopularBook);
+
+  // Pagination calculations for overdue books
+  const totalOverduePages = Math.ceil(overdueBooks.length / overdueItemsPerPage);
+  const indexOfLastOverdueBook = currentOverduePage * overdueItemsPerPage;
+  const indexOfFirstOverdueBook = indexOfLastOverdueBook - overdueItemsPerPage;
+  const currentOverdueBooks = overdueBooks.slice(indexOfFirstOverdueBook, indexOfLastOverdueBook);
 
   const sendOverdueNotification = async (userId, bookTitle, daysOverdue) => {
     try {
@@ -202,25 +216,43 @@ const Statistics = () => {
                 <TrendingUp className="section-icon" />
               </div>
               <div className="popular-books-grid">
-                {popularBooks.map((book, index) => (
+                {currentPopularBooks.map((book, index) => (
                   <div key={book.id} className="popular-book-card">
-                    <div className="book-rank">#{index + 1}</div>
+                    <div className="book-rank">#{(currentPopularPage - 1) * popularItemsPerPage + index + 1}</div>
                     <img src={book.coverUrl} alt={book.title} className="book-cover" />
                     <div className="book-details">
                       <h3 className="book-title">{book.title}</h3>
-                      <div className="book-stats">
+                      <div className="Sta-book-stats">
                         <div className="stat">
                           <BookOpen className="stat-icon" />
-                          <span>{book.readCount || 0} lượt đọc</span>
+                          <span>{book.readCount || 0} đọc</span>
                         </div>
                         <div className="stat">
                           <Book className="stat-icon" />
-                          <span>{book.borrowCount || 0} lượt mượn</span>
+                          <span>{book.borrowCount || 0} mượn</span>
                         </div>
                       </div>
                     </div>
                   </div>
                 ))}
+              </div>
+              
+              <div className="pagination">
+                <button
+                  onClick={() => setCurrentPopularPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPopularPage === 1}
+                  className={currentPopularPage === 1 ? 'disabled' : ''}
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <span>{currentPopularPage} / {totalPopularPages}</span>
+                <button
+                  onClick={() => setCurrentPopularPage(prev => Math.min(prev + 1, totalPopularPages))}
+                  disabled={currentPopularPage === totalPopularPages}
+                  className={currentPopularPage === totalPopularPages ? 'disabled' : ''}
+                >
+                  <ChevronRight size={18} />
+                </button>
               </div>
             </div>
 
@@ -243,7 +275,7 @@ const Statistics = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {overdueBooks.map((book) => {
+                      {currentOverdueBooks.map((book) => {
                         const userInfo = users[book.requesterId] || { fullName: 'Unknown User' };
                         const dueDate = new Date(book.dueDate);
                         const today = new Date();
@@ -269,6 +301,24 @@ const Statistics = () => {
                       })}
                     </tbody>
                   </table>
+                </div>
+                
+                <div className="pagination">
+                  <button
+                    onClick={() => setCurrentOverduePage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentOverduePage === 1}
+                    className={currentOverduePage === 1 ? 'disabled' : ''}
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <span>{currentOverduePage} / {totalOverduePages}</span>
+                  <button
+                    onClick={() => setCurrentOverduePage(prev => Math.min(prev + 1, totalOverduePages))}
+                    disabled={currentOverduePage === totalOverduePages}
+                    className={currentOverduePage === totalOverduePages ? 'disabled' : ''}
+                  >
+                    <ChevronRight size={18} />
+                  </button>
                 </div>
               </div>
             )}

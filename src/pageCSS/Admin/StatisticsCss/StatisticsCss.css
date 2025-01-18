@@ -205,7 +205,7 @@
   overflow: hidden;
 }
 
-.book-stats {
+.Sta-book-stats {
   display: flex;
   flex-direction: column;
   gap: 8px;
